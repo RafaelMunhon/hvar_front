@@ -1,0 +1,872 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Studio API &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="File Import API" href="import_file.html" />
+    <link rel="prev" title="Video Pexel API" href="video_pexel.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Video Studio API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api-principal">API Principal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#processamento-de-video">Processamento de Vídeo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#editor-de-video">Editor de Vídeo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#processamento-de-texto-e-overlay">Processamento de Texto e Overlay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#processamento-de-audio">Processamento de Áudio</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#servicos-de-ia">Serviços de IA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#vertex-ai">Vertex AI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#busca-de-imagens">Busca de Imagens</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#envato">Envato</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pexels">Pexels</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#banco-de-dados">Banco de Dados</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fluxo-de-trabalho">Fluxo de Trabalho</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_utils.html">Utilitários Comuns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vertex_ai.html">Vertex AI</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Video Studio API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/video_studio.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="video-studio-api">
+<h1>Video Studio API<a class="headerlink" href="#video-studio-api" title="Link to this heading"></a></h1>
+<section id="api-principal">
+<h2>API Principal<a class="headerlink" href="#api-principal" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.api.video_studio.</span></span><span class="sig-name descname"><span class="pre">get_signed_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/video_studio.html#get_signed_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera URLs assinadas para upload de vídeos no Google Cloud Storage.</p>
+<dl class="simple">
+<dt>Recebe:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>POST request com JSON contendo:</dt><dd><ul>
+<li><p>fileName (str): Nome do arquivo a ser enviado</p></li>
+<li><p>contentType (str, opcional): Tipo de conteúdo do arquivo (default: ‘video/mp4’)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Retorna:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>JSON com:</dt><dd><ul>
+<li><p>signedUrl (str): URL assinada para upload do arquivo</p></li>
+<li><p>publicUrl (str): URL pública para acesso ao vídeo após upload</p></li>
+<li><p>directUrl (str): URL direta do GCS (formato gs://)</p></li>
+<li><p>fileName (str): Nome único gerado para o arquivo</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Em caso de erro:</dt><dd><ul>
+<li><p>JSON com mensagem de erro e código HTTP apropriado</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.api.video_studio.</span></span><span class="sig-name descname"><span class="pre">process_video</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/video_studio.html#process_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Processa o vídeo após upload para o GCS</p>
+<dl class="simple">
+<dt>Recebe:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>POST request com JSON contendo:</dt><dd><ul>
+<li><p>videoUrl (str): URL do vídeo a ser processado</p></li>
+<li><p>site (str, opcional): Site de origem do vídeo (default: ‘none’)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>Retorna:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>JSON com:</dt><dd><ul>
+<li><p>status (str): Status do processamento</p></li>
+<li><p>message (str): Mensagem de sucesso ou erro</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.api.video_studio.</span></span><span class="sig-name descname"><span class="pre">list_videos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/video_studio.html#list_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Lista todos os vídeos do estúdio salvos no banco de dados.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>JSON com:</dt><dd><ul>
+<li><p>status (str): Status da operação</p></li>
+<li><p>videos (list): Lista de vídeos encontrados</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="processamento-de-video">
+<h2>Processamento de Vídeo<a class="headerlink" href="#processamento-de-video" title="Link to this heading"></a></h2>
+<section id="editor-de-video">
+<h3>Editor de Vídeo<a class="headerlink" href="#editor-de-video" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.editandoVideo.editando_video_studio.</span></span><span class="sig-name descname"><span class="pre">download_video_from_gcs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/editandoVideo/editando_video_studio.html#download_video_from_gcs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Faz o download de um vídeo do GCS para o sistema local.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>video_path</strong> (<em>str</em>) – Caminho do vídeo no GCS (<a class="reference external" href="https://">https://</a> ou gs://)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: Caminho local do vídeo baixado</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.editandoVideo.editando_video_studio.</span></span><span class="sig-name descname"><span class="pre">tratamento_videos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'envato'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/editandoVideo/editando_video_studio.html#tratamento_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Processa um vídeo para edição e criação de um vídeo final.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em><em>, </em><em>opcional</em>) – Caminho do vídeo no GCS (<a class="reference external" href="https://">https://</a> ou gs://)</p></li>
+<li><p><strong>site</strong> (<em>str</em><em>, </em><em>opcional</em>) – Site de origem do vídeo (default: ‘envato’)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>bool: True se o vídeo foi processado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.editandoVideo.editando_video_studio.</span></span><span class="sig-name descname"><span class="pre">list_imagem_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lista_imagens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/editandoVideo/editando_video_studio.html#list_imagem_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Lista imagens de acordo com o site especificado.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>json_data</strong> (<em>dict</em>) – Dados JSON contendo informações sobre as imagens</p></li>
+<li><p><strong>lista_imagens</strong> (<em>list</em>) – Lista de imagens existentes</p></li>
+<li><p><strong>site</strong> (<em>str</em>) – Site de origem das imagens</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>list: Lista de imagens encontradas</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.editandoVideo.editando_video_studio.</span></span><span class="sig-name descname"><span class="pre">melhorarTermo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/editandoVideo/editando_video_studio.html#melhorarTermo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="processamento-de-texto-e-overlay">
+<h3>Processamento de Texto e Overlay<a class="headerlink" href="#processamento-de-texto-e-overlay" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">get_temp_files_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#get_temp_files_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">get_videos_finalized_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#get_videos_finalized_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">encontrar_tempo_frase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transcricao_com_tempos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eh_imagem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#encontrar_tempo_frase"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Encontra o tempo de início e fim da primeira ocorrência de uma frase na transcrição</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">criar_efeitos_artisticos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#criar_efeitos_artisticos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Cria uma coleção de efeitos artísticos e dinâmicos para texto em vídeos.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">gerar_drawtext_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">palavras_encontradas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcricao_com_tempos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#gerar_drawtext_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera informações de texto com efeitos artísticos avançados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>palavras_encontradas</strong> (<em>list</em>) – Lista de palavras encontradas na transcrição</p></li>
+<li><p><strong>transcricao_com_tempos</strong> (<em>list</em>) – Lista de dicionários com a transcrição e timestamps</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>list: Lista de dicionários com informações para overlay.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">gerar_overlay_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imagem_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcricao_com_tempos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#gerar_overlay_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">criar_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palavras_encontradas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imagem_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcricao_com_tempos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duracao_video</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semEfeitos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#criar_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Cria um vídeo com efeitos de texto e imagem sobrepostos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do vídeo de entrada</p></li>
+<li><p><strong>palavras_encontradas</strong> (<em>list</em>) – Lista de palavras encontradas na transcrição</p></li>
+<li><p><strong>imagem_path</strong> (<em>list</em>) – Lista de dicionários contendo informações das imagens</p></li>
+<li><p><strong>transcricao_com_tempos</strong> (<em>list</em>) – Lista de dicionários com a transcrição e timestamps</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">gerar_drawtext_info_simples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">palavras_encontradas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcricao_com_tempos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#gerar_drawtext_info_simples"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">gerar_momentos_zoom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duracao_video</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qtd_zooms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervalo_minimo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#gerar_momentos_zoom"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera momentos de zoom aleatórios espaçados pelo intervalo mínimo no vídeo.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.text_overlay_service_studio.</span></span><span class="sig-name descname"><span class="pre">criar_background_arredondado</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fonte_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_horizontal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_vertical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/text_overlay_service_studio.html#criar_background_arredondado"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Cria um background com cantos arredondados que se adapta ao tamanho do texto.</p>
+</dd></dl>
+
+</section>
+<section id="processamento-de-audio">
+<h3>Processamento de Áudio<a class="headerlink" href="#processamento-de-audio" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">extract_audio_from_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#extract_audio_from_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Extrai o áudio de um vídeo e salva em um arquivo WAV.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho completo para o arquivo de vídeo.</p></li>
+<li><p><strong>audio_output_path</strong> (<em>str</em>) – Caminho completo para salvar o áudio extraído.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: Caminho completo para o áudio extraído.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">transcribe_with_timestamps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#transcribe_with_timestamps"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Transcreve um arquivo de áudio com timestamps usando o Google Cloud Speech-to-Text (LongRunningRecognize).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>audio_file_path</strong> (<em>str</em>) – Caminho completo para o arquivo de áudio.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>list: Lista de dicionários com as palavras transcritas e seus timestamps.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">transcribe_with_timestamps_v2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#transcribe_with_timestamps_v2"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Transcreve um arquivo de áudio com timestamps usando o Google Cloud Speech-to-Text.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">transcrever_video_com_google_cloud</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#transcrever_video_com_google_cloud"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Transcreve um vídeo do Google Cloud Storage</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do vídeo de entrada</p></li>
+<li><p><strong>audio_path</strong> (<em>str</em>) – Caminho do arquivo de saída</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">extract_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#extract_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Extrai o áudio do vídeo usando FFmpeg com configurações otimizadas</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do vídeo de entrada</p></li>
+<li><p><strong>audio_path</strong> (<em>str</em>) – Caminho do arquivo de saída</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>bool: True se o áudio foi extraído com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">upload_video_to_bucket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#upload_video_to_bucket"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Faz upload do vídeo processado para o bucket</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>video_path</strong> (<em>str</em>) – Caminho do vídeo de entrada</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: URL pública do vídeo no bucket ou None em caso de erro</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.speech_service.</span></span><span class="sig-name descname"><span class="pre">upload_audio_to_bucket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bucket_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yduqs-audio-web'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/speech_service.html#upload_audio_to_bucket"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Faz upload de um vídeo para o Google Cloud Storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> – Caminho local do arquivo de vídeo</p></li>
+<li><p><strong>bucket_name</strong> – Nome do bucket do GCS (default: ‘yduqs-audio-web’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>URL pública do vídeo no bucket ou None em caso de erro</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="servicos-de-ia">
+<h2>Serviços de IA<a class="headerlink" href="#servicos-de-ia" title="Link to this heading"></a></h2>
+<section id="vertex-ai">
+<h3>Vertex AI<a class="headerlink" href="#vertex-ai" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">prepare_text_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#prepare_text_topic"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Recebe um texto grande e gera um resumo com 15 palavras usando o Vertex AI com Gemini.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>texto</strong> (<em>str</em>) – O texto grande a ser resumido.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">prepare_aula_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#prepare_aula_3"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">extrair_informacoes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#extrair_informacoes"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">resumo_texto_mil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#resumo_texto_mil"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">cria_roteiro_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#cria_roteiro_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">cria_roteiro_template_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cenas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#cria_roteiro_template_3"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera um roteiro usando o modelo de template 3.</p>
+<p>Recebe:
+- data: Dados para gerar o roteiro
+- num_cenas: Número de cenas desejado</p>
+<p>Retorna:
+- Roteiro gerado ou None se falhar</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">melhorar_texto_com_gemini</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#melhorar_texto_com_gemini"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">remove_html_tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#remove_html_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Remove HTML tags e as marcações <code class="docutils literal notranslate"><span class="pre">`json</span> <span class="pre">e</span> <span class="pre">`</span></code> de uma string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">salvar_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#salvar_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.services.vertexai_service.</span></span><span class="sig-name descname"><span class="pre">encontrar_palavras_chaves_imagem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantidade_palavras_chaves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantidade_imagens</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/vertexai_service.html#encontrar_palavras_chaves_imagem"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+<section id="busca-de-imagens">
+<h2>Busca de Imagens<a class="headerlink" href="#busca-de-imagens" title="Link to this heading"></a></h2>
+<section id="envato">
+<h3>Envato<a class="headerlink" href="#envato" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">reformular_termo_busca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#reformular_termo_busca"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Reformula o termo de busca para melhor resultado</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">baixar_e_verificar_imagem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#baixar_e_verificar_imagem"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa a imagem e verifica se é adequada</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">buscar_no_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#buscar_no_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Busca imagens no Envato</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">buscar_imagens_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lista_imagens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momento_chave</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#buscar_imagens_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Busca imagens no Envato e retorna a primeira adequada</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">pre_processar_termos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cenas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#pre_processar_termos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Pré-processa todos os termos de busca de uma vez usando VertexAI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cenas</strong> (<em>list</em>) – Lista de cenas do vídeo</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dicionário com termos originais e reformulados</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">processar_imagem_paralelo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo_original</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termo_reformulado</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#processar_imagem_paralelo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Processa uma única imagem de forma paralela.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>termo_original</strong> (<em>str</em>) – Termo original da busca</p></li>
+<li><p><strong>termo_reformulado</strong> (<em>str</em>) – Termo reformulado para busca</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – Nome do arquivo</p></li>
+<li><p><strong>path_name</strong> (<em>str</em>) – Caminho para salvar a imagem</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Informações da imagem encontrada ou None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">list_imagem_envato_otimizado</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dados</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lista_imagens</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#list_imagem_envato_otimizado"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Versão otimizada do processamento de imagens com pré-processamento e paralelismo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dados</strong> (<em>dict</em>) – Dados do JSON com as cenas</p></li>
+<li><p><strong>lista_imagens</strong> (<em>list</em>) – Lista atual de imagens</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista atualizada de imagens</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">download_imagem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#download_imagem"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Faz o download da imagem</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">busca_imagens_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lista_imagens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momento_chave</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#busca_imagens_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Função de compatibilidade para manter a API antiga funcionando.
+Apenas um alias para buscar_imagens_envato para manter compatibilidade.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">buscar_videos_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downloaded_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#buscar_videos_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Busca vídeos no Envato usando a mesma lógica que funciona para imagens</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">download_video_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#download_video_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Faz download do vídeo do Envato</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">get_videos_for_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theme</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_videos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#get_videos_for_theme"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Obtém vídeos para o tema usando a nova implementação</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Envato.</span></span><span class="sig-name descname"><span class="pre">get_fallback_videos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Envato.html#get_fallback_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Retorna lista de vídeos locais para fallback</p>
+</dd></dl>
+
+</section>
+<section id="pexels">
+<h3>Pexels<a class="headerlink" href="#pexels" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">traduzir_termo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#traduzir_termo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Traduz o termo de busca para inglês.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">buscar_imagens_pexels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">term</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#buscar_imagens_pexels"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Faz uma busca por imagens na API do Pexels.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">selecionar_melhor_imagem_pexels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#selecionar_melhor_imagem_pexels"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Seleciona a melhor imagem do Pexels com base na resolução.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">baixar_imagem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pathName</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#baixar_imagem"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa uma imagem a partir da URL fornecida e verifica sua adequação.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">busca_imagens_pexels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lista_imagens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momento_chave</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#busca_imagens_pexels"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Função para manter compatibilidade com código existente (sem usar Envato).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">criar_lista_imagens_pexels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lista_imagens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momento_chave</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tentativas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#criar_lista_imagens_pexels"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.searchImagens.searchImagens_Pexel.</span></span><span class="sig-name descname"><span class="pre">reformular_termo_busca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/searchImagens/searchImagens_Pexel.html#reformular_termo_busca"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+<section id="banco-de-dados">
+<h2>Banco de Dados<a class="headerlink" href="#banco-de-dados" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">get_bigquery_client</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#get_bigquery_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Retorna um cliente do BigQuery</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">execute_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#execute_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Executa uma query no BigQuery com parâmetros
+:param query: string com a query SQL
+:param params: dicionário com os parâmetros da query</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de resultados ou None em caso de erro</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_bigquery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TEMA</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_bigquery"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_nome_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Consulta nomes de arquivos no BigQuery com opção de filtros</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_arquivos_conteudo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THEME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MODULO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NUCLEO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">JSON</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">JSON_CONTEUDO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC_PROXIMA_AULA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_arquivos_conteudo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_arquivo_conteudo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_arquivo_conteudo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">URL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THEME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TYPE_VIDEO</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_arquivo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_audio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tipo_audio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc_original</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Insere um registro de áudio no banco de dados.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_video_pexel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">URL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TYPE_VIDEO</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_video_pexel"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Insere um registro de vídeo Pexel no banco de dados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>URL</strong> (<em>str</em>) – URL do vídeo</p></li>
+<li><p><strong>TYPE_VIDEO</strong> (<em>str</em>) – Tipo de vídeo (‘PEXEL’)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: ID do vídeo inserido</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_videos_pexel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_videos_pexel"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Consulta vídeos do tipo Pexel no banco de dados.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_videos_studio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_videos_studio"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Consulta vídeos do tipo Studio no banco de dados.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">remover_audio_duplicado</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_duplicado</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#remover_audio_duplicado"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">encontrar_e_remover_duplicatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#encontrar_e_remover_duplicatas"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">verificar_arquivo_existe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#verificar_arquivo_existe"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Verifica se um arquivo já existe no banco de dados pelo nome</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nome_arquivo</strong> – nome do arquivo a ser verificado</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dicionário com informações do arquivo se existir, None caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">atualizar_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_conteudo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#atualizar_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Atualiza um arquivo existente no banco de dados</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_id</strong> – ID do arquivo a ser atualizado</p></li>
+<li><p><strong>file_name</strong> – Nome do arquivo</p></li>
+<li><p><strong>json_data</strong> – Dados JSON para atualização (dicionário)</p></li>
+<li><p><strong>json_conteudo</strong> – Conteúdo JSON completo (pode ser lista ou dicionário)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se atualizado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">atualizar_conteudo_completo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arquivos_conteudo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#atualizar_conteudo_completo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Atualiza o conteúdo completo de um arquivo ZIP</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_id</strong> – ID do arquivo a ser atualizado</p></li>
+<li><p><strong>tema</strong> – Tema do conteúdo</p></li>
+<li><p><strong>arquivos_conteudo</strong> – Lista de arquivos e seus conteúdos</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se atualizado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="fluxo-de-trabalho">
+<h2>Fluxo de Trabalho<a class="headerlink" href="#fluxo-de-trabalho" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Recebe o conteúdo do vídeo e configurações</p></li>
+<li><p>Processa o texto e gera o roteiro</p></li>
+<li><p>Busca imagens no Envato/Pexels conforme necessário</p></li>
+<li><p>Gera narração usando serviço de voz</p></li>
+<li><p>Aplica efeitos e sobreposições de texto</p></li>
+<li><p>Renderiza o vídeo final com ffmpeg</p></li>
+<li><p>Salva o vídeo e metadados no banco de dados</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="video_pexel.html" class="btn btn-neutral float-left" title="Video Pexel API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="import_file.html" class="btn btn-neutral float-right" title="File Import API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

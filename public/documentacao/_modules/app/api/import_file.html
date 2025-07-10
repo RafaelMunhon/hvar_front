@@ -1,0 +1,631 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.api.import_file &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.api.import_file</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.api.import_file</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.bd.bd</span><span class="w"> </span><span class="kn">import</span> <span class="n">inserir_arquivos_conteudo</span><span class="p">,</span> <span class="n">inserir_bigquery</span><span class="p">,</span> <span class="n">verificar_arquivo_existe</span><span class="p">,</span> <span class="n">atualizar_arquivo</span><span class="p">,</span> <span class="n">atualizar_conteudo_completo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unidecode</span><span class="w"> </span><span class="kn">import</span> <span class="n">unidecode</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">import_file_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;import_file&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># Rota relativa pelo blueprint</span>
+<div class="viewcode-block" id="check_file_exists">
+<a class="viewcode-back" href="../../../modules/import_file.html#app.api.import_file.check_file_exists">[docs]</a>
+<span class="nd">@import_file_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/check_file_exists&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="c1"># Rota absoluta para compatibilidade com o código anterior</span>
+<span class="nd">@import_file_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/check_file_exists&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_file_exists</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Verifica se um arquivo já existe no banco de dados&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verificando existência do arquivo: </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Nome do arquivo não fornecido&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+            
+        <span class="c1"># Verifica se o arquivo existe</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">verificar_arquivo_existe</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo encontrado: ID=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ID&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">, THEME=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;THEME&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span>
+                <span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ID&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;theme&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;THEME&quot;</span><span class="p">)</span>
+            <span class="p">}),</span> <span class="mi">200</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo não encontrado: </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}),</span> <span class="mi">200</span>
+            
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao verificar arquivo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Erro ao verificar arquivo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}),</span> <span class="mi">500</span></div>
+
+
+
+<div class="viewcode-block" id="import_json_to_db">
+<a class="viewcode-back" href="../../../modules/import_file.html#app.api.import_file.import_json_to_db">[docs]</a>
+<span class="nd">@import_file_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">import_json_to_db</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Verifica se o arquivo foi enviado</span>
+        <span class="k">if</span> <span class="s1">&#39;file&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Nenhum arquivo enviado&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="n">file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando o processamento do arquivo: </span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Verifica se é um arquivo ZIP ou JSON</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Arquivo deve ser ZIP, JSON ou TXT&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="c1"># Verifica se é uma atualização</span>
+        <span class="n">is_update</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;update&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span>
+        <span class="n">file_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_id&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_update</span> <span class="ow">and</span> <span class="n">file_id</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Atualizando arquivo existente: </span><span class="si">{</span><span class="n">file_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">atualizar_conteudo</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">file_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Processo normal de importação</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processando arquivo JSON/TXT único&quot;</span><span class="p">)</span>
+                <span class="c1"># Processa arquivo JSON único</span>
+                <span class="n">file_content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+                    <span class="c1"># Tenta interpretar o conteúdo do arquivo TXT como JSON</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file_content</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Item não é um dicionário JSON válido&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">generated_id</span> <span class="o">=</span> <span class="n">inserir_bigquery</span><span class="p">(</span>
+                        <span class="n">NAME</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                        <span class="n">TEMA</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;THEME&#39;</span><span class="p">,</span> <span class="s1">&#39;Tema Padrão&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">generated_id</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao gerar ID no BigQuery&quot;</span><span class="p">}),</span> <span class="mi">500</span>
+
+                    <span class="n">inserir_arquivos_conteudo</span><span class="p">(</span>
+                        <span class="n">ID</span><span class="o">=</span><span class="n">generated_id</span><span class="p">,</span>
+                        <span class="n">THEME</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;THEME&#39;</span><span class="p">),</span>
+                        <span class="n">MODULO</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MODULO&#39;</span><span class="p">),</span>
+                        <span class="n">NUCLEO</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">),</span>
+                        <span class="n">TITULO_NC</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_nc&#39;</span><span class="p">),</span>
+                        <span class="n">PATH</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">),</span>
+                        <span class="n">JSON</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">item</span><span class="p">),</span>
+                        <span class="n">JSON_CONTEUDO</span><span class="o">=</span><span class="n">data</span>
+                    <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Processa arquivo ZIP</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processando arquivo ZIP&quot;</span><span class="p">)</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+
+                <span class="n">zip_content</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+                <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_content</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_file</span><span class="p">:</span>
+                    <span class="c1"># Lista arquivos e procura conteudo inicial</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Arquivos encontrados no ZIP:&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">zip_info</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">filelist</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">zip_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Procura o arquivo conteudo inicial</span>
+                    <span class="n">conteudo_inicial_path</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="c1"># Lista para armazenar os nomes normalizados do conteudo_inicial</span>
+                    <span class="n">conteudo_inicial_normalizado</span> <span class="o">=</span> <span class="kc">None</span>
+                    
+                    <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">filelist</span><span class="p">:</span>
+                        <span class="c1"># Normaliza o nome do arquivo removendo acentos e convertendo para minúsculo</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verificando arquivo: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Lista de possíveis nomes para o arquivo de conteúdo inicial</span>
+                        <span class="n">possible_names</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="s1">&#39;conteudo-inicial.json&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudo-inicial.txt&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudo inicial.txt&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudo_inicial.txt&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudo_inicial.json&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudoinicial.txt&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudoinicial.json&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteudo inicial.json&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;conteúdo inicial.txt&#39;</span><span class="p">,</span>  <span class="c1"># Adiciona variações com acento</span>
+                            <span class="s1">&#39;conteúdo-inicial.txt&#39;</span>
+                        <span class="p">]</span>
+
+                        <span class="c1"># Verifica se o nome normalizado do arquivo corresponde a algum dos possíveis nomes</span>
+                        <span class="n">normalized_filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">normalized_filename</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">possible_names</span><span class="p">):</span>
+                            <span class="n">conteudo_inicial_path</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">filename</span>
+                            <span class="c1"># Armazena a versão normalizada para comparação posterior</span>
+                            <span class="n">conteudo_inicial_normalizado</span> <span class="o">=</span> <span class="n">normalized_filename</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo de conteúdo inicial encontrado: </span><span class="si">{</span><span class="n">conteudo_inicial_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">break</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">conteudo_inicial_path</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Arquivo de conteúdo inicial não encontrado&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Arquivo de conteúdo inicial não encontrado&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+                    <span class="c1"># Lê o arquivo usando o nome original</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">file_content</span> <span class="o">=</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">conteudo_inicial_path</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">conteudo_inicial_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+                            <span class="n">conteudo_inicial_path</span> <span class="o">=</span> <span class="n">conteudo_inicial_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">json_content</span> <span class="o">=</span> <span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                                <span class="n">conteudo_inicial</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_content</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">json_content</span> <span class="o">=</span> <span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                            <span class="n">conteudo_inicial</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_content</span><span class="p">)</span>
+
+                        <span class="n">tema</span> <span class="o">=</span> <span class="n">conteudo_inicial</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_tema&#39;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tema encontrado: </span><span class="si">{</span><span class="n">tema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">tema</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Campo &#39;titulo_tema&#39; não encontrado no conteudo_inicial.json&quot;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Campo &#39;titulo_tema&#39; não encontrado no conteudo_inicial.json&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+                        <span class="c1"># Log dos valores antes de inserir no BigQuery</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nome do arquivo (NAME): </span><span class="si">{</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tema (TEMA): </span><span class="si">{</span><span class="n">tema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Gera um único ID para todo o conteúdo</span>
+                        <span class="n">generated_id</span> <span class="o">=</span> <span class="n">inserir_bigquery</span><span class="p">(</span>
+                            <span class="n">NAME</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                            <span class="n">TEMA</span><span class="o">=</span><span class="n">tema</span>
+                        <span class="p">)</span>
+
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">generated_id</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao gerar ID no BigQuery&quot;</span><span class="p">}),</span> <span class="mi">500</span>
+
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ID gerado para todo o conteúdo: </span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Salva o conteudo_inicial.json no banco</span>
+                        <span class="n">inserir_arquivos_conteudo</span><span class="p">(</span>
+                            <span class="n">ID</span><span class="o">=</span><span class="n">generated_id</span><span class="p">,</span>
+                            <span class="n">THEME</span><span class="o">=</span><span class="n">tema</span><span class="p">,</span>
+                            <span class="n">MODULO</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># conteudo_inicial não tem módulo específico</span>
+                            <span class="n">NUCLEO</span><span class="o">=</span><span class="s1">&#39;conteudo_inicial.json&#39;</span><span class="p">,</span>
+                            <span class="n">TITULO_NC</span><span class="o">=</span><span class="n">conteudo_inicial</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_tema&#39;</span><span class="p">),</span>
+                            <span class="n">PATH</span><span class="o">=</span><span class="n">conteudo_inicial_path</span><span class="p">,</span>
+                            <span class="n">JSON</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">conteudo_inicial</span><span class="p">),</span>
+                            <span class="n">JSON_CONTEUDO</span><span class="o">=</span><span class="n">conteudo_inicial</span><span class="p">,</span>
+                            <span class="n">TITULO_NC_PROXIMA_AULA</span><span class="o">=</span><span class="kc">None</span>  <span class="c1"># Conteúdo inicial não deve ter próxima aula</span>
+                        <span class="p">)</span>
+
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao ler conteudo_inicial.json: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao ler arquivo conteudo_inicial.json&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+                    <span class="c1"># Processa todos os arquivos no ZIP usando o mesmo ID</span>
+                    <span class="n">arquivos_conteudo</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Inicializa a lista para armazenar os dados</span>
+
+                    <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">filelist</span><span class="p">:</span>
+                        <span class="c1"># Normaliza o nome do arquivo e ignora &quot;Estrutura do Tema.txt&quot;</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                        
+                        <span class="c1"># Normaliza para comparar com o conteudo_inicial já processado</span>
+                        <span class="n">normalized_filename</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        
+                        <span class="c1"># Ignora o arquivo de conteúdo inicial que já foi processado</span>
+                        <span class="k">if</span> <span class="n">conteudo_inicial_normalizado</span> <span class="ow">and</span> <span class="n">normalized_filename</span> <span class="o">==</span> <span class="n">conteudo_inicial_normalizado</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ignorando arquivo de conteúdo inicial já processado: </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">continue</span>
+                            
+                        <span class="k">if</span> <span class="s2">&quot;estrutura do tema&quot;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ignorando arquivo: </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">continue</span>
+
+                        <span class="c1"># Processa apenas arquivos .txt ou .json</span>
+                        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="c1"># Lê o conteúdo do arquivo</span>
+                                <span class="n">file_content</span> <span class="o">=</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+                                <span class="c1"># Converte o conteúdo para JSON</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                                <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="k">continue</span>
+
+                                <span class="c1"># Normaliza o nome do arquivo para .json</span>
+                                <span class="n">normalized_filename</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+
+                                <span class="c1"># Extrai o nome do módulo do caminho do arquivo</span>
+                                <span class="n">path_parts</span> <span class="o">=</span> <span class="n">normalized_filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                                <span class="n">modulo</span> <span class="o">=</span> <span class="kc">None</span>
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                                    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">path_parts</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="n">part</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;modulo&#39;</span><span class="p">):</span>
+                                            <span class="n">modulo</span> <span class="o">=</span> <span class="n">part</span>
+                                            <span class="k">break</span>
+
+                                <span class="n">nome_arquivo</span> <span class="o">=</span> <span class="n">normalized_filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+                                <span class="c1"># Adiciona os dados na lista</span>
+                                <span class="n">arquivos_conteudo</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                                    <span class="s1">&#39;MODULO&#39;</span><span class="p">:</span> <span class="n">modulo</span><span class="p">,</span>
+                                    <span class="s1">&#39;NUCLEO&#39;</span><span class="p">:</span> <span class="n">nome_arquivo</span><span class="p">,</span>
+                                    <span class="s1">&#39;TITULO_NC&#39;</span><span class="p">:</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_nc&#39;</span><span class="p">),</span>
+                                    <span class="s1">&#39;PATH&#39;</span><span class="p">:</span> <span class="n">normalized_filename</span><span class="p">,</span>
+                                    <span class="s1">&#39;JSON&#39;</span><span class="p">:</span> <span class="n">json_data</span><span class="p">,</span>
+                                    <span class="s1">&#39;JSON_CONTEUDO&#39;</span><span class="p">:</span> <span class="n">json_data</span><span class="p">,</span>
+                                <span class="p">})</span>
+
+                            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">continue</span>
+
+                    <span class="c1"># Ordena a lista de arquivos_conteudo por MODULO e NUCLEO</span>
+                    <span class="n">arquivos_conteudo</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;MODULO&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">]))</span>  <span class="c1"># Ordena considerando MODULO vazio como menor</span>
+
+                    <span class="c1"># Itera sobre a lista ordenada para inserir no banco e determinar a próxima aula</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">conteudo_atual</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arquivos_conteudo</span><span class="p">):</span>
+                        <span class="n">titulo_nc_proxima_aula</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">arquivos_conteudo</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Verifica se não é o último item</span>
+                            <span class="n">titulo_nc_proxima_aula</span> <span class="o">=</span> <span class="n">arquivos_conteudo</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">]</span>
+
+                        <span class="c1"># Usa o mesmo ID gerado anteriormente</span>
+                        <span class="n">inserir_arquivos_conteudo</span><span class="p">(</span>
+                            <span class="n">ID</span><span class="o">=</span><span class="n">generated_id</span><span class="p">,</span>
+                            <span class="n">THEME</span><span class="o">=</span><span class="n">tema</span><span class="p">,</span>
+                            <span class="n">MODULO</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;MODULO&#39;</span><span class="p">],</span>
+                            <span class="n">NUCLEO</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">],</span>
+                            <span class="n">TITULO_NC</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">],</span>
+                            <span class="n">PATH</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">],</span>
+                            <span class="n">JSON</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;JSON&#39;</span><span class="p">]),</span>
+                            <span class="n">JSON_CONTEUDO</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;JSON_CONTEUDO&#39;</span><span class="p">],</span>
+                            <span class="n">TITULO_NC_PROXIMA_AULA</span><span class="o">=</span><span class="n">titulo_nc_proxima_aula</span>  <span class="c1"># Passa o TITULO_NC_PROXIMA_AULA</span>
+                        <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Dados importados com sucesso&quot;</span><span class="p">}),</span> <span class="mi">200</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao importar arquivo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao processar o arquivo&quot;</span><span class="p">}),</span> <span class="mi">500</span></div>
+
+
+
+<div class="viewcode-block" id="atualizar_conteudo">
+<a class="viewcode-back" href="../../../modules/import_file.html#app.api.import_file.atualizar_conteudo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">atualizar_conteudo</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">file_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Função para atualizar conteúdo existente&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processando atualização para o arquivo ID: </span><span class="si">{</span><span class="n">file_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Se for arquivo ZIP, precisa de tratamento especial</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processando atualização de arquivo ZIP&quot;</span><span class="p">)</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+            
+            <span class="c1"># Lê o arquivo ZIP em um objeto BytesIO</span>
+            <span class="n">zip_content</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            
+            <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_content</span><span class="p">)</span> <span class="k">as</span> <span class="n">zip_file</span><span class="p">:</span>
+                <span class="c1"># Lista arquivos e procura conteudo inicial</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Arquivos encontrados no ZIP:&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">zip_info</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">filelist</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">zip_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># Procura o arquivo conteudo inicial</span>
+                <span class="n">conteudo_inicial_path</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">conteudo_inicial_normalizado</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Para armazenar o nome normalizado</span>
+                
+                <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">filelist</span><span class="p">:</span>
+                    <span class="c1"># Normaliza o nome do arquivo removendo acentos e convertendo para minúsculo</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+                    
+                    <span class="c1"># Lista de possíveis nomes para o arquivo de conteúdo inicial</span>
+                    <span class="n">possible_names</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="s1">&#39;conteudo-inicial.json&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudo-inicial.txt&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudo inicial.txt&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudo_inicial.txt&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudo_inicial.json&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudoinicial.txt&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudoinicial.json&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteudo inicial.json&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteúdo inicial.txt&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;conteúdo-inicial.txt&#39;</span>
+                    <span class="p">]</span>
+                    
+                    <span class="c1"># Verifica se o nome normalizado do arquivo corresponde a algum dos possíveis nomes</span>
+                    <span class="n">normalized_filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">normalized_filename</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">possible_names</span><span class="p">):</span>
+                        <span class="n">conteudo_inicial_path</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">filename</span>
+                        <span class="n">conteudo_inicial_normalizado</span> <span class="o">=</span> <span class="n">normalized_filename</span>  <span class="c1"># Armazena o nome normalizado</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo de conteúdo inicial encontrado: </span><span class="si">{</span><span class="n">conteudo_inicial_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">conteudo_inicial_path</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Arquivo de conteúdo inicial não encontrado&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Arquivo de conteúdo inicial não encontrado&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+                
+                <span class="c1"># Lê o arquivo de conteúdo inicial</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">file_content</span> <span class="o">=</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">conteudo_inicial_path</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="n">conteudo_inicial_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+                        <span class="n">conteudo_inicial_path</span> <span class="o">=</span> <span class="n">conteudo_inicial_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">json_content</span> <span class="o">=</span> <span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                            <span class="n">conteudo_inicial</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_content</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">json_content</span> <span class="o">=</span> <span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                        <span class="n">conteudo_inicial</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_content</span><span class="p">)</span>
+                    
+                    <span class="n">tema</span> <span class="o">=</span> <span class="n">conteudo_inicial</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_tema&#39;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tema encontrado: </span><span class="si">{</span><span class="n">tema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">tema</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Campo &#39;titulo_tema&#39; não encontrado no conteudo_inicial.json&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Campo &#39;titulo_tema&#39; não encontrado no conteudo_inicial.json&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+                    
+                    <span class="c1"># Primeiro, atualiza os dados básicos do arquivo</span>
+                    <span class="n">success</span> <span class="o">=</span> <span class="n">atualizar_arquivo</span><span class="p">(</span>
+                        <span class="n">file_id</span><span class="o">=</span><span class="n">file_id</span><span class="p">,</span>
+                        <span class="n">file_name</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                        <span class="n">json_data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;THEME&quot;</span><span class="p">:</span> <span class="n">tema</span><span class="p">},</span>
+                        <span class="n">json_conteudo</span><span class="o">=</span><span class="n">conteudo_inicial</span>
+                    <span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao atualizar informações básicas do arquivo&quot;</span><span class="p">}),</span> <span class="mi">500</span>
+                    
+                    <span class="c1"># Processa todos os arquivos no ZIP</span>
+                    <span class="n">arquivos_conteudo</span> <span class="o">=</span> <span class="p">[]</span>
+                    
+                    <span class="c1"># MODIFICAÇÃO: Adiciona o conteúdo inicial à lista de arquivos</span>
+                    <span class="n">arquivos_conteudo</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s1">&#39;MODULO&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="s1">&#39;NUCLEO&#39;</span><span class="p">:</span> <span class="s1">&#39;conteudo_inicial.json&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;TITULO_NC&#39;</span><span class="p">:</span> <span class="n">tema</span><span class="p">,</span>
+                        <span class="s1">&#39;PATH&#39;</span><span class="p">:</span> <span class="n">conteudo_inicial_path</span><span class="p">,</span>
+                        <span class="s1">&#39;JSON&#39;</span><span class="p">:</span> <span class="n">conteudo_inicial</span><span class="p">,</span>
+                        <span class="s1">&#39;JSON_CONTEUDO&#39;</span><span class="p">:</span> <span class="n">conteudo_inicial</span><span class="p">,</span>
+                    <span class="p">})</span>
+                    
+                    <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">filelist</span><span class="p">:</span>
+                        <span class="c1"># Normaliza o nome do arquivo e ignora &quot;Estrutura do Tema.txt&quot;</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                        
+                        <span class="c1"># Normaliza para comparar com o conteudo_inicial já processado</span>
+                        <span class="n">normalized_filename</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        
+                        <span class="c1"># Ignora o arquivo de conteúdo inicial que já foi processado anteriormente</span>
+                        <span class="k">if</span> <span class="n">conteudo_inicial_normalizado</span> <span class="ow">and</span> <span class="n">normalized_filename</span> <span class="o">==</span> <span class="n">conteudo_inicial_normalizado</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ignorando arquivo de conteúdo inicial já processado: </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">continue</span>
+                            
+                        <span class="k">if</span> <span class="s2">&quot;estrutura do tema&quot;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ignorando arquivo: </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">continue</span>
+                        
+                        <span class="c1"># Processa apenas arquivos .txt ou .json</span>
+                        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="c1"># Lê o conteúdo do arquivo</span>
+                                <span class="n">file_content</span> <span class="o">=</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                                
+                                <span class="c1"># Converte o conteúdo para JSON</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                                <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="k">continue</span>
+                                
+                                <span class="c1"># Normaliza o nome do arquivo para .json</span>
+                                <span class="n">normalized_filename</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">)</span>
+                                
+                                <span class="c1"># Extrai o nome do módulo do caminho do arquivo</span>
+                                <span class="n">path_parts</span> <span class="o">=</span> <span class="n">normalized_filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                                <span class="n">modulo</span> <span class="o">=</span> <span class="kc">None</span>
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                                    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">path_parts</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="n">part</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;modulo&#39;</span><span class="p">):</span>
+                                            <span class="n">modulo</span> <span class="o">=</span> <span class="n">part</span>
+                                            <span class="k">break</span>
+                                
+                                <span class="n">nome_arquivo</span> <span class="o">=</span> <span class="n">normalized_filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                                
+                                <span class="c1"># Adiciona os dados na lista</span>
+                                <span class="n">arquivos_conteudo</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                                    <span class="s1">&#39;MODULO&#39;</span><span class="p">:</span> <span class="n">modulo</span><span class="p">,</span>
+                                    <span class="s1">&#39;NUCLEO&#39;</span><span class="p">:</span> <span class="n">nome_arquivo</span><span class="p">,</span>
+                                    <span class="s1">&#39;TITULO_NC&#39;</span><span class="p">:</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_nc&#39;</span><span class="p">),</span>
+                                    <span class="s1">&#39;PATH&#39;</span><span class="p">:</span> <span class="n">normalized_filename</span><span class="p">,</span>
+                                    <span class="s1">&#39;JSON&#39;</span><span class="p">:</span> <span class="n">json_data</span><span class="p">,</span>
+                                    <span class="s1">&#39;JSON_CONTEUDO&#39;</span><span class="p">:</span> <span class="n">json_data</span><span class="p">,</span>
+                                <span class="p">})</span>
+                                
+                            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">continue</span>
+                    
+                    <span class="c1"># Chama a função para atualizar o conteúdo completo</span>
+                    <span class="n">success</span> <span class="o">=</span> <span class="n">atualizar_conteudo_completo</span><span class="p">(</span>
+                        <span class="n">file_id</span><span class="o">=</span><span class="n">file_id</span><span class="p">,</span>
+                        <span class="n">tema</span><span class="o">=</span><span class="n">tema</span><span class="p">,</span>
+                        <span class="n">arquivos_conteudo</span><span class="o">=</span><span class="n">arquivos_conteudo</span>
+                    <span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Arquivo ZIP atualizado com sucesso&quot;</span><span class="p">}),</span> <span class="mi">200</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao atualizar conteúdo completo&quot;</span><span class="p">}),</span> <span class="mi">500</span>
+                    
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar arquivo ZIP para atualização: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Erro ao processar arquivo ZIP para atualização: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}),</span> <span class="mi">500</span>
+        
+        <span class="c1"># Para arquivos JSON ou TXT</span>
+        <span class="k">elif</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processando atualização de arquivo JSON/TXT&quot;</span><span class="p">)</span>
+            <span class="c1"># Lê o conteúdo do arquivo</span>
+            <span class="n">file_content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            
+            <span class="c1"># Decodifica o conteúdo</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao decodificar JSON do arquivo TXT&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+                
+            <span class="c1"># Atualiza o arquivo no banco de dados</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="n">atualizar_arquivo</span><span class="p">(</span>
+                <span class="n">file_id</span><span class="o">=</span><span class="n">file_id</span><span class="p">,</span>
+                <span class="n">file_name</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                <span class="n">json_data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">{},</span>
+                <span class="n">json_conteudo</span><span class="o">=</span><span class="n">data</span>
+            <span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Arquivo atualizado com sucesso&quot;</span><span class="p">}),</span> <span class="mi">200</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao atualizar arquivo&quot;</span><span class="p">}),</span> <span class="mi">500</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Tipo de arquivo não suportado para atualização&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+            
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao atualizar conteúdo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Erro ao atualizar conteúdo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}),</span> <span class="mi">500</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

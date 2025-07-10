@@ -1,0 +1,1010 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Pexel API &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Video Studio API" href="video_studio.html" />
+    <link rel="prev" title="YDUQS Video Service Documentation" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Video Pexel API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#api-principal">API Principal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#processamento-de-midia">Processamento de Mídia</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#processamento-de-audio">Processamento de Áudio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#processamento-de-video">Processamento de Vídeo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#geracao-de-video">Geração de Vídeo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#componentes">Componentes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#musica">Música</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#narracao">Narração</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#legendas">Legendas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#utilitarios">Utilitários</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#busca">Busca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#processamento-de-texto">Processamento de Texto</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#utilitarios-gerais">Utilitários Gerais</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#fluxo-de-trabalho">Fluxo de Trabalho</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_utils.html">Utilitários Comuns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vertex_ai.html">Vertex AI</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Video Pexel API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/video_pexel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="video-pexel-api">
+<h1>Video Pexel API<a class="headerlink" href="#video-pexel-api" title="Link to this heading"></a></h1>
+<section id="api-principal">
+<h2>API Principal<a class="headerlink" href="#api-principal" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.api.video_pexel.</span></span><span class="sig-name descname"><span class="pre">create_video</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/video_pexel.html#create_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Cria um vídeo Pexel com base nos dados recebidos.</p>
+<p>Tenta criar um vídeo Pexel com base nos dados recebidos.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>JSON com o resultado da criação do vídeo Pexel</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.api.video_pexel.</span></span><span class="sig-name descname"><span class="pre">get_voices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/video_pexel.html#get_voices"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Endpoint para obter as vozes disponíveis para narração.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON com as vozes disponíveis e seus detalhes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.api.video_pexel.</span></span><span class="sig-name descname"><span class="pre">list_videos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/video_pexel.html#list_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Lista todos os vídeos Pexel salvos no banco de dados.</p>
+<p>Tenta listar todos os vídeos Pexel salvos no banco de dados.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>JSON com o resultado da lista de vídeos Pexel</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="processamento-de-midia">
+<h2>Processamento de Mídia<a class="headerlink" href="#processamento-de-midia" title="Link to this heading"></a></h2>
+<section id="processamento-de-audio">
+<h3>Processamento de Áudio<a class="headerlink" href="#processamento-de-audio" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.audio_processing.</span></span><span class="sig-name descname"><span class="pre">extract_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/audio_processing.html#extract_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Extrai o áudio do vídeo usando FFmpeg com configurações otimizadas.</p>
+<p>Tenta extrair o áudio do vídeo usando FFmpeg com configurações otimizadas.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>bool: True se o áudio foi extraído com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="processamento-de-video">
+<h3>Processamento de Vídeo<a class="headerlink" href="#processamento-de-video" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.video_processing.</span></span><span class="sig-name descname"><span class="pre">standardize_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/video_processing.html#standardize_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Padroniza o vídeo para o formato desejado</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.video_processing.</span></span><span class="sig-name descname"><span class="pre">add_narration_to_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">narration_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/video_processing.html#add_narration_to_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Adiciona narração ao vídeo com delay inicial</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.video_processing.</span></span><span class="sig-name descname"><span class="pre">process_videos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom_prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">music_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_scenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/video_processing.html#process_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Processa os vídeos com base no prompt fornecido.</p>
+<p>Tenta processar os vídeos com base no prompt fornecido.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: URL do vídeo processado</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.video_processing.</span></span><span class="sig-name descname"><span class="pre">concatenate_videos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/video_processing.html#concatenate_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Concatena uma lista de vídeos em um único arquivo</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.video_processing.</span></span><span class="sig-name descname"><span class="pre">get_audio_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/video_processing.html#get_audio_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Obtém a duração de um arquivo de áudio em segundos</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.video_processing.</span></span><span class="sig-name descname"><span class="pre">adjust_narration_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/video_processing.html#adjust_narration_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Ajusta o prompt para gerar um texto com duração adequada</p>
+</dd></dl>
+
+</section>
+<section id="geracao-de-video">
+<h3>Geração de Vídeo<a class="headerlink" href="#geracao-de-video" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.generate_video_pexel.</span></span><span class="sig-name descname"><span class="pre">get_music_style_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style_number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/generate_video_pexel.html#get_music_style_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Converte o número do estilo musical para o nome correspondente.</p>
+<p>Tenta converter o número do estilo musical para o nome correspondente.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: Nome do estilo musical</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.generate_video_pexel.</span></span><span class="sig-name descname"><span class="pre">generate_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_scenes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">music_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/generate_video_pexel.html#generate_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera um vídeo com os parâmetros especificados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format_type</strong> (<em>str</em>) – ‘desktop’ ou ‘mobile’</p></li>
+<li><p><strong>theme_text</strong> (<em>str</em>) – Texto/tema do vídeo</p></li>
+<li><p><strong>num_scenes</strong> (<em>int</em>) – Número de cenas</p></li>
+<li><p><strong>music_type</strong> (<em>str</em>) – Tipo de música</p></li>
+<li><p><strong>voice</strong> (<em>str</em><em>, </em><em>optional</em>) – ID da voz para narração</p></li>
+<li><p><strong>site</strong> (<em>str</em><em>, </em><em>optional</em>) – Site de origem das imagens</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>dict: Dicionário com o resultado da geração do vídeo</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="componentes">
+<h2>Componentes<a class="headerlink" href="#componentes" title="Link to this heading"></a></h2>
+<section id="musica">
+<h3>Música<a class="headerlink" href="#musica" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.music.</span></span><span class="sig-name descname"><span class="pre">download_background_music</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/music.html#download_background_music"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa uma música de fundo do Jamendo com base no estilo especificado.</p>
+<p>Faz uma busca na API do Jamendo por músicas instrumentais do estilo fornecido,
+filtrando por músicas com duração adequada e fazendo o download da música selecionada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>style</strong> (<em>str</em>) – Estilo musical desejado para a música de fundo (opcional)
+Se não fornecido, busca apenas músicas instrumentais genéricas</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de música baixado em caso de sucesso
+None: Em caso de falha no download ou se nenhuma música adequada for encontrada</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.music.</span></span><span class="sig-name descname"><span class="pre">prepare_background_music</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">music_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/music.html#prepare_background_music"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Prepara a música de fundo para um vídeo, ajustando sua duração e volume.</p>
+<p>Recebe uma música e a prepara para ser usada como background em um vídeo,
+fazendo os ajustes necessários de duração (repetindo se necessário) e volume.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>music_path</strong> (<em>str</em>) – Caminho do arquivo de música original</p></li>
+<li><p><strong>target_duration</strong> (<em>float</em>) – Duração desejada em segundos</p></li>
+<li><p><strong>volume</strong> (<em>float</em><em>, </em><em>optional</em>) – Volume da música (0.0 a 1.0). Padrão é 0.1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de música preparado em caso de sucesso
+None: Em caso de erro</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.music.</span></span><span class="sig-name descname"><span class="pre">add_background_music</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">music_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/music.html#add_background_music"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Adiciona música de fundo a um vídeo.</p>
+<p>Combina um vídeo com uma faixa de música de fundo, ajustando o volume da música
+e garantindo que ela cubra toda a duração do vídeo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo de entrada</p></li>
+<li><p><strong>music_path</strong> (<em>str</em>) – Caminho do arquivo de música de fundo</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – Caminho onde o vídeo final será salvo</p></li>
+<li><p><strong>volume</strong> (<em>float</em><em>, </em><em>optional</em>) – Volume da música de fundo (0.0 a 1.0). Padrão é 0.1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do vídeo com música adicionada em caso de sucesso
+None: Em caso de erro</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="narracao">
+<h3>Narração<a class="headerlink" href="#narracao" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.narration.</span></span><span class="sig-name descname"><span class="pre">generate_voiceover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pt-BR-Standard-A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">language_code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pt-BR'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/narration.html#generate_voiceover"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera narração usando Google Cloud Text-to-Speech</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – Texto para narração</p></li>
+<li><p><strong>voice</strong> – Nome da voz ou ID da voz (default: pt-BR-Standard-A)</p></li>
+<li><p><strong>language_code</strong> – Código do idioma (default: pt-BR)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de áudio gerado</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.narration.</span></span><span class="sig-name descname"><span class="pre">get_available_voices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/narration.html#get_available_voices"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Obtém lista de vozes disponíveis no Google Cloud TTS com nomes brasileiros familiares.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>dict: Dicionário com as vozes disponíveis e seus detalhes</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="legendas">
+<h3>Legendas<a class="headerlink" href="#legendas" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">split_long_sentence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sentence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_words</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'desktop'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#split_long_sentence"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Divide uma frase longa em partes menores para melhor legibilidade.</p>
+<p>Recebe uma frase e divide em partes menores baseado em limites de palavras e caracteres,
+considerando o formato do vídeo (desktop/mobile). Tenta fazer divisões naturais em pontuações.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sentence</strong> (<em>str</em>) – A frase a ser dividida</p></li>
+<li><p><strong>max_words</strong> (<em>int</em><em>, </em><em>optional</em>) – Número máximo de palavras por linha. Padrão é 12.</p></li>
+<li><p><strong>max_chars</strong> (<em>int</em><em>, </em><em>optional</em>) – Número máximo de caracteres por linha. Padrão é 60.</p></li>
+<li><p><strong>format_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Tipo de formato do vídeo (‘desktop’ ou ‘mobile’). Padrão é ‘desktop’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Lista de strings contendo as partes da frase dividida.</dt><dd><p>Se a frase original estiver dentro dos limites, retorna lista com apenas a frase original.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">add_subtitles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcription</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#add_subtitles"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Adiciona legendas a um vídeo usando FFmpeg.</p>
+<p>Recebe um vídeo e sua transcrição com timestamps, e gera um novo vídeo com legendas
+sobrepostas. As legendas são formatadas e posicionadas de acordo com o tipo de formato
+do vídeo (desktop/mobile).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo de entrada</p></li>
+<li><p><strong>transcription</strong> (<em>list</em>) – Lista de dicionários contendo as palavras e seus timestamps</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Tipo de formato do vídeo (‘desktop’ ou ‘mobile’)</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – Caminho onde o vídeo com legendas será salvo</p></li>
+<li><p><strong>start_delay</strong> (<em>float</em><em>, </em><em>optional</em>) – Atraso inicial em segundos antes da primeira legenda.
+Padrão é 5.0 segundos.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do vídeo com legendas adicionadas em caso de sucesso
+None: Em caso de erro</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">get_video_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#get_video_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Obtém a duração de um arquivo de vídeo em segundos.</p>
+<p>Utiliza o ffprobe para extrair a duração do vídeo especificado.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Duração do vídeo em segundos
+0: Em caso de erro ou se não for possível obter a duração</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">add_logo_and_blur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#add_logo_and_blur"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Adiciona logo com efeito de blur ao vídeo.</p>
+<p>Recebe um vídeo e adiciona uma logo com efeito de blur ao fundo. A logo é posicionada
+no centro do vídeo e dimensionada de acordo com o formato (desktop/mobile). O fundo
+da logo recebe um efeito de desfoque (blur) para melhor visibilidade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo de entrada</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Tipo de formato do vídeo (‘desktop’ ou ‘mobile’)</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – Caminho onde o vídeo com logo será salvo</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em>, </em><em>optional</em>) – Duração desejada do vídeo em segundos.
+Se não fornecido, usa 10 segundos</p></li>
+<li><p><strong>start_time</strong> (<em>float</em><em>, </em><em>optional</em>) – Tempo inicial do vídeo em segundos.
+Padrão é 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do vídeo com logo adicionada em caso de sucesso
+None: Em caso de erro</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">cut_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#cut_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Corta um vídeo para uma duração específica a partir de um ponto inicial.</p>
+<p>Recebe um vídeo e o corta para a duração desejada, começando do ponto inicial
+especificado. Se o vídeo original for menor que a duração solicitada, retorna
+o vídeo original sem modificações.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo de entrada</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – Caminho onde o vídeo cortado será salvo</p></li>
+<li><p><strong>duration</strong> (<em>float</em>) – Duração desejada em segundos</p></li>
+<li><p><strong>start_time</strong> (<em>float</em><em>, </em><em>optional</em>) – Tempo inicial do corte em segundos. Padrão é 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do vídeo cortado em caso de sucesso
+None: Em caso de erro ou se o vídeo não for encontrado</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">limit_video_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#limit_video_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Limita a duração de um vídeo ao número máximo de segundos especificado.</p>
+<p>Recebe um vídeo e gera uma versão mais curta mantendo apenas os primeiros X segundos,
+onde X é a duração máxima especificada. Útil para adequar vídeos a limites de duração
+de plataformas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo de entrada</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – Caminho onde o vídeo cortado será salvo</p></li>
+<li><p><strong>max_duration</strong> (<em>int</em><em>, </em><em>optional</em>) – Duração máxima em segundos. Padrão é 15 segundos.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do vídeo cortado em caso de sucesso
+None: Em caso de erro ou se o vídeo já estiver dentro do limite</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.subtitles.</span></span><span class="sig-name descname"><span class="pre">sync_text_with_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'desktop'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/subtitles.html#sync_text_with_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Sincroniza um texto com um arquivo de áudio, gerando timestamps para legendas.</p>
+<p>Recebe um texto e um arquivo de áudio e tenta sincronizar o texto com a fala,
+gerando timestamps precisos para cada parte do texto. Usa reconhecimento de fala
+e alinhamento de texto para determinar quando cada parte deve aparecer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>str</em>) – O texto a ser sincronizado</p></li>
+<li><p><strong>audio_path</strong> (<em>str</em>) – Caminho do arquivo de áudio</p></li>
+<li><p><strong>video_duration</strong> (<em>float</em>) – Duração total do vídeo em segundos</p></li>
+<li><p><strong>format_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Tipo de formato do vídeo (‘desktop’ ou ‘mobile’).
+Padrão é ‘desktop’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Lista de dicionários contendo o texto e seus timestamps no formato:</dt><dd><p>[{‘text’: str, ‘start’: float, ‘end’: float}, …]</p>
+</dd>
+</dl>
+<p>None: Em caso de erro na sincronização</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="utilitarios">
+<h2>Utilitários<a class="headerlink" href="#utilitarios" title="Link to this heading"></a></h2>
+<section id="busca">
+<h3>Busca<a class="headerlink" href="#busca" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">is_video_orientation_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#is_video_orientation_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Verifica se a orientação do vídeo é válida para o formato solicitado
+:param video: dados do vídeo do Pexels
+:param format_type: ‘desktop’ ou ‘mobile’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True se a orientação for válida, False caso contrário</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">extract_keywords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#extract_keywords"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Extrai palavras-chave relevantes de um texto, removendo stopwords e palavras duplicadas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – O texto do qual extrair as palavras-chave</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de palavras-chave extraídas do texto, em minúsculas e sem duplicatas</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">generate_search_queries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_scenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#generate_search_queries"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Gera termos de busca em inglês para encontrar vídeos relacionados ao tema fornecido.</p>
+<p>Utiliza o Gemini para gerar termos de busca otimizados para encontrar vídeos stock
+que correspondam ao prompt fornecido. Gera múltiplos termos para permitir diferentes
+tentativas de busca.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt</strong> (<em>str</em>) – O texto/tema para gerar os termos de busca</p></li>
+<li><p><strong>num_scenes</strong> (<em>int</em><em>, </em><em>optional</em>) – Número de termos de busca a serem gerados. Padrão é 6.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Lista de strings contendo os termos de busca em inglês.</dt><dd><p>Em caso de falha, retorna uma lista de termos padrão.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">download_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downloaded_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#download_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa um vídeo com base na query fornecida e no site especificado.</p>
+<p>Tenta baixar um vídeo com base na query fornecida e no site especificado.</p>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: URL do vídeo baixado</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">download_video_pexels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downloaded_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#download_video_pexels"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa um vídeo do Pexels com base nos parâmetros fornecidos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – Termo de busca para encontrar vídeos</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Formato do vídeo (‘mobile’ ou ‘desktop’)</p></li>
+<li><p><strong>downloaded_ids</strong> (<em>set</em>) – Conjunto de IDs de vídeos já baixados para evitar duplicatas</p></li>
+<li><p><strong>max_attempts</strong> (<em>int</em>) – Número máximo de tentativas de download</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">download_video_envato</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downloaded_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#download_video_envato"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa um vídeo do Envato com base nos parâmetros fornecidos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – Termo de busca para encontrar vídeos</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Formato do vídeo (‘mobile’ ou ‘desktop’)</p></li>
+<li><p><strong>downloaded_ids</strong> (<em>set</em>) – Conjunto de IDs de vídeos já baixados para evitar duplicatas</p></li>
+<li><p><strong>max_attempts</strong> (<em>int</em>) – Número máximo de tentativas de download</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">is_envato_video_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#is_envato_video_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Verifica se um vídeo do Envato atende aos critérios de formato e duração.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video</strong> (<em>dict</em>) – Dicionário contendo os dados do vídeo do Envato</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Tipo de formato desejado (‘mobile’ ou ‘desktop’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se o vídeo é válido, False caso contrário</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">download_envato_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#download_envato_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa um vídeo do Envato com base nos parâmetros fornecidos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video</strong> (<em>dict</em>) – Dicionário contendo os dados do vídeo do Envato</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Tipo de formato desejado (‘mobile’ ou ‘desktop’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">search_videos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tentativas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#search_videos"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Busca vídeos no Pexels com verificação de qualidade e relevância.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – Termo de busca</p></li>
+<li><p><strong>max_tentativas</strong> (<em>int</em>) – Número máximo de tentativas para encontrar um vídeo adequado</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Informações do vídeo encontrado ou None se falhar</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">reformular_termo_busca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">termo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#reformular_termo_busca"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Reformula um termo de busca para melhorar os resultados na busca de vídeos.</p>
+<p>Utiliza o Gemini para gerar uma versão mais específica e profissional do termo de busca,
+otimizada para encontrar vídeos stock de alta qualidade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>termo</strong> (<em>str</em>) – O termo de busca original que precisa ser reformulado</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>O termo de busca reformulado e otimizado para busca de vídeos profissionais</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">get_best_video_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#get_best_video_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Obtém a URL do vídeo com a melhor qualidade disponível.</p>
+<p>Analisa os arquivos de vídeo disponíveis e retorna a URL do vídeo com a maior resolução.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>video</strong> (<em>dict</em>) – Dicionário contendo os dados do vídeo do Pexels, incluindo a lista de ‘video_files’</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>URL do vídeo com a melhor qualidade disponível, ou None se não houver vídeos disponíveis</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.search.</span></span><span class="sig-name descname"><span class="pre">download_pexels_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/search.html#download_pexels_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Baixa um vídeo do Pexels com base nos parâmetros fornecidos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video</strong> (<em>dict</em>) – Dicionário contendo os dados do vídeo do Pexels, incluindo a lista de ‘video_files’</p></li>
+<li><p><strong>format_type</strong> (<em>str</em>) – Formato do vídeo (‘mobile’ ou ‘desktop’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="processamento-de-texto">
+<h3>Processamento de Texto<a class="headerlink" href="#processamento-de-texto" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.text_processor.</span></span><span class="sig-name descname"><span class="pre">process_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/text_processor.html#process_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Processa um texto substituindo palavras que precisam ter sua grafia preservada.</p>
+<p>Recebe um texto e verifica cada palavra contra um dicionário de palavras preservadas,
+substituindo-as pela forma correta quando encontradas. Por exemplo, nomes próprios
+ou siglas que devem manter uma grafia específica.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – O texto a ser processado</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>O texto processado com as palavras preservadas substituídas por suas formas corretas.</dt><dd><p>Se o texto de entrada for vazio, retorna o próprio texto.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.text_processor.</span></span><span class="sig-name descname"><span class="pre">add_preserved_word</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_form</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/text_processor.html#add_preserved_word"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Adiciona uma nova palavra ao dicionário de palavras preservadas com suas variações.</p>
+<p>Recebe uma palavra e sua forma correta e adiciona ao dicionário PRESERVED_WORDS
+em três variações: minúscula, maiúscula e capitalizada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>word</strong> (<em>str</em>) – A palavra a ser preservada</p></li>
+<li><p><strong>correct_form</strong> (<em>str</em>) – A forma correta/padronizada da palavra</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="utilitarios-gerais">
+<h3>Utilitários Gerais<a class="headerlink" href="#utilitarios-gerais" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">remove_html_tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#remove_html_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Remove todas as tags HTML de um texto.</p>
+<p>Recebe um texto que pode conter tags HTML e retorna o mesmo texto
+com todas as tags removidas, mantendo apenas o conteúdo textual.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – O texto contendo possíveis tags HTML</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>O texto limpo, sem as tags HTML</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">adjust_text_for_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_duration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#adjust_text_for_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Ajusta um texto para caber em uma duração alvo.</p>
+<p>Recebe um texto e uma duração alvo em segundos, e ajusta o texto para que sua narração
+caiba aproximadamente nessa duração. O ajuste é feito estimando a velocidade média de
+fala em 1.8 palavras por segundo e truncando o texto se necessário.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>str</em>) – O texto a ser ajustado</p></li>
+<li><p><strong>target_duration</strong> (<em>float</em>) – A duração alvo em segundos</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>O texto ajustado para caber na duração alvo.</dt><dd><p>Se o texto original já couber na duração, retorna o próprio texto.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">clean_temp_folder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#clean_temp_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Limpa a pasta temporária removendo todos os arquivos e subdiretórios.</p>
+<p>Remove todos os arquivos e subdiretórios dentro da pasta temporária definida em
+get_temp_files_path(). Útil para liberar espaço em disco e remover arquivos
+temporários que não são mais necessários.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">get_video_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#get_video_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Obtém a duração de um arquivo de vídeo em segundos.</p>
+<p>Utiliza o ffprobe para extrair a duração do vídeo especificado.
+Executa um comando ffprobe que retorna apenas o valor da duração,
+sem formatação adicional.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>video_path</strong> (<em>str</em>) – Caminho do arquivo de vídeo</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Duração do vídeo em segundos se bem sucedido
+None: Em caso de erro ao obter a duração</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">extract_main_term</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#extract_main_term"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Extrai o termo principal de um texto, removendo caracteres especiais.</p>
+<p>Recebe um texto e retorna a primeira palavra encontrada após remover caracteres especiais
+e espaços extras. Se o texto estiver vazio ou não contiver palavras válidas, retorna “video”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – O texto do qual extrair o termo principal</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A primeira palavra do texto processado ou “video” se o texto for inválido</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">criar_diretorio_se_nao_existir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#criar_diretorio_se_nao_existir"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Cria um diretório se ele não existir.</p>
+<p>Verifica se o diretório especificado existe e o cria caso não exista.
+Imprime uma mensagem informando quando um novo diretório é criado.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Caminho do diretório a ser verificado/criado</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>O mesmo caminho passado como argumento</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">app.videoPexel.utils.</span></span><span class="sig-name descname"><span class="pre">cleanup_temp_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">files</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/videoPexel/utils.html#cleanup_temp_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Remove arquivos temporários gerados durante o processamento.</p>
+<p>Recebe uma lista variável de arquivos ou listas de arquivos e tenta removê-los,
+preservando apenas os arquivos finais (que terminam com ‘_final.mp4’).
+Imprime mensagens informando quais arquivos foram removidos ou preservados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*files</strong> – Lista variável de strings com caminhos de arquivos ou listas/tuplas de caminhos.
+Cada argumento pode ser uma string com caminho de arquivo ou uma lista/tupla de caminhos.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="fluxo-de-trabalho">
+<h2>Fluxo de Trabalho<a class="headerlink" href="#fluxo-de-trabalho" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Recebe o texto e parâmetros do vídeo</p></li>
+<li><p>Processa o texto para identificar palavras-chave</p></li>
+<li><p>Busca vídeos relacionados no Pexels</p></li>
+<li><p>Baixa e processa os vídeos encontrados</p></li>
+<li><p>Gera narração do texto</p></li>
+<li><p>Sincroniza áudio com vídeo</p></li>
+<li><p>Adiciona legendas e efeitos</p></li>
+<li><p>Combina todos os elementos no vídeo final</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="YDUQS Video Service Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="video_studio.html" class="btn btn-neutral float-right" title="Video Studio API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

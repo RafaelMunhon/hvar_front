@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.videoPexel.search &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.videoPexel.search</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.videoPexel.search</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.vertexAi</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_content</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">VIDEO_FORMATS</span><span class="p">,</span> <span class="n">PEXELS_API_KEY</span><span class="p">,</span>
+    <span class="n">PEXELS_API_URL</span><span class="p">,</span> <span class="n">MIN_DURATION</span><span class="p">,</span> <span class="n">MAX_DURATION</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_temp_files_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.utils.verificaImagemVideo</span><span class="w"> </span><span class="kn">import</span> <span class="n">analisar_video</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">ENVATO_API_KEY</span> <span class="o">=</span> <span class="s2">&quot;7BGGwCRsTuQCucq2Vq3yfqJodv3Rer4H&quot;</span>  <span class="c1"># Substitua pela sua chave real</span>
+
+<div class="viewcode-block" id="is_video_orientation_valid">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.is_video_orientation_valid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_video_orientation_valid</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verifica se a orientação do vídeo é válida para o formato solicitado</span>
+<span class="sd">    Args:</span>
+<span class="sd">        video: dados do vídeo do Pexels</span>
+<span class="sd">        format_type: &#39;desktop&#39; ou &#39;mobile&#39;</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True se a orientação for válida, False caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">video_file</span> <span class="ow">in</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;video_files&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">video_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">video_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">width</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">height</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+            
+        <span class="c1"># Para desktop: largura deve ser maior que altura (horizontal/landscape)</span>
+        <span class="k">if</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;desktop&#39;</span> <span class="ow">and</span> <span class="n">width</span> <span class="o">&lt;=</span> <span class="n">height</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="c1"># Para mobile: altura deve ser maior que largura (vertical/portrait)</span>
+        <span class="k">if</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;mobile&#39;</span> <span class="ow">and</span> <span class="n">height</span> <span class="o">&lt;=</span> <span class="n">width</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="k">return</span> <span class="kc">True</span>
+    
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="extract_keywords">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.extract_keywords">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_keywords</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extrai palavras-chave relevantes de um texto, removendo stopwords e palavras duplicadas.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): O texto do qual extrair as palavras-chave</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lista de palavras-chave extraídas do texto, em minúsculas e sem duplicatas</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Lista de palavras para ignorar</span>
+    <span class="n">stopwords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;os&#39;</span><span class="p">,</span> <span class="s1">&#39;as&#39;</span><span class="p">,</span> <span class="s1">&#39;um&#39;</span><span class="p">,</span> <span class="s1">&#39;uma&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;é&#39;</span><span class="p">,</span> <span class="s1">&#39;são&#39;</span><span class="p">,</span> <span class="s1">&#39;para&#39;</span><span class="p">,</span> <span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="s1">&#39;seu&#39;</span><span class="p">,</span> <span class="s1">&#39;sua&#39;</span><span class="p">,</span> <span class="s1">&#39;seus&#39;</span><span class="p">,</span> <span class="s1">&#39;suas&#39;</span><span class="p">}</span>
+
+    <span class="c1"># Remove pontuação e converte para minúsculas</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+    <span class="c1"># Divide em palavras e remove stopwords</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="p">[</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stopwords</span><span class="p">]</span>
+
+    <span class="c1"># Identifica palavras-chave importantes (substantivos e adjetivos)</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>  <span class="c1"># Evita duplicatas</span>
+            <span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">keywords</span></div>
+
+
+<div class="viewcode-block" id="generate_search_queries">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.generate_search_queries">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_search_queries</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">num_scenes</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera termos de busca em inglês para encontrar vídeos relacionados ao tema fornecido.</span>
+
+<span class="sd">    Utiliza o Gemini para gerar termos de busca otimizados para encontrar vídeos stock</span>
+<span class="sd">    que correspondam ao prompt fornecido. Gera múltiplos termos para permitir diferentes</span>
+<span class="sd">    tentativas de busca.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        prompt (str): O texto/tema para gerar os termos de busca</span>
+<span class="sd">        num_scenes (int, optional): Número de termos de busca a serem gerados. Padrão é 6.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lista de strings contendo os termos de busca em inglês.</span>
+<span class="sd">              Em caso de falha, retorna uma lista de termos padrão.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Prompt para gerar as queries</span>
+        <span class="n">system_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Gere </span><span class="si">{</span><span class="n">num_scenes</span><span class="si">}</span><span class="s2"> termos de busca em inglês para encontrar vídeos relacionados ao tema:</span>
+<span class="s2">        &quot;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">        </span>
+<span class="s2">        Requisitos:</span>
+<span class="s2">        - Termos curtos e diretos (2-5 palavras)</span>
+<span class="s2">        - Relacionados ao tema principal</span>
+<span class="s2">        - Sem aspas ou caracteres especiais</span>
+<span class="s2">        - Apenas em inglês</span>
+<span class="s2">        - Um termo por linha</span>
+<span class="s2">        - Sem numeração</span>
+<span class="s2">        - Incluir termos genéricos que tenham mais chance de encontrar vídeos (como &#39;business meeting&#39;, &#39;office work&#39;, &#39;people technology&#39;)</span>
+<span class="s2">        - Variar entre termos específicos e genéricos</span>
+<span class="s2">        - Incluir termos relacionados a pessoas, ambientes corporativos e tecnologia</span>
+<span class="s2">        - Evitar termos muito específicos que possam limitar os resultados</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">system_prompt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">response</span><span class="p">:</span>
+            <span class="c1"># Queries padrão em caso de falha</span>
+            <span class="n">default_queries</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;business technology&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;office work&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;corporate meeting&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;professional team&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;digital innovation&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;modern workplace&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;business presentation&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;technology people&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;office collaboration&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;corporate success&quot;</span>
+            <span class="p">]</span>
+            <span class="k">return</span> <span class="n">default_queries</span><span class="p">[:</span><span class="n">num_scenes</span><span class="p">]</span>
+
+        <span class="c1"># Processa a resposta</span>
+        <span class="n">queries</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Garante que temos queries suficientes</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_scenes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">queries</span><span class="p">:</span>
+                <span class="n">queries</span> <span class="o">=</span> <span class="n">default_queries</span>
+            <span class="n">queries</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>  <span class="c1"># Duplica as queries existentes se precisar de mais</span>
+
+        <span class="k">return</span> <span class="n">queries</span><span class="p">[:</span><span class="n">num_scenes</span><span class="p">]</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar queries: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Retorna queries padrão em caso de erro</span>
+        <span class="n">default_queries</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;business technology&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;office work&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;corporate meeting&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;professional team&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;digital innovation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;modern workplace&quot;</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">default_queries</span><span class="p">[:</span><span class="n">num_scenes</span><span class="p">]</span></div>
+
+    
+
+<div class="viewcode-block" id="download_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.download_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_video</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa um vídeo com base na query fornecida e no site especificado.</span>
+
+<span class="sd">    Tenta baixar um vídeo com base na query fornecida e no site especificado.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        str: URL do vídeo baixado</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Garantir que max_attempts seja inteiro</span>
+    <span class="n">max_attempts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">site</span> <span class="ow">and</span> <span class="n">site</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;envato&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">download_video_envato</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">download_video_pexels</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="download_video_pexels">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.download_video_pexels">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_video_pexels</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa um vídeo do Pexels com base nos parâmetros fornecidos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        query (str): Termo de busca para encontrar vídeos</span>
+<span class="sd">        format_type (str): Formato do vídeo (&#39;mobile&#39; ou &#39;desktop&#39;)</span>
+<span class="sd">        downloaded_ids (set): Conjunto de IDs de vídeos já baixados para evitar duplicatas</span>
+<span class="sd">        max_attempts (int): Número máximo de tentativas de download</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Garantir que max_attempts seja inteiro</span>
+    <span class="n">max_attempts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="n">PEXELS_API_KEY</span><span class="p">}</span>
+    <span class="n">original_query</span> <span class="o">=</span> <span class="n">query</span>
+    <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cached_videos</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">while</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_videos</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Buscando vídeos no Pexels para: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">PEXELS_API_URL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da requisição: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status da requisição: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro na requisição: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    
+                <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                <span class="n">cached_videos</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;videos&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de vídeos encontrados: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cached_videos</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">cached_videos</span><span class="p">:</span>
+                    <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+                        <span class="n">new_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">original_query</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">new_queries</span><span class="p">:</span>
+                            <span class="n">query</span> <span class="o">=</span> <span class="n">new_queries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando nova query: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                            <span class="k">continue</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Nenhum vídeo encontrado&quot;</span><span class="p">)</span>
+
+            <span class="n">valid_videos</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">video</span> <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">cached_videos</span> 
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">downloaded_ids</span> <span class="ow">and</span>
+                    <span class="n">MIN_DURATION</span> <span class="o">&lt;=</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">MAX_DURATION</span> <span class="ow">and</span>
+                    <span class="n">is_video_orientation_valid</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">format_type</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+            
+            <span class="k">if</span> <span class="n">valid_videos</span><span class="p">:</span>
+                <span class="n">video</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">valid_videos</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">download_pexels_video</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">format_type</span><span class="p">)</span>
+                
+            <span class="n">cached_videos</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo do Pexels: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="download_video_envato">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.download_video_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_video_envato</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa um vídeo do Envato com base nos parâmetros fornecidos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        query (str): Termo de busca para encontrar vídeos</span>
+<span class="sd">        format_type (str): Formato do vídeo (&#39;mobile&#39; ou &#39;desktop&#39;)</span>
+<span class="sd">        downloaded_ids (set): Conjunto de IDs de vídeos já baixados para evitar duplicatas</span>
+<span class="sd">        max_attempts (int): Número máximo de tentativas de download</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="n">ENVATO_API_KEY</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Mozilla/5.0&#39;</span>
+    <span class="p">}</span>
+
+    <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="k">while</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Buscando vídeos no Envato para: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;https://api.envato.com/v1/discovery/search/search/item&quot;</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;term&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+                    <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="s2">&quot;videohive.net&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">&quot;page_size&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                    <span class="s2">&quot;sort_by&quot;</span><span class="p">:</span> <span class="s2">&quot;relevance&quot;</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            
+            <span class="n">resultados</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;matches&#39;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de vídeos encontrados no Envato: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">resultados</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">resultados</span><span class="p">:</span>
+                <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+                    <span class="n">new_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">new_queries</span><span class="p">:</span>
+                        <span class="n">query</span> <span class="o">=</span> <span class="n">new_queries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando nova query no Envato: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            
+            <span class="c1"># Tenta cada vídeo encontrado</span>
+            <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">resultados</span><span class="p">:</span>
+                <span class="n">video_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">video_id</span> <span class="ow">in</span> <span class="n">downloaded_ids</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                
+                <span class="c1"># Verifica se tem preview de vídeo</span>
+                <span class="n">preview_url</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">previews</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;previews&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;icon_with_video_preview&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                
+                <span class="c1"># Tenta obter a URL do vídeo</span>
+                <span class="n">preview_url</span> <span class="o">=</span> <span class="n">previews</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;video_preview_download_url&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">preview_url</span><span class="p">:</span>
+                    <span class="n">preview_url</span> <span class="o">=</span> <span class="n">previews</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;video_url&#39;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">preview_url</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nenhum preview de vídeo encontrado para o item </span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                
+                <span class="c1"># Baixa o vídeo</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">video_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;envato_</span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+                    <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_temp_files_path</span><span class="p">(),</span> <span class="n">video_filename</span><span class="p">)</span>
+                    
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando baixar vídeo de: </span><span class="si">{</span><span class="n">preview_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">preview_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+                    
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                    
+                    <span class="n">downloaded_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">video_id</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado com sucesso: </span><span class="si">{</span><span class="n">video_filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">output_path</span>
+                    
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo </span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+            
+            <span class="c1"># Se chegou aqui, nenhum vídeo foi baixado com sucesso</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+                <span class="n">new_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_queries</span><span class="p">:</span>
+                    <span class="n">query</span> <span class="o">=</span> <span class="n">new_queries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando nova query no Envato: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                    
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao buscar vídeos no Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="is_envato_video_valid">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.is_envato_video_valid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_envato_video_valid</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verifica se um vídeo do Envato atende aos critérios de formato e duração.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video (dict): Dicionário contendo os dados do vídeo do Envato</span>
+<span class="sd">        format_type (str): Tipo de formato desejado (&#39;mobile&#39; ou &#39;desktop&#39;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True se o vídeo é válido, False caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Verificar atributos do vídeo</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;duration&#39;</span><span class="p">:</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;width&#39;</span><span class="p">:</span>
+                <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;height&#39;</span><span class="p">:</span>
+                <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+                
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">duration</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="c1"># Verificar duração</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">MIN_DURATION</span> <span class="o">&lt;=</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="n">MAX_DURATION</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="c1"># Verificar orientação</span>
+        <span class="k">if</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s1">&#39;mobile&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="n">width</span>  <span class="c1"># Vertical</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="n">height</span>  <span class="c1"># Horizontal</span>
+            
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao validar vídeo do Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="download_envato_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.download_envato_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_envato_video</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa um vídeo do Envato com base nos parâmetros fornecidos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video (dict): Dicionário contendo os dados do vídeo do Envato</span>
+<span class="sd">        format_type (str): Tipo de formato desejado (&#39;mobile&#39; ou &#39;desktop&#39;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Obter URL do preview do vídeo</span>
+        <span class="n">preview_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">preview</span> <span class="ow">in</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;previews&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="n">preview</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;video&#39;</span><span class="p">:</span>
+                <span class="n">preview_url</span> <span class="o">=</span> <span class="n">preview</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+                
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">preview_url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Criar nome do arquivo</span>
+        <span class="n">video_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;envato_</span><span class="si">{</span><span class="n">video</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_temp_files_path</span><span class="p">(),</span> <span class="n">video_filename</span><span class="p">)</span>
+        
+        <span class="c1"># Baixar vídeo</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">preview_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">output_path</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo do Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="search_videos">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.search_videos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">search_videos</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_tentativas</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Busca vídeos no Pexels com verificação de qualidade e relevância.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        query (str): Termo de busca</span>
+<span class="sd">        max_tentativas (int): Número máximo de tentativas para encontrar um vídeo adequado</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Informações do vídeo encontrado ou None se falhar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tentativas</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">videos_tentados</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Para evitar repetições</span>
+
+    <span class="k">while</span> <span class="n">tentativas</span> <span class="o">&lt;</span> <span class="n">max_tentativas</span><span class="p">:</span>
+        <span class="n">tentativas</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">tentativas</span><span class="si">}</span><span class="s2"> de </span><span class="si">{</span><span class="n">max_tentativas</span><span class="si">}</span><span class="s2"> para buscar vídeo&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Faz a busca no Pexels</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PEXELS_API_URL</span><span class="si">}</span><span class="s2">/search&quot;</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="n">PEXELS_API_KEY</span><span class="p">},</span>
+                <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+                    <span class="s2">&quot;per_page&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+                    <span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="s2">&quot;landscape&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;large&quot;</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+            <span class="c1"># Itera sobre os vídeos encontrados</span>
+            <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;videos&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">video_url</span> <span class="o">=</span> <span class="n">get_best_video_url</span><span class="p">(</span><span class="n">video</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">video_url</span> <span class="ow">or</span> <span class="n">video_url</span> <span class="ow">in</span> <span class="n">videos_tentados</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">videos_tentados</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">video_url</span><span class="p">)</span>
+                
+                <span class="c1"># Analisa o vídeo</span>
+                <span class="n">analise</span> <span class="o">=</span> <span class="n">analisar_video</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+                
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Resultado da análise do vídeo:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Descrição Gemini: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;descricao_gemini&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Corresponde: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;corresponde&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confiança: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;confianca&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detalhes: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;detalhes&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Verifica se o vídeo é adequado</span>
+                <span class="k">if</span> <span class="n">analise</span><span class="p">[</span><span class="s1">&#39;corresponde&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">analise</span><span class="p">[</span><span class="s1">&#39;confianca&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.7</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Vídeo validado e selecionado&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="n">video_url</span><span class="p">,</span>
+                        <span class="s1">&#39;video_id&#39;</span><span class="p">:</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;analise&#39;</span><span class="p">:</span> <span class="n">analise</span>
+                    <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Vídeo não corresponde à descrição esperada ou confiança muito baixa&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Se chegou aqui, precisa reformular a busca</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">reformular_termo_busca</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro na busca: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">tentativas</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Todas as </span><span class="si">{</span><span class="n">max_tentativas</span><span class="si">}</span><span class="s2"> tentativas falharam para encontrar um vídeo adequado&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="reformular_termo_busca">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.reformular_termo_busca">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reformula um termo de busca para melhorar os resultados na busca de vídeos.</span>
+
+<span class="sd">    Utiliza o Gemini para gerar uma versão mais específica e profissional do termo de busca,</span>
+<span class="sd">    otimizada para encontrar vídeos stock de alta qualidade.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        termo (str): O termo de busca original que precisa ser reformulado</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: O termo de busca reformulado e otimizado para busca de vídeos profissionais</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Preciso reformular o seguinte termo de busca para encontrar VÍDEOS PROFISSIONAIS: &quot;</span><span class="si">{</span><span class="n">termo</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">    </span>
+<span class="s2">    Por favor, sugira uma reformulação do termo que:</span>
+<span class="s2">    1. Mantenha o significado principal</span>
+<span class="s2">    2. Seja mais específico e descritivo</span>
+<span class="s2">    3. Use termos que funcionem bem para busca de VÍDEOS STOCK</span>
+<span class="s2">    4. Inclua detalhes visuais importantes</span>
+<span class="s2">    5. Adicione termos como &quot;professional video&quot;, &quot;stock footage&quot;, &quot;high quality&quot;</span>
+<span class="s2">    </span>
+<span class="s2">    Retorne apenas o novo termo reformulado, sem explicações adicionais.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="n">conteudo</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="n">novo_termo</span> <span class="o">=</span> <span class="n">conteudo</span><span class="o">.</span><span class="n">text</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Termo reformulado pelo Gemini: </span><span class="si">{</span><span class="n">novo_termo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">novo_termo</span></div>
+
+
+<div class="viewcode-block" id="get_best_video_url">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.get_best_video_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_best_video_url</span><span class="p">(</span><span class="n">video</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém a URL do vídeo com a melhor qualidade disponível.</span>
+
+<span class="sd">    Analisa os arquivos de vídeo disponíveis e retorna a URL do vídeo com a maior resolução.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video (dict): Dicionário contendo os dados do vídeo do Pexels, incluindo a lista de &#39;video_files&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: URL do vídeo com a melhor qualidade disponível, ou None se não houver vídeos disponíveis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">video</span> <span class="ow">or</span> <span class="s1">&#39;video_files&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">video</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1"># Ordena por qualidade (resolução) e pega o melhor</span>
+    <span class="n">video_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="n">video</span><span class="p">[</span><span class="s1">&#39;video_files&#39;</span><span class="p">],</span>
+        <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">video_files</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;link&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">video_files</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="download_pexels_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.search.download_pexels_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_pexels_video</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa um vídeo do Pexels com base nos parâmetros fornecidos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video (dict): Dicionário contendo os dados do vídeo do Pexels, incluindo a lista de &#39;video_files&#39;</span>
+<span class="sd">        format_type (str): Formato do vídeo (&#39;mobile&#39; ou &#39;desktop&#39;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do arquivo de vídeo baixado em caso de sucesso, None em caso de falha</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Encontra o melhor formato disponível</span>
+        <span class="n">best_format</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">target_width</span> <span class="o">=</span> <span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">][</span><span class="s1">&#39;width&#39;</span><span class="p">]</span>
+        <span class="n">target_height</span> <span class="o">=</span> <span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">][</span><span class="s1">&#39;height&#39;</span><span class="p">]</span>
+        <span class="n">min_width</span> <span class="o">=</span> <span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">][</span><span class="s1">&#39;min_width&#39;</span><span class="p">]</span>
+        <span class="n">min_height</span> <span class="o">=</span> <span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">][</span><span class="s1">&#39;min_height&#39;</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">video_file</span> <span class="ow">in</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;video_files&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">video_file</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_width</span> <span class="ow">and</span> <span class="n">video_file</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_height</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">best_format</span> <span class="ow">or</span> <span class="p">(</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="n">video_file</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_width</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">best_format</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_width</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">best_format</span> <span class="o">=</span> <span class="n">video_file</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">best_format</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Nenhum formato adequado encontrado&quot;</span><span class="p">)</span>
+            
+        <span class="c1"># Download do vídeo</span>
+        <span class="n">video_url</span> <span class="o">=</span> <span class="n">best_format</span><span class="p">[</span><span class="s1">&#39;link&#39;</span><span class="p">]</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">video_url</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="c1"># Define o caminho para salvar o vídeo</span>
+        <span class="n">video_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;pexels_</span><span class="si">{</span><span class="n">video</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_temp_files_path</span><span class="p">(),</span> <span class="n">video_filename</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">output_path</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo do Pexels: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

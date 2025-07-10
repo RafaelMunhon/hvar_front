@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Operations &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Video 100% IA API" href="video_ia.html" />
+    <link rel="prev" title="File Import API" href="import_file.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_file.html">File Import API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Database Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#operacoes-de-banco-de-dados">Operações de Banco de Dados</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.get_bigquery_client"><code class="docutils literal notranslate"><span class="pre">get_bigquery_client()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.execute_query"><code class="docutils literal notranslate"><span class="pre">execute_query()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.inserir_bigquery"><code class="docutils literal notranslate"><span class="pre">inserir_bigquery()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.consultar_nome_arquivo"><code class="docutils literal notranslate"><span class="pre">consultar_nome_arquivo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.inserir_arquivos_conteudo"><code class="docutils literal notranslate"><span class="pre">inserir_arquivos_conteudo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.consultar_arquivo_conteudo"><code class="docutils literal notranslate"><span class="pre">consultar_arquivo_conteudo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.inserir_video"><code class="docutils literal notranslate"><span class="pre">inserir_video()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.inserir_audio"><code class="docutils literal notranslate"><span class="pre">inserir_audio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.inserir_video_pexel"><code class="docutils literal notranslate"><span class="pre">inserir_video_pexel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.consultar_videos_pexel"><code class="docutils literal notranslate"><span class="pre">consultar_videos_pexel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.consultar_videos_studio"><code class="docutils literal notranslate"><span class="pre">consultar_videos_studio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.remover_audio_duplicado"><code class="docutils literal notranslate"><span class="pre">remover_audio_duplicado()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.encontrar_e_remover_duplicatas"><code class="docutils literal notranslate"><span class="pre">encontrar_e_remover_duplicatas()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.verificar_arquivo_existe"><code class="docutils literal notranslate"><span class="pre">verificar_arquivo_existe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.atualizar_arquivo"><code class="docutils literal notranslate"><span class="pre">atualizar_arquivo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.bd.bd.atualizar_conteudo_completo"><code class="docutils literal notranslate"><span class="pre">atualizar_conteudo_completo()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#principais-operacoes">Principais Operações</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#insercao-de-dados">Inserção de Dados</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">inserir_bigquery()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">inserir_arquivos_conteudo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">inserir_audio()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#consultas">Consultas</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">consultar_nome_arquivo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">verificar_arquivo_existe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">execute_query()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atualizacoes">Atualizações</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">atualizar_arquivo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">atualizar_conteudo_completo()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Database Operations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/database.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="database-operations">
+<h1>Database Operations<a class="headerlink" href="#database-operations" title="Link to this heading"></a></h1>
+<section id="operacoes-de-banco-de-dados">
+<h2>Operações de Banco de Dados<a class="headerlink" href="#operacoes-de-banco-de-dados" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-app.bd.bd">
+<dt class="sig sig-object py" id="app.bd.bd.get_bigquery_client">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">get_bigquery_client</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#get_bigquery_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.get_bigquery_client" title="Link to this definition"></a></dt>
+<dd><p>Retorna um cliente do BigQuery</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.execute_query">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">execute_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#execute_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.execute_query" title="Link to this definition"></a></dt>
+<dd><p>Executa uma query no BigQuery com parâmetros
+:param query: string com a query SQL
+:param params: dicionário com os parâmetros da query</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de resultados ou None em caso de erro</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.inserir_bigquery">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_bigquery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TEMA</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_bigquery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.inserir_bigquery" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.consultar_nome_arquivo">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_nome_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.consultar_nome_arquivo" title="Link to this definition"></a></dt>
+<dd><p>Consulta nomes de arquivos no BigQuery com opção de filtros</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.inserir_arquivos_conteudo">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_arquivos_conteudo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THEME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MODULO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NUCLEO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">JSON</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">JSON_CONTEUDO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC_PROXIMA_AULA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_arquivos_conteudo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.inserir_arquivos_conteudo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.consultar_arquivo_conteudo">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_arquivo_conteudo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_arquivo_conteudo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.consultar_arquivo_conteudo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.inserir_video">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">URL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THEME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TYPE_VIDEO</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.inserir_video" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.inserir_audio">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_arquivo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_audio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tipo_audio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc_original</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.inserir_audio" title="Link to this definition"></a></dt>
+<dd><p>Insere um registro de áudio no banco de dados.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.inserir_video_pexel">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_video_pexel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">URL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TYPE_VIDEO</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_video_pexel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.inserir_video_pexel" title="Link to this definition"></a></dt>
+<dd><p>Insere um registro de vídeo Pexel no banco de dados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>URL</strong> (<em>str</em>) – URL do vídeo</p></li>
+<li><p><strong>TYPE_VIDEO</strong> (<em>str</em>) – Tipo de vídeo (‘PEXEL’)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Retorna:</dt><dd><p>str: ID do vídeo inserido</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.consultar_videos_pexel">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_videos_pexel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_videos_pexel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.consultar_videos_pexel" title="Link to this definition"></a></dt>
+<dd><p>Consulta vídeos do tipo Pexel no banco de dados.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.consultar_videos_studio">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_videos_studio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_videos_studio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.consultar_videos_studio" title="Link to this definition"></a></dt>
+<dd><p>Consulta vídeos do tipo Studio no banco de dados.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.remover_audio_duplicado">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">remover_audio_duplicado</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_duplicado</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#remover_audio_duplicado"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.remover_audio_duplicado" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.encontrar_e_remover_duplicatas">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">encontrar_e_remover_duplicatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#encontrar_e_remover_duplicatas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.encontrar_e_remover_duplicatas" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.verificar_arquivo_existe">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">verificar_arquivo_existe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#verificar_arquivo_existe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.verificar_arquivo_existe" title="Link to this definition"></a></dt>
+<dd><p>Verifica se um arquivo já existe no banco de dados pelo nome</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nome_arquivo</strong> – nome do arquivo a ser verificado</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dicionário com informações do arquivo se existir, None caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.atualizar_arquivo">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">atualizar_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_conteudo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#atualizar_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.atualizar_arquivo" title="Link to this definition"></a></dt>
+<dd><p>Atualiza um arquivo existente no banco de dados</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_id</strong> – ID do arquivo a ser atualizado</p></li>
+<li><p><strong>file_name</strong> – Nome do arquivo</p></li>
+<li><p><strong>json_data</strong> – Dados JSON para atualização (dicionário)</p></li>
+<li><p><strong>json_conteudo</strong> – Conteúdo JSON completo (pode ser lista ou dicionário)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se atualizado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.bd.bd.atualizar_conteudo_completo">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">atualizar_conteudo_completo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arquivos_conteudo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#atualizar_conteudo_completo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.bd.bd.atualizar_conteudo_completo" title="Link to this definition"></a></dt>
+<dd><p>Atualiza o conteúdo completo de um arquivo ZIP</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_id</strong> – ID do arquivo a ser atualizado</p></li>
+<li><p><strong>tema</strong> – Tema do conteúdo</p></li>
+<li><p><strong>arquivos_conteudo</strong> – Lista de arquivos e seus conteúdos</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se atualizado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="principais-operacoes">
+<h2>Principais Operações<a class="headerlink" href="#principais-operacoes" title="Link to this heading"></a></h2>
+<section id="insercao-de-dados">
+<h3>Inserção de Dados<a class="headerlink" href="#insercao-de-dados" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_bigquery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TEMA</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_bigquery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_arquivos_conteudo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THEME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MODULO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NUCLEO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">JSON</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">JSON_CONTEUDO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TITULO_NC_PROXIMA_AULA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_arquivos_conteudo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">inserir_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_arquivo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_audio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tipo_audio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc_original</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#inserir_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Insere um registro de áudio no banco de dados.</p>
+</dd></dl>
+
+</section>
+<section id="consultas">
+<h3>Consultas<a class="headerlink" href="#consultas" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">consultar_nome_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#consultar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Consulta nomes de arquivos no BigQuery com opção de filtros</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">verificar_arquivo_existe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#verificar_arquivo_existe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Verifica se um arquivo já existe no banco de dados pelo nome</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nome_arquivo</strong> – nome do arquivo a ser verificado</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dicionário com informações do arquivo se existir, None caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">execute_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#execute_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>Executa uma query no BigQuery com parâmetros
+:param query: string com a query SQL
+:param params: dicionário com os parâmetros da query</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de resultados ou None em caso de erro</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="atualizacoes">
+<h3>Atualizações<a class="headerlink" href="#atualizacoes" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">atualizar_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_conteudo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#atualizar_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd><p>Atualiza um arquivo existente no banco de dados</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_id</strong> – ID do arquivo a ser atualizado</p></li>
+<li><p><strong>file_name</strong> – Nome do arquivo</p></li>
+<li><p><strong>json_data</strong> – Dados JSON para atualização (dicionário)</p></li>
+<li><p><strong>json_conteudo</strong> – Conteúdo JSON completo (pode ser lista ou dicionário)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se atualizado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-prename descclassname"><span class="pre">app.bd.bd.</span></span><span class="sig-name descname"><span class="pre">atualizar_conteudo_completo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arquivos_conteudo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/bd/bd.html#atualizar_conteudo_completo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd><p>Atualiza o conteúdo completo de um arquivo ZIP</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_id</strong> – ID do arquivo a ser atualizado</p></li>
+<li><p><strong>tema</strong> – Tema do conteúdo</p></li>
+<li><p><strong>arquivos_conteudo</strong> – Lista de arquivos e seus conteúdos</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True se atualizado com sucesso, False caso contrário</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="import_file.html" class="btn btn-neutral float-left" title="File Import API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="video_ia.html" class="btn btn-neutral float-right" title="Video 100% IA API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

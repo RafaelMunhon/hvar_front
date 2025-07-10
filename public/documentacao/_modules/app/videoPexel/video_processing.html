@@ -1,0 +1,675 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.videoPexel.video_processing &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.videoPexel.video_processing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.videoPexel.video_processing</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">googletrans</span><span class="w"> </span><span class="kn">import</span> <span class="n">Translator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_temp_files_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.speech_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">transcribe_with_timestamps</span><span class="p">,</span> <span class="n">transcribe_with_timestamps_v2</span><span class="p">,</span> <span class="n">upload_video_to_bucket</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.narration</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_voiceover</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.music</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_background_music</span><span class="p">,</span> <span class="n">add_background_music</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.audio_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_audio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+     <span class="n">VIDEO_FORMATS</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">clean_temp_folder</span><span class="p">,</span> <span class="n">get_temp_files_pexel_path</span><span class="p">,</span>
+    <span class="n">remove_html_tags</span><span class="p">,</span> <span class="n">adjust_text_for_duration</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.vertexAi</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_content</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.search</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_video</span><span class="p">,</span> <span class="n">generate_search_queries</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.subtitles</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_logo_and_blur</span><span class="p">,</span> <span class="n">add_subtitles</span><span class="p">,</span> <span class="n">cut_video</span><span class="p">,</span> <span class="n">get_video_duration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">storage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+
+<span class="c1"># Configurar logger</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="standardize_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.video_processing.standardize_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">standardize_video</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">format_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Padroniza o vídeo para o formato desejado&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">format_config</span> <span class="o">=</span> <span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">]</span>
+        <span class="n">target_width</span> <span class="o">=</span> <span class="n">format_config</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+        <span class="n">target_height</span> <span class="o">=</span> <span class="n">format_config</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Padronizando vídeo: </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formato alvo: </span><span class="si">{</span><span class="n">target_width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">target_height</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Primeiro, verifica o formato do vídeo de entrada</span>
+        <span class="n">probe_cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffprobe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-select_streams&quot;</span><span class="p">,</span> <span class="s2">&quot;v:0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-show_entries&quot;</span><span class="p">,</span> <span class="s2">&quot;stream=width,height,r_frame_rate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-of&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+            <span class="n">input_path</span>
+        <span class="p">]</span>
+        
+        <span class="n">probe_result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">probe_cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">probe_result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">probe_result</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;streams&#39;</span><span class="p">,</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">input_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">input_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formato original: </span><span class="si">{</span><span class="n">input_width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">input_height</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Comando ffmpeg para padronizar o vídeo</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>  <span class="c1"># Sobrescrever arquivo de saída</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">input_path</span><span class="p">,</span>  <span class="c1"># Arquivo de entrada</span>
+            <span class="s2">&quot;-vf&quot;</span><span class="p">,</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;scale=</span><span class="si">{</span><span class="n">target_width</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">target_height</span><span class="si">}</span><span class="s2">:force_original_aspect_ratio=decrease,&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;pad=</span><span class="si">{</span><span class="n">target_width</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">target_height</span><span class="si">}</span><span class="s2">:(ow-iw)/2:(oh-ih)/2:black&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>  <span class="c1"># Frame rate</span>
+            <span class="s2">&quot;-c:v&quot;</span><span class="p">,</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>  <span class="c1"># Codec de vídeo</span>
+            <span class="s2">&quot;-preset&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span>  <span class="c1"># Preset de compressão</span>
+            <span class="s2">&quot;-crf&quot;</span><span class="p">,</span> <span class="s2">&quot;23&quot;</span><span class="p">,</span>  <span class="c1"># Qualidade do vídeo</span>
+            <span class="s2">&quot;-movflags&quot;</span><span class="p">,</span> <span class="s2">&quot;+faststart&quot;</span><span class="p">,</span>  <span class="c1"># Otimização para web</span>
+            <span class="s2">&quot;-pix_fmt&quot;</span><span class="p">,</span> <span class="s2">&quot;yuv420p&quot;</span><span class="p">,</span>  <span class="c1"># Formato de pixel</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executando comando de padronização...&quot;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao padronizar vídeo: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Verifica se o vídeo de saída está no formato correto</span>
+        <span class="n">probe_result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">probe_cmd</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">output_path</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">probe_result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">probe_result</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;streams&#39;</span><span class="p">,</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">output_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">output_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formato final: </span><span class="si">{</span><span class="n">output_width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">output_height</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">output_width</span> <span class="o">!=</span> <span class="n">target_width</span> <span class="ow">or</span> <span class="n">output_height</span> <span class="o">!=</span> <span class="n">target_height</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AVISO: O vídeo não está no formato alvo exato!&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo padronizado com sucesso: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao padronizar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s1">&#39;__traceback__&#39;</span><span class="p">):</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Traceback completo:&quot;</span><span class="p">)</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_tb</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="add_narration_to_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.video_processing.add_narration_to_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_narration_to_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">narration_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adiciona narração ao vídeo com delay inicial&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando narração ao vídeo...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Cria um arquivo de silêncio com 5 segundos</span>
+        <span class="n">silence_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">narration_path</span><span class="p">),</span> <span class="s2">&quot;silence.mp3&quot;</span><span class="p">)</span>
+        <span class="n">silence_cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;lavfi&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="s2">&quot;anullsrc=r=44100:cl=stereo&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">,</span>  <span class="c1"># 5 segundos de silêncio</span>
+            <span class="n">silence_path</span>
+        <span class="p">]</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">silence_cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao criar arquivo de silêncio: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Concatena o silêncio com a narração</span>
+        <span class="n">delayed_narration</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">narration_path</span><span class="p">),</span> <span class="s2">&quot;delayed_narration.mp3&quot;</span><span class="p">)</span>
+        <span class="n">concat_cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="s2">&quot;concat:&quot;</span><span class="o">+</span><span class="n">silence_path</span><span class="o">+</span><span class="s2">&quot;|&quot;</span><span class="o">+</span><span class="n">narration_path</span><span class="p">,</span>
+            <span class="s2">&quot;-acodec&quot;</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+            <span class="n">delayed_narration</span>
+        <span class="p">]</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">concat_cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar delay à narração: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Adiciona a narração com delay ao vídeo</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">delayed_narration</span><span class="p">,</span>
+            <span class="s2">&quot;-c:v&quot;</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-c:a&quot;</span><span class="p">,</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-map&quot;</span><span class="p">,</span> <span class="s2">&quot;0:v:0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-map&quot;</span><span class="p">,</span> <span class="s2">&quot;1:a:0&quot;</span><span class="p">,</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar narração: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Narração adicionada com sucesso!&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Limpa arquivos temporários</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">silence_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">silence_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">delayed_narration</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">delayed_narration</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar narração: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="process_videos">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.video_processing.process_videos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_videos</span><span class="p">(</span><span class="n">custom_prompt</span><span class="p">,</span> <span class="n">voice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">music_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_scenes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Processa os vídeos com base no prompt fornecido.</span>
+
+<span class="sd">    Tenta processar os vídeos com base no prompt fornecido.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        str: URL do vídeo processado</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Limpa a pasta temp</span>
+        <span class="n">clean_temp_folder</span><span class="p">()</span>
+
+        <span class="c1"># Verifica o formato do vídeo</span>
+        <span class="n">format_type</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;VIDEO_FORMAT&quot;</span><span class="p">,</span> <span class="s2">&quot;mobile&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">format_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">VIDEO_FORMATS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formato de vídeo inválido: </span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Obtém o caminho base para os arquivos temporários</span>
+        <span class="n">pasta_temp</span> <span class="o">=</span> <span class="n">get_temp_files_path</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Gerando vídeo com </span><span class="si">{</span><span class="n">num_scenes</span><span class="si">}</span><span class="s2"> cenas...&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formato: </span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resolução alvo: </span><span class="si">{</span><span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">][</span><span class="s1">&#39;width&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">VIDEO_FORMATS</span><span class="p">[</span><span class="n">format_type</span><span class="p">][</span><span class="s1">&#39;height&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Baixa os vídeos</span>
+        <span class="n">downloaded_video_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">video_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">retry_count</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_scenes</span> <span class="ow">and</span> <span class="n">retry_count</span> <span class="o">&lt;</span> <span class="n">max_retries</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">retry_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Tentativa </span><span class="si">{</span><span class="n">retry_count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> de encontrar vídeos suficientes...&quot;</span><span class="p">)</span>
+                <span class="c1"># Gera novas queries com critérios diferentes</span>
+                <span class="k">if</span> <span class="n">retry_count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">new_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;refazer a busca, </span><span class="si">{</span><span class="n">custom_prompt</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">elif</span> <span class="n">retry_count</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">new_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;refazer a busca, </span><span class="si">{</span><span class="n">custom_prompt</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">search_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">new_prompt</span><span class="p">,</span> <span class="n">num_scenes</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">search_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">custom_prompt</span><span class="p">,</span> <span class="n">num_scenes</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">search_queries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">num_scenes</span><span class="p">:</span>
+                    <span class="k">break</span>
+                    
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Baixando vídeo </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">num_scenes</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                <span class="n">video_path</span> <span class="o">=</span> <span class="n">download_video</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_video_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">video_path</span><span class="p">:</span>
+                    <span class="n">video_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+            
+            <span class="n">retry_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_scenes</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Aviso: Foram encontrados apenas </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> vídeos dos </span><span class="si">{</span><span class="n">num_scenes</span><span class="si">}</span><span class="s2"> solicitados&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">video_files</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Nenhum vídeo foi baixado com sucesso&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Corta os vídeos para duração específica</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Cortando vídeos para duração específica...&quot;</span><span class="p">)</span>
+        <span class="n">cut_video_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">video_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">video_files</span><span class="p">):</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;cut_video_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.mp4&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Define a duração baseada na posição do vídeo</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Primeira cena</span>
+                <span class="n">target_duration</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># 5 segundos para introdução</span>
+            <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Última cena</span>
+                <span class="n">target_duration</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># 5 segundos para conclusão</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Cenas do meio</span>
+                <span class="n">target_duration</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># 10 segundos para cada cena do meio</span>
+                
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processando vídeo </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">cut_result</span> <span class="o">=</span> <span class="n">cut_video</span><span class="p">(</span>
+                <span class="n">video_path</span><span class="o">=</span><span class="n">video_path</span><span class="p">,</span>
+                <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+                <span class="n">duration</span><span class="o">=</span><span class="n">target_duration</span>
+            <span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">cut_result</span><span class="p">:</span>
+                <span class="n">cut_video_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cut_result</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> cortado com sucesso&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao cortar vídeo </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cut_video_files</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao cortar os vídeos&quot;</span><span class="p">)</span>
+            
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Vídeos cortados com sucesso: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cut_video_files</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Padroniza os vídeos cortados</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Padronizando vídeos...&quot;</span><span class="p">)</span>
+        <span class="n">standardized_videos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">video_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_video_files</span><span class="p">):</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;std_video_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.mp4&quot;</span><span class="p">)</span>
+            <span class="n">standardized</span> <span class="o">=</span> <span class="n">standardize_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">format_type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">standardized</span><span class="p">:</span>
+                <span class="n">standardized_videos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardized</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao padronizar vídeo </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">standardized_videos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Nenhum vídeo foi padronizado com sucesso&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Vídeos padronizados com sucesso: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">standardized_videos</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">video_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Adiciona logo com blur na primeira e última cena</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando logo nas cenas de abertura e encerramento...&quot;</span><span class="p">)</span>
+        <span class="n">first_scene</span> <span class="o">=</span> <span class="n">standardized_videos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">last_scene</span> <span class="o">=</span> <span class="n">standardized_videos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">first_scene_with_logo</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;first_scene_with_logo.mp4&quot;</span><span class="p">)</span>
+        <span class="n">first_scene_processed</span> <span class="o">=</span> <span class="n">add_logo_and_blur</span><span class="p">(</span>
+            <span class="n">video_path</span><span class="o">=</span><span class="n">first_scene</span><span class="p">,</span>
+            <span class="n">format_type</span><span class="o">=</span><span class="n">format_type</span><span class="p">,</span>
+            <span class="n">output_path</span><span class="o">=</span><span class="n">first_scene_with_logo</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="mi">10</span>
+        <span class="p">)</span>
+        
+        <span class="n">last_scene_with_logo</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;last_scene_with_logo.mp4&quot;</span><span class="p">)</span>
+        <span class="n">last_scene_processed</span> <span class="o">=</span> <span class="n">add_logo_and_blur</span><span class="p">(</span>
+            <span class="n">video_path</span><span class="o">=</span><span class="n">last_scene</span><span class="p">,</span>
+            <span class="n">format_type</span><span class="o">=</span><span class="n">format_type</span><span class="p">,</span>
+            <span class="n">output_path</span><span class="o">=</span><span class="n">last_scene_with_logo</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="mi">10</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Atualiza a lista de vídeos com as cenas processadas</span>
+        <span class="n">standardized_videos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_scene_processed</span>
+        <span class="n">standardized_videos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_scene_processed</span>
+
+        <span class="c1"># Concatena os vídeos após processar logos</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Concatenando vídeos...&quot;</span><span class="p">)</span>
+        <span class="n">concatenated_video</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;concatenated.mp4&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">concatenate_videos</span><span class="p">(</span><span class="n">standardized_videos</span><span class="p">,</span> <span class="n">concatenated_video</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao concatenar vídeos&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Obtém a duração do vídeo concatenado</span>
+        <span class="n">video_duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">concatenated_video</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">video_duration</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Não foi possível obter a duração do vídeo&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Duração total do vídeo: </span><span class="si">{</span><span class="n">video_duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> segundos&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Gera o texto narrativo e a narração</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Crie um texto publicitário curto para narração em vídeo sobre:</span>
+<span class="s2">        &quot;</span><span class="si">{</span><span class="n">custom_prompt</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="s2">        Requisitos:</span>
+<span class="s2">        - Linguagem direta e envolvente</span>
+<span class="s2">        - Entre 80 e 120 palavras</span>
+<span class="s2">        - Sem marcações ou formatações</span>
+<span class="s2">        - Texto em português do Brasil</span>
+<span class="s2">        - Tom publicitário e persuasivo</span>
+
+<span class="s2">        O texto deve seguir esta estrutura:</span>
+<span class="s2">        1. Abertura impactante (1-2 frases)</span>
+<span class="s2">        2. Desenvolvimento do tema (2-3 frases)</span>
+<span class="s2">        3. Conclusão com call-to-action (1 frase)</span>
+
+<span class="s2">        Retorne apenas o texto para narração, sem formatações ou marcações.</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">response</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Não foi possível gerar o texto narrativo&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Limpa o texto</span>
+        <span class="n">texto_narrativo</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">texto_narrativo</span> <span class="o">=</span> <span class="n">remove_html_tags</span><span class="p">(</span><span class="n">texto_narrativo</span><span class="p">)</span>
+        <span class="n">texto_narrativo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\[.*?\]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">texto_narrativo</span><span class="p">)</span>
+        <span class="n">texto_narrativo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\(.*?\)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">texto_narrativo</span><span class="p">)</span>
+        <span class="n">texto_narrativo</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">texto_narrativo</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Texto gerado para narração:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">texto_narrativo</span><span class="p">)</span>
+        
+        <span class="c1"># Gera narração</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando narração...&quot;</span><span class="p">)</span>
+        <span class="n">narration_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">retry_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">narration_path</span> <span class="ow">and</span> <span class="n">retry_count</span> <span class="o">&lt;</span> <span class="n">max_retries</span><span class="p">:</span>
+            <span class="n">retry_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">retry_count</span><span class="si">}</span><span class="s2"> de </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s2"> para gerar narração...&quot;</span><span class="p">)</span>
+            <span class="n">narration_path</span> <span class="o">=</span> <span class="n">generate_voiceover</span><span class="p">(</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">texto_narrativo</span><span class="p">,</span>
+                <span class="n">voice</span><span class="o">=</span><span class="n">voice</span> <span class="k">if</span> <span class="n">voice</span> <span class="k">else</span> <span class="s1">&#39;pt-BR-Standard-A&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">narration_path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao gerar narração!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Extrai o áudio da narração para transcrição</span>
+        <span class="n">audio_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;narration_audio.wav&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">extract_audio</span><span class="p">(</span><span class="n">narration_path</span><span class="p">,</span> <span class="n">audio_file</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao extrair áudio da narração&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao extrair áudio da narração!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Transcreve o áudio para obter os timestamps</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Transcrevendo narração para sincronizar legendas...&quot;</span><span class="p">)</span>
+        <span class="n">transcricao_com_tempos</span> <span class="o">=</span> <span class="n">transcribe_with_timestamps</span><span class="p">(</span><span class="n">audio_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transcricao_com_tempos</span><span class="p">:</span>
+            <span class="c1"># Formata a transcrição completa</span>
+            <span class="n">transcricao</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;word&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">transcricao_com_tempos</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcrição completa: </span><span class="si">{</span><span class="n">transcricao</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Falha na transcrição. Gerando timestamps manualmente...&quot;</span><span class="p">)</span>
+            <span class="c1"># Gera timestamps manualmente se a transcrição falhar</span>
+            <span class="n">palavras</span> <span class="o">=</span> <span class="n">texto_narrativo</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">duracao_total</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">narration_path</span><span class="p">)</span>
+            <span class="n">tempo_por_palavra</span> <span class="o">=</span> <span class="p">(</span><span class="n">duracao_total</span> <span class="o">-</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras</span><span class="p">)</span>  <span class="c1"># 5s de delay inicial</span>
+            
+            <span class="n">transcricao_com_tempos</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">palavras</span><span class="p">):</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="mf">5.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">tempo_por_palavra</span><span class="p">)</span>
+                <span class="n">end_time</span> <span class="o">=</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">tempo_por_palavra</span>
+                <span class="n">transcricao_com_tempos</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;word&#39;</span><span class="p">:</span> <span class="n">palavra</span><span class="p">,</span>
+                    <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">start_time</span><span class="p">,</span>
+                    <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">end_time</span>
+                <span class="p">})</span>
+            
+            <span class="n">transcricao</span> <span class="o">=</span> <span class="n">texto_narrativo</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Timestamps gerados manualmente para </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">palavras</span><span class="p">)</span><span class="si">}</span><span class="s2"> palavras&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Adiciona narração ao vídeo</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando narração ao vídeo...&quot;</span><span class="p">)</span>
+        <span class="n">video_with_narration</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;video_with_narration.mp4&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">add_narration_to_video</span><span class="p">(</span><span class="n">concatenated_video</span><span class="p">,</span> <span class="n">narration_path</span><span class="p">,</span> <span class="n">video_with_narration</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao adicionar narração ao vídeo!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Adiciona logo e legendas usando a transcrição</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando logo e legendas...&quot;</span><span class="p">)</span>
+        <span class="n">video_with_subtitles</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;video_with_subtitles.mp4&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Debug dos timestamps antes de adicionar legendas</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Timestamps para legendas:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">transcricao_com_tempos</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>  <span class="c1"># Mostra as 5 primeiras palavras</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Palavra: </span><span class="si">{</span><span class="n">ts</span><span class="p">[</span><span class="s1">&#39;word&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, Início: </span><span class="si">{</span><span class="n">ts</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, Fim: </span><span class="si">{</span><span class="n">ts</span><span class="p">[</span><span class="s1">&#39;end_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">final_result</span> <span class="o">=</span> <span class="n">add_subtitles</span><span class="p">(</span>
+            <span class="n">video_path</span><span class="o">=</span><span class="n">video_with_narration</span><span class="p">,</span>
+            <span class="n">transcription</span><span class="o">=</span><span class="n">transcricao_com_tempos</span><span class="p">,</span>
+            <span class="n">format_type</span><span class="o">=</span><span class="n">format_type</span><span class="p">,</span>
+            <span class="n">output_path</span><span class="o">=</span><span class="n">video_with_subtitles</span><span class="p">,</span>
+            <span class="n">start_delay</span><span class="o">=</span><span class="mf">5.0</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">final_result</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao adicionar logo e legendas ao vídeo!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Baixa música de fundo</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Baixando música de fundo...&quot;</span><span class="p">)</span>
+        <span class="n">background_music</span> <span class="o">=</span> <span class="n">download_background_music</span><span class="p">(</span><span class="n">music_style</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">background_music</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao baixar música de fundo!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Adiciona música de fundo ao vídeo final</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando música de fundo...&quot;</span><span class="p">)</span>
+        <span class="n">final_video</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;final_video.mp4&quot;</span><span class="p">)</span>
+        <span class="n">final_result</span> <span class="o">=</span> <span class="n">add_background_music</span><span class="p">(</span>
+            <span class="n">video_with_subtitles</span><span class="p">,</span>
+            <span class="n">background_music</span><span class="p">,</span>
+            <span class="n">final_video</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">final_result</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao adicionar música de fundo ao vídeo!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Após processar o vídeo, faz upload para o bucket</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="n">final_video_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;final_video_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+        <span class="n">final_video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="n">final_video_name</span><span class="p">)</span>
+        
+        <span class="c1"># Move o vídeo final para o novo nome com timestamp</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">final_video</span><span class="p">,</span> <span class="n">final_video_path</span><span class="p">)</span>
+        
+        <span class="c1"># Faz upload para o bucket</span>
+        <span class="n">bucket_url</span> <span class="o">=</span> <span class="n">upload_video_to_bucket</span><span class="p">(</span><span class="n">final_video_path</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bucket_url</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao fazer upload do vídeo para o bucket&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Vídeo processado com sucesso!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bucket_url</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro no processamento: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Detalhes do erro:&quot;</span><span class="p">)</span>  <span class="c1"># Adiciona stack trace completo</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="concatenate_videos">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.video_processing.concatenate_videos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">concatenate_videos</span><span class="p">(</span><span class="n">video_list</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Concatena uma lista de vídeos em um único arquivo&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pasta_temp</span> <span class="o">=</span> <span class="n">get_temp_files_path</span><span class="p">()</span>
+        <span class="n">file_list_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="s2">&quot;file_list.txt&quot;</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_list_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">video_list</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;file &#39;</span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;concat&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-safe&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">file_list_path</span><span class="p">,</span>
+            <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao concatenar vídeos: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro na concatenação: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_audio_duration">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.video_processing.get_audio_duration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_audio_duration</span><span class="p">(</span><span class="n">audio_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtém a duração de um arquivo de áudio em segundos&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffprobe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-show_entries&quot;</span><span class="p">,</span> <span class="s2">&quot;format=duration&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-of&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+            <span class="n">audio_path</span>
+        <span class="p">]</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">][</span><span class="s1">&#39;duration&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="adjust_narration_text">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.video_processing.adjust_narration_text">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">adjust_narration_text</span><span class="p">(</span><span class="n">current_duration</span><span class="p">,</span> <span class="n">video_duration</span><span class="p">,</span> <span class="n">prompt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ajusta o prompt para gerar um texto com duração adequada&quot;&quot;&quot;</span>
+    <span class="n">target_duration</span> <span class="o">=</span> <span class="n">video_duration</span> <span class="o">-</span> <span class="mi">10</span>  <span class="c1"># Alvo: 10 segundos menor que o vídeo total</span>
+    
+    <span class="c1"># Se a narração estiver muito diferente do alvo (mais que 3 segundos), ajusta</span>
+    <span class="n">duration_diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">current_duration</span> <span class="o">-</span> <span class="n">target_duration</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">duration_diff</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Duração atual da narração: </span><span class="si">{</span><span class="n">current_duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração do vídeo: </span><span class="si">{</span><span class="n">video_duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração alvo da narração: </span><span class="si">{</span><span class="n">target_duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ajustando texto para atingir duração alvo...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Estima número de palavras necessário (média de 2.5 palavras por segundo)</span>
+        <span class="n">target_words</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_duration</span> <span class="o">*</span> <span class="mf">2.5</span><span class="p">)</span>
+        
+        <span class="n">adjusted_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Crie um texto publicitário para narração em vídeo sobre:</span>
+<span class="s2">        &quot;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="s2">        Requisitos IMPORTANTES:</span>
+<span class="s2">        - O texto DEVE ter duração de </span><span class="si">{</span><span class="n">target_duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> segundos quando narrado</span>
+<span class="s2">        - Use aproximadamente </span><span class="si">{</span><span class="n">target_words</span><span class="si">}</span><span class="s2"> palavras</span>
+<span class="s2">        - Linguagem direta e envolvente</span>
+<span class="s2">        - Tom publicitário e persuasivo</span>
+<span class="s2">        - Texto em português do Brasil</span>
+<span class="s2">        - Sem marcações ou formatações</span>
+
+<span class="s2">        Estrutura:</span>
+<span class="s2">        1. Abertura impactante (2-3 frases)</span>
+<span class="s2">        2. Desenvolvimento do tema (3-4 frases)</span>
+<span class="s2">        3. Conclusão com call-to-action (1-2 frases)</span>
+
+<span class="s2">        Retorne apenas o texto para narração.</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">adjusted_prompt</span>
+    
+    <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># Duração está adequada</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.searchImagens.searchImagens_Pexel &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.searchImagens.searchImagens_Pexel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.searchImagens.searchImagens_Pexel</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">googletrans</span><span class="w"> </span><span class="kn">import</span> <span class="n">Translator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.vertexAi</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_content</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.utils.verificaImagemVideo</span><span class="w"> </span><span class="kn">import</span> <span class="n">analisar_imagem</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Tokens de API</span>
+<span class="n">PEXELS_API_KEY</span> <span class="o">=</span> <span class="s1">&#39;Yuyg91HW4pxA7DPLVrJiacMnmiBcNvHgp0rT8hs00SEyJmRSANHUeuwB&#39;</span>  <span class="c1"># Substitua pelo seu token do Pexels</span>
+
+<span class="c1"># URLs da API</span>
+<span class="n">PEXELS_API_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.pexels.com/v1/search&quot;</span>
+
+<span class="c1"># Cabeçalhos de autenticação</span>
+<span class="n">PEXELS_HEADERS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="n">PEXELS_API_KEY</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="traduzir_termo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.traduzir_termo">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">traduzir_termo</span><span class="p">(</span><span class="n">termo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Traduz o termo de busca para inglês.&quot;&quot;&quot;</span>
+    <span class="n">translator</span> <span class="o">=</span> <span class="n">Translator</span><span class="p">()</span>
+    <span class="n">traduzido</span> <span class="o">=</span> <span class="k">await</span> <span class="n">translator</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">termo</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;en&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traduzido para inglês: </span><span class="si">{</span><span class="n">traduzido</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">traduzido</span><span class="o">.</span><span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="buscar_imagens_pexels">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.buscar_imagens_pexels">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">buscar_imagens_pexels</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">per_page</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Faz uma busca por imagens na API do Pexels.&quot;&quot;&quot;</span>
+    <span class="c1"># Adiciona parâmetros para priorizar fotos reais</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">term</span><span class="p">,</span>
+        <span class="s2">&quot;per_page&quot;</span><span class="p">:</span> <span class="n">per_page</span><span class="p">,</span>
+        <span class="s2">&quot;orientation&quot;</span><span class="p">:</span> <span class="s2">&quot;landscape&quot;</span><span class="p">,</span>  <span class="c1"># Formato paisagem geralmente melhor para vídeos</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;large&quot;</span><span class="p">,</span>  <span class="c1"># Imagens grandes</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;photo&quot;</span>  <span class="c1"># Apenas fotos, não ilustrações</span>
+    <span class="p">}</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">PEXELS_API_URL</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">PEXELS_HEADERS</span>
+        <span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao buscar imagens no Pexels: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="selecionar_melhor_imagem_pexels">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.selecionar_melhor_imagem_pexels">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">selecionar_melhor_imagem_pexels</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Seleciona a melhor imagem do Pexels com base na resolução.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;photos&#39;</span><span class="p">):</span>
+        <span class="n">best_image</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;photos&#39;</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">best_image</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">][</span><span class="s1">&#39;original&#39;</span><span class="p">],</span> <span class="n">best_image</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="baixar_imagem">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.baixar_imagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">baixar_imagem</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="n">pathName</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Baixa uma imagem a partir da URL fornecida e verifica sua adequação.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">img_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">img_response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pathName</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">img_file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">img_response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="mi">1024</span><span class="p">):</span>
+                <span class="n">img_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem baixada e salva como &#39;</span><span class="si">{</span><span class="n">pathName</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar a imagem: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="busca_imagens_pexels">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.busca_imagens_pexels">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">busca_imagens_pexels</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Função para manter compatibilidade com código existente (sem usar Envato).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">criar_lista_imagens_pexels</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="criar_lista_imagens_pexels">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.criar_lista_imagens_pexels">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_lista_imagens_pexels</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">,</span> <span class="n">max_tentativas</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="c1"># Modifica o termo inicial para priorizar fotos reais</span>
+    <span class="k">if</span> <span class="s2">&quot;ilustração&quot;</span> <span class="ow">in</span> <span class="n">termo</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;ilustracao&quot;</span> <span class="ow">in</span> <span class="n">termo</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">termo</span> <span class="o">=</span> <span class="n">termo</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;ilustração&quot;</span><span class="p">,</span> <span class="s2">&quot;foto&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;ilustracao&quot;</span><span class="p">,</span> <span class="s2">&quot;foto&quot;</span><span class="p">)</span>
+    <span class="n">termo</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;real photo of </span><span class="si">{</span><span class="n">termo</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="n">tentativas</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">termo</span>
+    <span class="n">imagens_tentadas</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Conjunto para rastrear URLs já tentadas</span>
+    <span class="n">urls_selecionadas</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Conjunto para rastrear URLs já selecionadas para o vídeo</span>
+    <span class="n">resultado_busca</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">indice_imagem</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Pega URLs já usadas no vídeo</span>
+    <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">lista_imagens</span><span class="p">:</span>
+        <span class="n">urls_selecionadas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="s1">&#39;urlImg&#39;</span><span class="p">])</span>
+
+    <span class="k">while</span> <span class="n">tentativas</span> <span class="o">&lt;</span> <span class="n">max_tentativas</span><span class="p">:</span>
+        <span class="n">tentativas</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">tentativas</span><span class="si">}</span><span class="s2"> de </span><span class="si">{</span><span class="n">max_tentativas</span><span class="si">}</span><span class="s2"> para termo: &#39;</span><span class="si">{</span><span class="n">termo_atual</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Faz nova busca apenas se necessário</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resultado_busca</span> <span class="ow">or</span> <span class="n">indice_imagem</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">resultado_busca</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;photos&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="n">termo_traduzido</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">traduzir_termo</span><span class="p">(</span><span class="n">termo_atual</span><span class="p">))</span>
+            <span class="n">resultado_busca</span> <span class="o">=</span> <span class="n">buscar_imagens_pexels</span><span class="p">(</span><span class="n">termo_traduzido</span><span class="p">,</span> <span class="n">per_page</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="n">indice_imagem</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">resultado_busca</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">resultado_busca</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;photos&#39;</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sem resultados na busca&quot;</span><span class="p">)</span>
+                <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="c1"># Pega próxima imagem não tentada</span>
+        <span class="n">photos</span> <span class="o">=</span> <span class="n">resultado_busca</span><span class="p">[</span><span class="s1">&#39;photos&#39;</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">indice_imagem</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">photos</span><span class="p">):</span>
+            <span class="n">imagem</span> <span class="o">=</span> <span class="n">photos</span><span class="p">[</span><span class="n">indice_imagem</span><span class="p">]</span>
+            <span class="n">imagem_url</span> <span class="o">=</span> <span class="n">imagem</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">][</span><span class="s1">&#39;original&#39;</span><span class="p">]</span>
+            <span class="n">indice_imagem</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Pula se a imagem já foi tentada ou já está sendo usada no vídeo</span>
+            <span class="k">if</span> <span class="n">imagem_url</span> <span class="ow">in</span> <span class="n">imagens_tentadas</span> <span class="ow">or</span> <span class="n">imagem_url</span> <span class="ow">in</span> <span class="n">urls_selecionadas</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pulando imagem duplicada: </span><span class="si">{</span><span class="n">imagem_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">imagens_tentadas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">imagem_url</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">baixar_imagem</span><span class="p">(</span><span class="n">imagem_url</span><span class="p">,</span> <span class="n">path_name</span><span class="p">):</span>
+                <span class="n">analise</span> <span class="o">=</span> <span class="n">analisar_imagem</span><span class="p">(</span><span class="n">path_name</span><span class="p">,</span> <span class="n">termo_atual</span><span class="p">)</span>
+                
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Resultado da análise da imagem:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Descrição Gemini: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;descricao_gemini&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Corresponde: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;corresponde&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confiança: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;confianca&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detalhes: </span><span class="si">{</span><span class="n">analise</span><span class="p">[</span><span class="s1">&#39;detalhes&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">analise</span><span class="p">[</span><span class="s1">&#39;corresponde&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">analise</span><span class="p">[</span><span class="s1">&#39;confianca&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.7</span><span class="p">:</span>
+                    <span class="n">urls_selecionadas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">imagem_url</span><span class="p">)</span>  <span class="c1"># Adiciona à lista de URLs selecionadas</span>
+                    <span class="n">lista_imagens</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s2">&quot;urlImg&quot;</span><span class="p">:</span> <span class="n">imagem_url</span><span class="p">,</span>
+                        <span class="s2">&quot;caminho&quot;</span><span class="p">:</span> <span class="n">path_name</span><span class="p">,</span>
+                        <span class="s2">&quot;momentoChave&quot;</span><span class="p">:</span> <span class="n">momento_chave</span><span class="p">,</span>
+                        <span class="s2">&quot;nomeArquivo&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fileName</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;analise_gemini&quot;</span><span class="p">:</span> <span class="n">analise</span>
+                    <span class="p">})</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Imagem validada e adicionada à lista&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">lista_imagens</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Imagem não corresponde à descrição esperada ou confiança muito baixa&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">)</span>
+        
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Todas as </span><span class="si">{</span><span class="n">max_tentativas</span><span class="si">}</span><span class="s2"> tentativas falharam para encontrar uma imagem adequada&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lista_imagens</span></div>
+
+
+<div class="viewcode-block" id="reformular_termo_busca">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Pexel.reformular_termo_busca">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">):</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Preciso reformular o seguinte termo de busca para encontrar FOTOS REAIS (não ilustrações): &quot;</span><span class="si">{</span><span class="n">termo</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">        </span>
+<span class="s2">        Por favor, sugira uma reformulação do termo que:</span>
+<span class="s2">        1. Mantenha o significado principal</span>
+<span class="s2">        2. Seja mais específico e descritivo</span>
+<span class="s2">        3. Use termos que funcionem bem para busca de FOTOGRAFIAS REAIS</span>
+<span class="s2">        4. Inclua detalhes visuais importantes</span>
+<span class="s2">        5. Evite termos como &quot;ilustração&quot;, &quot;desenho&quot;, &quot;arte&quot;</span>
+<span class="s2">        6. Adicione termos como &quot;foto&quot;, &quot;fotografia&quot;, &quot;real&quot;, &quot;pessoa real&quot;</span>
+<span class="s2">        </span>
+<span class="s2">        Retorne apenas o novo termo reformulado, sem explicações adicionais.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="n">conteudo</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="n">novo_termo</span> <span class="o">=</span> <span class="n">conteudo</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;ilustração&quot;</span><span class="p">,</span> <span class="s2">&quot;foto&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;drawing&quot;</span><span class="p">,</span> <span class="s2">&quot;photo&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Termo reformulado pelo Gemini: </span><span class="si">{</span><span class="n">novo_termo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">novo_termo</span></div>
+
+
+<span class="c1"># Teste</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">termo</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Digite o termo de busca: &quot;</span><span class="p">)</span>
+    <span class="n">fileName</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Digite o nome do arquivo para salvar: &quot;</span><span class="p">)</span>
+    <span class="n">path_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fileName</span><span class="si">}</span><span class="s2">.jpg&quot;</span>  <span class="c1"># Caminho completo com o nome do arquivo</span>
+    
+    <span class="n">busca_imagens_pexels</span><span class="p">(</span><span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

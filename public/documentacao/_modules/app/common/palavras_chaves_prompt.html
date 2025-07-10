@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.common.palavras_chaves_prompt &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/common_utils.html">Utilitários Comuns</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.common.palavras_chaves_prompt</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.common.palavras_chaves_prompt</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+
+<div class="viewcode-block" id="prompt_palavras_chaves_imagem">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.palavras_chaves_prompt.prompt_palavras_chaves_imagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prompt_palavras_chaves_imagem</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span> <span class="n">quantidade_palavras_chaves</span><span class="p">,</span> <span class="n">quantidade_imagens</span><span class="p">):</span>
+
+    <span class="n">schema_texto</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">response_schema_roteiro</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Você é um especialista em análise de texto e extração de palavras-chave. Sua tarefa é identificar as palavras e frases mais importantes e relevantes no texto fornecido abaixo. Essas palavras-chave devem representar os principais tópicos, conceitos e ideias centrais do texto.</span>
+
+<span class="s2">        **Instruções:**</span>
+<span class="s2">        Palavras-chave:</span>
+<span class="s2">            1. **Leia atentamente o texto:** Compreenda o tema principal, os argumentos e as informações chave apresentadas.</span>
+<span class="s2">            2. **Identifique os termos mais relevantes:**  Procure por palavras e frases que se repetem, que são centrais para o entendimento do texto, e que representam os conceitos mais importantes discutidos.</span>
+<span class="s2">            3. **Priorize a relevância sobre a frequência pura:**  Embora palavras frequentes possam ser importantes, foque naquelas que são *conceitualmente* relevantes para o tema. Evite palavras muito genéricas e artigos (a, o, as, os, etc.), preposições (de, em, para, etc.) e conjunções (e, mas, ou, etc.), a menos que façam parte de uma expressão chave (ex: &quot;relação homem-máquina&quot;).</span>
+<span class="s2">            4. **Extraia entre [X] e [Y] palavras-chave/frases:**  Selecione um número grande e consideravel de palavras-chave que capturem a essência do texto. </span>
+<span class="s2">            5. **Apresente as palavras-chave/frases em uma lista:**  Liste cada palavra-chave ou frase separadamente, de forma clara e organizada.</span>
+<span class="s2">        Imagens:</span>
+<span class="s2">            6. **Máximo de </span><span class="si">{</span><span class="n">quantidade_imagens</span><span class="si">}</span><span class="s2"> imagens.</span>
+<span class="s2">            7. **Forneça uma descrição da imagem em inglês (5-6 palavras).</span>
+<span class="s2">            8. **Não inclua momentoChave no início ou final do texto (intervalo de 20 palavras).</span>
+<span class="s2">            9. **descricaoBuscaEnvato e momentoChave não podem estar no array de palavras_chaves[].</span>
+<span class="s2">            10. **Formato de saída: JSON (apenas a string JSON pura, sem formatação ou explicações adicionais). Siga o schema fornecido.</span>
+
+<span class="s2">        **Texto a ser analisado:**</span>
+
+<span class="s2">        </span><span class="si">{</span><span class="n">texto</span><span class="si">}</span>
+
+<span class="s2">        **Saída esperada:**</span>
+
+<span class="s2">        </span><span class="si">{</span><span class="n">schema_texto</span><span class="si">}</span>
+
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">prompt</span></div>
+
+
+<span class="n">response_schema_roteiro</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;palavras_chaves&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span> 
+                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> 
+                                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Palavras chaves que contem no texto.&quot;</span> 
+                            <span class="p">}</span>
+                            <span class="p">},</span>
+                            <span class="s2">&quot;imagens&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;momentoChave&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> 
+                                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;texto que a imagem deve aparecer, igual ao texto original até 15 palavras&quot;</span>
+                                <span class="p">},</span>
+                                <span class="s2">&quot;descricaoBuscaEnvato&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> 
+                                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Descricao da imagem de 5 a 6 palavras em ingles&quot;</span> 
+                                <span class="p">}</span>
+                                <span class="p">}</span>
+                            <span class="p">}</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Utilitários Comuns &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Vertex AI" href="vertex_ai.html" />
+    <link rel="prev" title="Serviços de Áudio" href="audio_services.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilitários Comuns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prompts-de-ia">Prompts de IA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#audiobook">Audiobook</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.audiobookprompt.audiobookprompt"><code class="docutils literal notranslate"><span class="pre">audiobookprompt()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#audio-q-a">Audio Q&amp;A</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.audioqaprompt.audioqaprompt"><code class="docutils literal notranslate"><span class="pre">audioqaprompt()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#roteiro-de-video">Roteiro de Vídeo</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_1"><code class="docutils literal notranslate"><span class="pre">cria_roteiro_prompt_template_1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_3"><code class="docutils literal notranslate"><span class="pre">cria_roteiro_prompt_template_3()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.criaRoteiroPrompt.criar_payload_heygen"><code class="docutils literal notranslate"><span class="pre">criar_payload_heygen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.criaRoteiroPrompt.criar_payload_heygen_template_1"><code class="docutils literal notranslate"><span class="pre">criar_payload_heygen_template_1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.criaRoteiroPrompt.criar_payload_heygen_template_3"><code class="docutils literal notranslate"><span class="pre">criar_payload_heygen_template_3()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#processamento-zip-json">Processamento ZIP/JSON</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.json_zip_prompt.generate_new_script"><code class="docutils literal notranslate"><span class="pre">generate_new_script()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.json_zip_prompt.generate_new_script_json"><code class="docutils literal notranslate"><span class="pre">generate_new_script_json()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#microlearning">Microlearning</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.microlearningprompt.microlearningprompt"><code class="docutils literal notranslate"><span class="pre">microlearningprompt()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#palavras-chave">Palavras-Chave</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.palavras_chaves_prompt.prompt_palavras_chaves_imagem"><code class="docutils literal notranslate"><span class="pre">prompt_palavras_chaves_imagem()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#podcast">Podcast</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.podcastprompt.cria_roteiro_prompt"><code class="docutils literal notranslate"><span class="pre">cria_roteiro_prompt()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#processamento-de-dados">Processamento de Dados</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tratamento-json">Tratamento JSON</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.tratamentoJsonMatriz.get_component_classes"><code class="docutils literal notranslate"><span class="pre">get_component_classes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.tratamentoJsonMatriz.buscaPromptMatriz"><code class="docutils literal notranslate"><span class="pre">buscaPromptMatriz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.tratamentoJsonMatriz.tratamentoObjetoComponentes"><code class="docutils literal notranslate"><span class="pre">tratamentoObjetoComponentes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.tratamentoJsonMatriz.consultar_bigquery"><code class="docutils literal notranslate"><span class="pre">consultar_bigquery()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.tratamentoJsonMatriz.mapear_componente"><code class="docutils literal notranslate"><span class="pre">mapear_componente()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.common.tratamentoJsonMatriz.extrair_texto_de_html"><code class="docutils literal notranslate"><span class="pre">extrair_texto_de_html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#tratamento-de-video">Tratamento de Vídeo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#fluxo-de-trabalho">Fluxo de Trabalho</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#geracao-de-prompts">Geração de Prompts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Processamento de Dados</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tratamento-de-midia">Tratamento de Mídia</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vertex_ai.html">Vertex AI</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Utilitários Comuns</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/common_utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="utilitarios-comuns">
+<h1>Utilitários Comuns<a class="headerlink" href="#utilitarios-comuns" title="Link to this heading"></a></h1>
+<section id="prompts-de-ia">
+<h2>Prompts de IA<a class="headerlink" href="#prompts-de-ia" title="Link to this heading"></a></h2>
+<section id="audiobook">
+<h3>Audiobook<a class="headerlink" href="#audiobook" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.audiobookprompt">
+<dt class="sig sig-object py" id="app.common.audiobookprompt.audiobookprompt">
+<span class="sig-prename descclassname"><span class="pre">app.common.audiobookprompt.</span></span><span class="sig-name descname"><span class="pre">audiobookprompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/audiobookprompt.html#audiobookprompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.audiobookprompt.audiobookprompt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="audio-q-a">
+<h3>Audio Q&amp;A<a class="headerlink" href="#audio-q-a" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.audioqaprompt">
+<dt class="sig sig-object py" id="app.common.audioqaprompt.audioqaprompt">
+<span class="sig-prename descclassname"><span class="pre">app.common.audioqaprompt.</span></span><span class="sig-name descname"><span class="pre">audioqaprompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resumido</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/audioqaprompt.html#audioqaprompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.audioqaprompt.audioqaprompt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="roteiro-de-video">
+<h3>Roteiro de Vídeo<a class="headerlink" href="#roteiro-de-video" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.criaRoteiroPrompt">
+<dt class="sig sig-object py" id="app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_1">
+<span class="sig-prename descclassname"><span class="pre">app.common.criaRoteiroPrompt.</span></span><span class="sig-name descname"><span class="pre">cria_roteiro_prompt_template_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/criaRoteiroPrompt.html#cria_roteiro_prompt_template_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_3">
+<span class="sig-prename descclassname"><span class="pre">app.common.criaRoteiroPrompt.</span></span><span class="sig-name descname"><span class="pre">cria_roteiro_prompt_template_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numCenas</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/criaRoteiroPrompt.html#cria_roteiro_prompt_template_3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_3" title="Link to this definition"></a></dt>
+<dd><p>Cria o prompt para gerar um roteiro usando o modelo de template 3.</p>
+<p>Recebe:
+- texto: Texto para gerar o roteiro
+- numCenas: Número de cenas desejado</p>
+<p>Retorna:
+- Prompt para gerar o roteiro</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.criaRoteiroPrompt.criar_payload_heygen">
+<span class="sig-prename descclassname"><span class="pre">app.common.criaRoteiroPrompt.</span></span><span class="sig-name descname"><span class="pre">criar_payload_heygen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/criaRoteiroPrompt.html#criar_payload_heygen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.criaRoteiroPrompt.criar_payload_heygen" title="Link to this definition"></a></dt>
+<dd><p>Cria o payload para a API do HeyGen com base no roteiro e na resposta do HeyGen.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.criaRoteiroPrompt.criar_payload_heygen_template_1">
+<span class="sig-prename descclassname"><span class="pre">app.common.criaRoteiroPrompt.</span></span><span class="sig-name descname"><span class="pre">criar_payload_heygen_template_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/criaRoteiroPrompt.html#criar_payload_heygen_template_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.criaRoteiroPrompt.criar_payload_heygen_template_1" title="Link to this definition"></a></dt>
+<dd><p>Cria o payload para a API do HeyGen com base no roteiro e na resposta do HeyGen.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.criaRoteiroPrompt.criar_payload_heygen_template_3">
+<span class="sig-prename descclassname"><span class="pre">app.common.criaRoteiroPrompt.</span></span><span class="sig-name descname"><span class="pre">criar_payload_heygen_template_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro_json</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/criaRoteiroPrompt.html#criar_payload_heygen_template_3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.criaRoteiroPrompt.criar_payload_heygen_template_3" title="Link to this definition"></a></dt>
+<dd><p>Cria o payload para a API do HeyGen com base no roteiro e na resposta do HeyGen.</p>
+<p>Recebe:
+- roteiro_json: Roteiro em formato JSON</p>
+<p>Retorna:
+- Payload para a API do HeyGen</p>
+</dd></dl>
+
+</section>
+<section id="processamento-zip-json">
+<h3>Processamento ZIP/JSON<a class="headerlink" href="#processamento-zip-json" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.json_zip_prompt">
+<dt class="sig sig-object py" id="app.common.json_zip_prompt.generate_new_script">
+<span class="sig-prename descclassname"><span class="pre">app.common.json_zip_prompt.</span></span><span class="sig-name descname"><span class="pre">generate_new_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_context_prompt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/json_zip_prompt.html#generate_new_script"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.json_zip_prompt.generate_new_script" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.json_zip_prompt.generate_new_script_json">
+<span class="sig-prename descclassname"><span class="pre">app.common.json_zip_prompt.</span></span><span class="sig-name descname"><span class="pre">generate_new_script_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_script</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/json_zip_prompt.html#generate_new_script_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.json_zip_prompt.generate_new_script_json" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="microlearning">
+<h3>Microlearning<a class="headerlink" href="#microlearning" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.microlearningprompt">
+<dt class="sig sig-object py" id="app.common.microlearningprompt.microlearningprompt">
+<span class="sig-prename descclassname"><span class="pre">app.common.microlearningprompt.</span></span><span class="sig-name descname"><span class="pre">microlearningprompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resumido</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/microlearningprompt.html#microlearningprompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.microlearningprompt.microlearningprompt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="palavras-chave">
+<h3>Palavras-Chave<a class="headerlink" href="#palavras-chave" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.palavras_chaves_prompt">
+<dt class="sig sig-object py" id="app.common.palavras_chaves_prompt.prompt_palavras_chaves_imagem">
+<span class="sig-prename descclassname"><span class="pre">app.common.palavras_chaves_prompt.</span></span><span class="sig-name descname"><span class="pre">prompt_palavras_chaves_imagem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantidade_palavras_chaves</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantidade_imagens</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/palavras_chaves_prompt.html#prompt_palavras_chaves_imagem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.palavras_chaves_prompt.prompt_palavras_chaves_imagem" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="podcast">
+<h3>Podcast<a class="headerlink" href="#podcast" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.podcastprompt">
+<dt class="sig sig-object py" id="app.common.podcastprompt.cria_roteiro_prompt">
+<span class="sig-prename descclassname"><span class="pre">app.common.podcastprompt.</span></span><span class="sig-name descname"><span class="pre">cria_roteiro_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/podcastprompt.html#cria_roteiro_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.podcastprompt.cria_roteiro_prompt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+<section id="processamento-de-dados">
+<h2>Processamento de Dados<a class="headerlink" href="#processamento-de-dados" title="Link to this heading"></a></h2>
+<section id="tratamento-json">
+<h3>Tratamento JSON<a class="headerlink" href="#tratamento-json" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.common.tratamentoJsonMatriz">
+<dt class="sig sig-object py" id="app.common.tratamentoJsonMatriz.get_component_classes">
+<span class="sig-prename descclassname"><span class="pre">app.common.tratamentoJsonMatriz.</span></span><span class="sig-name descname"><span class="pre">get_component_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/tratamentoJsonMatriz.html#get_component_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.tratamentoJsonMatriz.get_component_classes" title="Link to this definition"></a></dt>
+<dd><p>Obtém as classes de componentes disponíveis.</p>
+<p>Retorna:
+- Dicionário com as classes de componentes</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.tratamentoJsonMatriz.buscaPromptMatriz">
+<span class="sig-prename descclassname"><span class="pre">app.common.tratamentoJsonMatriz.</span></span><span class="sig-name descname"><span class="pre">buscaPromptMatriz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/tratamentoJsonMatriz.html#buscaPromptMatriz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.tratamentoJsonMatriz.buscaPromptMatriz" title="Link to this definition"></a></dt>
+<dd><p>Busca o prompt da matriz de componentes.</p>
+<p>Recebe:
+- data: Dados para buscar o prompt
+- component_classes: Classes de componentes disponíveis</p>
+<p>Retorna:
+- Texto completo com os prompts das matrizes de componentes</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.tratamentoJsonMatriz.tratamentoObjetoComponentes">
+<span class="sig-prename descclassname"><span class="pre">app.common.tratamentoJsonMatriz.</span></span><span class="sig-name descname"><span class="pre">tratamentoObjetoComponentes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arrayMatriz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/tratamentoJsonMatriz.html#tratamentoObjetoComponentes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.tratamentoJsonMatriz.tratamentoObjetoComponentes" title="Link to this definition"></a></dt>
+<dd><p>Trata os objetos de componentes.</p>
+<p>Recebe:
+- arrayMatriz: Lista de dicionários com informações sobre os componentes</p>
+<p>Retorna:
+- Texto completo com os prompts das matrizes de componentes</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.tratamentoJsonMatriz.consultar_bigquery">
+<span class="sig-prename descclassname"><span class="pre">app.common.tratamentoJsonMatriz.</span></span><span class="sig-name descname"><span class="pre">consultar_bigquery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">componente</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variante</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/tratamentoJsonMatriz.html#consultar_bigquery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.tratamentoJsonMatriz.consultar_bigquery" title="Link to this definition"></a></dt>
+<dd><p>Consulta o prompt da matriz de componentes no BigQuery.</p>
+<p>Recebe:
+- componente: Nome do componente a ser consultado
+- variante: Variante do componente a ser consultada (opcional)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.tratamentoJsonMatriz.mapear_componente">
+<span class="sig-prename descclassname"><span class="pre">app.common.tratamentoJsonMatriz.</span></span><span class="sig-name descname"><span class="pre">mapear_componente</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">componente</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/common/tratamentoJsonMatriz.html#mapear_componente"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.tratamentoJsonMatriz.mapear_componente" title="Link to this definition"></a></dt>
+<dd><p>Mapeia o componente para a classe correspondente.</p>
+<p>Recebe:
+- componente: Nome do componente a ser mapeado
+- item: Item a ser mapeado
+- component_classes: Classes de componentes disponíveis</p>
+<p>Retorna:
+- Objeto mapeado ou None se não encontrado</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.common.tratamentoJsonMatriz.extrair_texto_de_html">
+<span class="sig-prename descclassname"><span class="pre">app.common.tratamentoJsonMatriz.</span></span><span class="sig-name descname"><span class="pre">extrair_texto_de_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">html_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/app/common/tratamentoJsonMatriz.html#extrair_texto_de_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.common.tratamentoJsonMatriz.extrair_texto_de_html" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="tratamento-de-video">
+<h3>Tratamento de Vídeo<a class="headerlink" href="#tratamento-de-video" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="fluxo-de-trabalho">
+<h2>Fluxo de Trabalho<a class="headerlink" href="#fluxo-de-trabalho" title="Link to this heading"></a></h2>
+<section id="geracao-de-prompts">
+<h3>Geração de Prompts<a class="headerlink" href="#geracao-de-prompts" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe dados brutos do sistema</p></li>
+<li><p>Aplica formatação específica para cada tipo de conteúdo</p></li>
+<li><p>Gera prompt otimizado para o modelo de IA</p></li>
+<li><p>Retorna texto formatado para processamento</p></li>
+</ol>
+</section>
+<section id="id1">
+<h3>Processamento de Dados<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe dados em formato JSON/Matriz</p></li>
+<li><p>Valida estrutura e conteúdo</p></li>
+<li><p>Aplica transformações necessárias</p></li>
+<li><p>Retorna dados processados no formato correto</p></li>
+</ol>
+</section>
+<section id="tratamento-de-midia">
+<h3>Tratamento de Mídia<a class="headerlink" href="#tratamento-de-midia" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe arquivos de mídia</p></li>
+<li><p>Processa metadados</p></li>
+<li><p>Aplica transformações necessárias</p></li>
+<li><p>Prepara dados para uso nos serviços</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="audio_services.html" class="btn btn-neutral float-left" title="Serviços de Áudio" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vertex_ai.html" class="btn btn-neutral float-right" title="Vertex AI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

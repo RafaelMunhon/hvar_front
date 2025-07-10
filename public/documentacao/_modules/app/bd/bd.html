@@ -1,0 +1,762 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.bd.bd &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.bd.bd</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.bd.bd</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">bigquery</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_bigquery_client">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.get_bigquery_client">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_bigquery_client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retorna um cliente do BigQuery&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao criar cliente BigQuery: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="execute_query">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.execute_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Executa uma query no BigQuery com parâmetros</span>
+<span class="sd">    Args:</span>
+<span class="sd">        query: string com a query SQL</span>
+<span class="sd">        params: dicionário com os parâmetros da query</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        lista de resultados ou None em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">get_bigquery_client</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">()</span>
+
+        <span class="c1"># Configura os parâmetros se existirem</span>
+        <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">job_config</span><span class="o">.</span><span class="n">query_parameters</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">]</span>
+
+        <span class="c1"># Executa a query</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">)</span>
+
+        <span class="c1"># Obtém os resultados</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+        <span class="c1"># Converte para lista de dicionários</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao executar query: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query: </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parâmetros: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="inserir_bigquery">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.inserir_bigquery">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inserir_bigquery</span><span class="p">(</span><span class="n">NAME</span><span class="p">,</span> <span class="n">TEMA</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">tabela_id</span> <span class="o">=</span> <span class="s2">&quot;yduqs-dev-443513.YDUQS.ARQUIVOS&quot;</span>
+
+    <span class="c1"># Gerar UUID no Python</span>
+    <span class="n">generated_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+
+    <span class="n">create_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data de criação: </span><span class="si">{</span><span class="n">create_date</span><span class="si">}</span><span class="s2">, ID: </span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        INSERT INTO `</span><span class="si">{</span><span class="n">tabela_id</span><span class="si">}</span><span class="s2">` (ID, NAME, THEME, CREATE_DATE)</span>
+<span class="s2">        VALUES (&#39;</span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">NAME</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">TEMA</span><span class="si">}</span><span class="s2">&#39;, PARSE_TIMESTAMP(&#39;%Y-%m-%dT%H:%M:%E3SZ&#39;, &#39;</span><span class="si">{</span><span class="n">create_date</span><span class="si">}</span><span class="s2">&#39;))</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Aguarda a conclusão da query</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registro inserido com sucesso. ID gerado: </span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">generated_id</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao inserir o registro: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="consultar_nome_arquivo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.consultar_nome_arquivo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">consultar_nome_arquivo</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Consulta nomes de arquivos no BigQuery com opção de filtros&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT</span>
+<span class="s2">            a1.ID,</span>
+<span class="s2">            a1.NAME,</span>
+<span class="s2">            a2.THEME,</span>
+<span class="s2">            a2.TITULO_NC,</span>
+<span class="s2">            a2.MODULO,</span>
+<span class="s2">            a1.CREATE_DATE,</span>
+<span class="s2">            a2.NUCLEO</span>
+<span class="s2">        FROM `yduqs-dev-443513.YDUQS.ARQUIVOS` a1</span>
+<span class="s2">        INNER JOIN `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO` a2</span>
+<span class="s2">        ON a1.ID = a2.ID</span>
+<span class="s2">        WHERE 1=1</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Adiciona condições de filtro se fornecidas</span>
+        <span class="k">if</span> <span class="nb">id</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot; AND a1.ID LIKE @id&quot;</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;%</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">%&quot;</span>
+            
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot; AND a1.NAME LIKE @name&quot;</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;%</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">%&quot;</span>
+            
+        <span class="k">if</span> <span class="n">titulo_nc</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot; AND a2.TITULO_NC LIKE @titulo_nc&quot;</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;titulo_nc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;%</span><span class="si">{</span><span class="n">titulo_nc</span><span class="si">}</span><span class="s2">%&quot;</span>
+            
+        <span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot; ORDER BY a1.CREATE_DATE DESC&quot;</span>
+        
+        <span class="k">return</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao consultar nomes de arquivos: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+
+<div class="viewcode-block" id="inserir_arquivos_conteudo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.inserir_arquivos_conteudo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inserir_arquivos_conteudo</span><span class="p">(</span><span class="n">ID</span><span class="p">,</span> <span class="n">THEME</span><span class="p">,</span> <span class="n">MODULO</span><span class="p">,</span> <span class="n">NUCLEO</span><span class="p">,</span> <span class="n">TITULO_NC</span><span class="p">,</span> <span class="n">PATH</span><span class="p">,</span> <span class="n">JSON</span><span class="p">,</span> <span class="n">JSON_CONTEUDO</span><span class="p">,</span> <span class="n">TITULO_NC_PROXIMA_AULA</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># Adicionado TITULO_NC_PROXIMA_AULA</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">tabela_id</span> <span class="o">=</span> <span class="s2">&quot;yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO&quot;</span>
+
+    <span class="c1"># Verificar se é o conteúdo inicial e definir TITULO_NC_PROXIMA_AULA como None</span>
+    <span class="k">if</span> <span class="n">NUCLEO</span> <span class="o">==</span> <span class="s1">&#39;conteudo_inicial.json&#39;</span> <span class="ow">or</span> <span class="n">NUCLEO</span> <span class="o">==</span> <span class="s1">&#39;conteudo-inicial.json&#39;</span><span class="p">:</span>
+        <span class="n">TITULO_NC_PROXIMA_AULA</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Definindo TITULO_NC_PROXIMA_AULA como None para o conteúdo inicial&quot;</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        INSERT INTO `</span><span class="si">{</span><span class="n">tabela_id</span><span class="si">}</span><span class="s2">` (ID, THEME, MODULO, NUCLEO, TITULO_NC, PATH, JSON, JSON_CONTEUDO, TITULO_NC_PROXIMA_AULA) # Adicionado TITULO_NC_PROXIMA_AULA na query</span>
+<span class="s2">        VALUES (</span>
+<span class="s2">            @id,</span>
+<span class="s2">            @theme,</span>
+<span class="s2">            @modulo,</span>
+<span class="s2">            @nucleo,</span>
+<span class="s2">            @titulo_nc,</span>
+<span class="s2">            @path,</span>
+<span class="s2">            @json,</span>
+<span class="s2">            PARSE_JSON(@json_conteudo),</span>
+<span class="s2">            @titulo_nc_proxima_aula # Adicionado parâmetro</span>
+<span class="s2">        );</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+        <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">ID</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">THEME</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;modulo&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">MODULO</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;nucleo&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">NUCLEO</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;titulo_nc&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">TITULO_NC</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">PATH</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">JSON</span><span class="p">)),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;json_conteudo&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">JSON_CONTEUDO</span><span class="p">)),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;titulo_nc_proxima_aula&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">TITULO_NC_PROXIMA_AULA</span><span class="p">)</span> <span class="c1"># Adicionado parâmetro</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">)</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registro inserido com sucesso na tabela ARQUIVOS_CONTEUDO com TITULO_NC_PROXIMA_AULA=</span><span class="si">{</span><span class="n">TITULO_NC_PROXIMA_AULA</span><span class="si">}</span><span class="s2"> para NUCLEO=</span><span class="si">{</span><span class="n">NUCLEO</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># Log atualizado</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao inserir o registro na tabela ARQUIVOS_CONTEUDO: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="consultar_arquivo_conteudo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.consultar_arquivo_conteudo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">consultar_arquivo_conteudo</span><span class="p">():</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT CAST(ID AS STRING) AS ID, THEME, MODULO, NUCLEO, TITULO_NC, PATH</span>
+<span class="s2">    FROM `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO`</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>  <span class="c1"># Executa a consulta</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Obtém os resultados</span>
+
+        <span class="c1"># Retorna uma lista de dicionários com os dados</span>
+        <span class="n">arquivos</span> <span class="o">=</span> <span class="p">[{</span>
+            <span class="s2">&quot;ID&quot;</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span>
+            <span class="s2">&quot;TEMA&quot;</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">THEME</span><span class="p">,</span>
+            <span class="s2">&quot;MODULO&quot;</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">MODULO</span><span class="p">,</span>
+            <span class="s2">&quot;NUCLEO&quot;</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">NUCLEO</span><span class="p">,</span>
+            <span class="s2">&quot;TITULO_NC&quot;</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">TITULO_NC</span><span class="p">,</span>
+            <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="n">row</span><span class="o">.</span><span class="n">PATH</span><span class="p">}</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">arquivos</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao consultar BigQuery: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+
+
+<div class="viewcode-block" id="inserir_video">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.inserir_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inserir_video</span><span class="p">(</span><span class="n">ID</span><span class="p">,</span> <span class="n">URL</span><span class="p">,</span> <span class="n">THEME</span><span class="p">,</span> <span class="n">TITULO_NC</span><span class="p">,</span> <span class="n">TYPE_VIDEO</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">tabela_id</span> <span class="o">=</span> <span class="s2">&quot;yduqs-dev-443513.YDUQS.VIDEOS&quot;</span>
+
+    <span class="n">create_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data de criação: </span><span class="si">{</span><span class="n">create_date</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        INSERT INTO `</span><span class="si">{</span><span class="n">tabela_id</span><span class="si">}</span><span class="s2">` (ID, URL, THEME, TITULO_NC, TYPE_VIDEO, CREATE_DATE)</span>
+<span class="s2">        VALUES (&#39;</span><span class="si">{</span><span class="n">ID</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">URL</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">THEME</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">TITULO_NC</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">TYPE_VIDEO</span><span class="si">}</span><span class="s2">&#39;, PARSE_TIMESTAMP(&#39;%Y-%m-%dT%H:%M:%E3SZ&#39;, &#39;</span><span class="si">{</span><span class="n">create_date</span><span class="si">}</span><span class="s2">&#39;))</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video inserido com sucesso na tabela VIDEOS.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao inserir o video na tabela VIDEOS: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="inserir_audio">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.inserir_audio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inserir_audio</span><span class="p">(</span><span class="n">id_arquivo</span><span class="p">,</span> <span class="n">url_audio</span><span class="p">,</span> <span class="n">tipo_audio</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">theme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titulo_nc_original</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insere um registro de áudio no banco de dados.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando inserção do áudio no banco: ID=</span><span class="si">{</span><span class="n">id_arquivo</span><span class="si">}</span><span class="s2">, URL=</span><span class="si">{</span><span class="n">url_audio</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parâmetros: content_id=</span><span class="si">{</span><span class="n">id_arquivo</span><span class="si">}</span><span class="s2">, theme=</span><span class="si">{</span><span class="n">theme</span><span class="si">}</span><span class="s2">, titulo_nc_original=</span><span class="si">{</span><span class="n">titulo_nc_original</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">id_arquivo</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;ID do arquivo não fornecido&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">url_audio</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;URL do áudio não fornecida&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+        <span class="n">max_tentativas</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">tentativa</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">tentativa</span> <span class="o">&lt;</span> <span class="n">max_tentativas</span><span class="p">:</span>
+            <span class="n">tentativa</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">query_verificacao</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                SELECT COUNT(*) AS count FROM `yduqs-dev-443513.YDUQS.AUDIOS` WHERE ID = &#39;</span><span class="si">{</span><span class="n">id_arquivo</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query_verificacao</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ID </span><span class="si">{</span><span class="n">id_arquivo</span><span class="si">}</span><span class="s2"> já existe. Gerando um novo ID...&quot;</span><span class="p">)</span>
+                <span class="n">id_arquivo</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>  <span class="c1"># Gera um novo UUID</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># ID não existe, podemos inserir</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">tentativa</span> <span class="o">&gt;=</span> <span class="n">max_tentativas</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Número máximo de tentativas para gerar um ID único atingido.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            INSERT INTO `yduqs-dev-443513.YDUQS.AUDIOS`</span>
+<span class="s2">            (ID, URL, TIPO_AUDIO, CREATE_DATE, THEME, TITULO_NC)</span>
+<span class="s2">            VALUES</span>
+<span class="s2">            (@id_arquivo, @url_audio, @tipo_audio, CURRENT_TIMESTAMP(), @theme, @titulo_nc)</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executando query com parâmetros: ID=</span><span class="si">{</span><span class="n">id_arquivo</span><span class="si">}</span><span class="s2">, URL=</span><span class="si">{</span><span class="n">url_audio</span><span class="si">}</span><span class="s2">, tipo=</span><span class="si">{</span><span class="n">tipo_audio</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+            <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;id_arquivo&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">id_arquivo</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;url_audio&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">url_audio</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;tipo_audio&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">tipo_audio</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">theme</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;titulo_nc&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">titulo_nc_original</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">)</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Áudio inserido com sucesso no banco de dados: ID=</span><span class="si">{</span><span class="n">id_arquivo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao inserir áudio no banco de dados: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="inserir_video_pexel">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.inserir_video_pexel">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inserir_video_pexel</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="n">TYPE_VIDEO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Insere um registro de vídeo Pexel no banco de dados.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        URL (str): URL do vídeo</span>
+<span class="sd">        TYPE_VIDEO (str): Tipo de vídeo (&#39;PEXEL&#39;)   </span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        str: ID do vídeo inserido</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">tabela_id</span> <span class="o">=</span> <span class="s2">&quot;yduqs-dev-443513.YDUQS.VIDEOS&quot;</span>
+
+    <span class="c1"># Gerar UUID no Python</span>
+    <span class="n">generated_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+
+    <span class="n">create_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data de criação: </span><span class="si">{</span><span class="n">create_date</span><span class="si">}</span><span class="s2">, ID: </span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        INSERT INTO `</span><span class="si">{</span><span class="n">tabela_id</span><span class="si">}</span><span class="s2">` (ID, URL, TYPE_VIDEO, CREATE_DATE)</span>
+<span class="s2">        VALUES (&#39;</span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">URL</span><span class="si">}</span><span class="s2">&#39;, &#39;</span><span class="si">{</span><span class="n">TYPE_VIDEO</span><span class="si">}</span><span class="s2">&#39;, PARSE_TIMESTAMP(&#39;%Y-%m-%dT%H:%M:%E3SZ&#39;, &#39;</span><span class="si">{</span><span class="n">create_date</span><span class="si">}</span><span class="s2">&#39;))</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Aguarda a conclusão da query</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registro inserido com sucesso. ID gerado: </span><span class="si">{</span><span class="n">generated_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">generated_id</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao inserir o registro: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="consultar_videos_pexel">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.consultar_videos_pexel">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">consultar_videos_pexel</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Consulta vídeos do tipo Pexel no banco de dados.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT URL, CREATE_DATE</span>
+<span class="s2">        FROM `yduqs-dev-443513.YDUQS.VIDEOS`</span>
+<span class="s2">        WHERE TYPE_VIDEO = &#39;PEXEL&#39;</span>
+<span class="s2">        ORDER BY CREATE_DATE DESC</span>
+<span class="s2">        LIMIT 1000</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">results</span><span class="p">:</span>
+            <span class="c1"># Formata as datas para string ISO</span>
+            <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;CREATE_DATE&#39;</span> <span class="ow">in</span> <span class="n">video</span><span class="p">:</span>
+                    <span class="n">video</span><span class="p">[</span><span class="s1">&#39;CREATE_DATE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;CREATE_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao consultar vídeos Pexel: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="consultar_videos_studio">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.consultar_videos_studio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">consultar_videos_studio</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Consulta vídeos do tipo Studio no banco de dados.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT ID, URL, CREATE_DATE</span>
+<span class="s2">        FROM `yduqs-dev-443513.YDUQS.VIDEOS`</span>
+<span class="s2">        WHERE TYPE_VIDEO = &#39;STUDIO&#39;</span>
+<span class="s2">        ORDER BY CREATE_DATE DESC</span>
+<span class="s2">        LIMIT 1000</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">results</span><span class="p">:</span>
+            <span class="c1"># Formata as datas para string ISO</span>
+            <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;CREATE_DATE&#39;</span> <span class="ow">in</span> <span class="n">video</span><span class="p">:</span>
+                    <span class="n">video</span><span class="p">[</span><span class="s1">&#39;CREATE_DATE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">video</span><span class="p">[</span><span class="s1">&#39;CREATE_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao consultar vídeos Studio: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+
+<div class="viewcode-block" id="remover_audio_duplicado">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.remover_audio_duplicado">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remover_audio_duplicado</span><span class="p">(</span><span class="n">id_duplicado</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        DELETE FROM `yduqs-dev-443513.YDUQS.AUDIOS`</span>
+<span class="s2">        WHERE ID = &#39;</span><span class="si">{</span><span class="n">id_duplicado</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">        AND CREATE_DATE NOT IN (SELECT MIN(CREATE_DATE) FROM `yduqs-dev-443513.YDUQS.AUDIOS` WHERE ID = &#39;</span><span class="si">{</span><span class="n">id_duplicado</span><span class="si">}</span><span class="s2">&#39;)</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registros duplicados com ID </span><span class="si">{</span><span class="n">id_duplicado</span><span class="si">}</span><span class="s2"> removidos.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="encontrar_e_remover_duplicatas">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.encontrar_e_remover_duplicatas">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encontrar_e_remover_duplicatas</span><span class="p">():</span>
+    <span class="n">query_ids_duplicados</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT ID FROM `yduqs-dev-443513.YDUQS.AUDIOS`</span>
+<span class="s2">        GROUP BY ID</span>
+<span class="s2">        HAVING COUNT(*) &gt; 1</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">resultados</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query_ids_duplicados</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resultados</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">resultados</span><span class="p">:</span>
+            <span class="n">id_duplicado</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">]</span>
+            <span class="n">remover_audio_duplicado</span><span class="p">(</span><span class="n">id_duplicado</span><span class="p">)</span>  <span class="c1"># Remover registros duplicados</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Nenhum registro duplicado encontrado.&quot;</span><span class="p">)</span></div>
+
+
+<span class="c1"># Script de limpeza (Execute isso UMA VEZ em um ambiente de TESTE primeiro!)</span>
+<span class="c1">#encontrar_e_remover_duplicatas()</span>
+
+
+<span class="c1"># Novas funções para verificação e atualização de arquivos</span>
+
+<div class="viewcode-block" id="verificar_arquivo_existe">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.verificar_arquivo_existe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verificar_arquivo_existe</span><span class="p">(</span><span class="n">nome_arquivo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verifica se um arquivo já existe no banco de dados pelo nome</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        nome_arquivo: nome do arquivo a ser verificado</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Dicionário com informações do arquivo se existir, None caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT a1.ID, a1.NAME, a1.THEME</span>
+<span class="s2">        FROM `yduqs-dev-443513.YDUQS.ARQUIVOS` a1</span>
+<span class="s2">        WHERE a1.NAME = @nome</span>
+<span class="s2">        LIMIT 1</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;nome&quot;</span><span class="p">:</span> <span class="n">nome_arquivo</span><span class="p">})</span>
+        
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao verificar existência do arquivo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="atualizar_arquivo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.atualizar_arquivo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">atualizar_arquivo</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">json_data</span><span class="p">,</span> <span class="n">json_conteudo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atualiza um arquivo existente no banco de dados</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        file_id: ID do arquivo a ser atualizado</span>
+<span class="sd">        file_name: Nome do arquivo</span>
+<span class="sd">        json_data: Dados JSON para atualização (dicionário)</span>
+<span class="sd">        json_conteudo: Conteúdo JSON completo (pode ser lista ou dicionário)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        True se atualizado com sucesso, False caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+        
+        <span class="c1"># Primeiro, verifica se o arquivo existe e obtém suas informações</span>
+        <span class="n">query_info</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT ac.THEME, ac.MODULO, ac.NUCLEO, ac.TITULO_NC, ac.PATH, ac.TITULO_NC_PROXIMA_AULA</span>
+<span class="s2">        FROM `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO` ac</span>
+<span class="s2">        WHERE ac.ID = @id</span>
+<span class="s2">        LIMIT 1</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="n">arquivo_info</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query_info</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">file_id</span><span class="p">})</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">arquivo_info</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">arquivo_info</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo com ID </span><span class="si">{</span><span class="n">file_id</span><span class="si">}</span><span class="s2"> não encontrado para atualização&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="c1"># Extrai informações existentes</span>
+        <span class="n">arquivo_info</span> <span class="o">=</span> <span class="n">arquivo_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># Atualiza o registro na tabela ARQUIVOS_CONTEUDO</span>
+        <span class="n">query_update</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        UPDATE `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO`</span>
+<span class="s2">        SET JSON = @json,</span>
+<span class="s2">            JSON_CONTEUDO = PARSE_JSON(@json_conteudo),</span>
+<span class="s2">            THEME = @theme,</span>
+<span class="s2">            TITULO_NC = @titulo_nc,</span>
+<span class="s2">            MODULO = @modulo</span>
+<span class="s2">        WHERE ID = @id</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Determina os valores a serem atualizados, mantendo os valores existentes quando não fornecidos</span>
+        <span class="n">theme</span> <span class="o">=</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;THEME&#39;</span><span class="p">,</span> <span class="n">arquivo_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;THEME&#39;</span><span class="p">))</span>
+        <span class="n">titulo_nc</span> <span class="o">=</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_nc&#39;</span><span class="p">,</span> <span class="n">arquivo_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">))</span>
+        <span class="n">modulo</span> <span class="o">=</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MODULO&#39;</span><span class="p">,</span> <span class="n">arquivo_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MODULO&#39;</span><span class="p">))</span>
+        
+        <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+            <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">file_id</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_data</span><span class="p">)),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;json_conteudo&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_conteudo</span><span class="p">)),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">theme</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;titulo_nc&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;modulo&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">modulo</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Executa a atualização</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_update</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">)</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        
+        <span class="c1"># Também atualiza o registro na tabela ARQUIVOS</span>
+        <span class="n">query_update_arquivo</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        UPDATE `yduqs-dev-443513.YDUQS.ARQUIVOS`</span>
+<span class="s2">        SET NAME = @name,</span>
+<span class="s2">            THEME = @theme</span>
+<span class="s2">        WHERE ID = @id</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="n">job_config_arquivo</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+            <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">file_id</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">theme</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="n">query_job_arquivo</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_update_arquivo</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config_arquivo</span><span class="p">)</span>
+        <span class="n">query_job_arquivo</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo com ID </span><span class="si">{</span><span class="n">file_id</span><span class="si">}</span><span class="s2"> atualizado com sucesso&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao atualizar arquivo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="atualizar_conteudo_completo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.bd.bd.atualizar_conteudo_completo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">atualizar_conteudo_completo</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">tema</span><span class="p">,</span> <span class="n">arquivos_conteudo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atualiza o conteúdo completo de um arquivo ZIP</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        file_id: ID do arquivo a ser atualizado</span>
+<span class="sd">        tema: Tema do conteúdo</span>
+<span class="sd">        arquivos_conteudo: Lista de arquivos e seus conteúdos</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        True se atualizado com sucesso, False caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+        
+        <span class="c1"># Primeiro, atualizamos os dados básicos na tabela ARQUIVOS</span>
+        <span class="n">query_update_arquivo</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        UPDATE `yduqs-dev-443513.YDUQS.ARQUIVOS`</span>
+<span class="s2">        SET THEME = @theme</span>
+<span class="s2">        WHERE ID = @id</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="n">job_config_arquivo</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+            <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">file_id</span><span class="p">),</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">tema</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="n">query_job_arquivo</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_update_arquivo</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config_arquivo</span><span class="p">)</span>
+        <span class="n">query_job_arquivo</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        
+        <span class="c1"># Excluímos todos os registros existentes na tabela ARQUIVOS_CONTEUDO</span>
+        <span class="n">query_delete</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        DELETE FROM `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO`</span>
+<span class="s2">        WHERE ID = @id</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        
+        <span class="n">job_config_delete</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+            <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">file_id</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="n">query_job_delete</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_delete</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config_delete</span><span class="p">)</span>
+        <span class="n">query_job_delete</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        
+        <span class="c1"># Não precisamos mais adicionar um registro de conteúdo inicial separado</span>
+        <span class="c1"># Removido o trecho que criava um conteúdo inicial simplificado</span>
+        
+        <span class="c1"># Ordena a lista - assegure que o conteúdo inicial fique primeiro </span>
+        <span class="n">arquivos_conteudo</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;conteudo_inicial.json&#39;</span> <span class="ow">or</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;conteudo-inicial.json&#39;</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Coloca conteúdo inicial primeiro</span>
+            <span class="n">x</span><span class="p">[</span><span class="s1">&#39;MODULO&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">x</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">]</span>
+        <span class="p">))</span>
+        
+        <span class="c1"># Itera sobre a lista ordenada para inserir no banco e determinar a próxima aula</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">conteudo_atual</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arquivos_conteudo</span><span class="p">):</span>
+            <span class="n">titulo_nc_proxima_aula</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">arquivos_conteudo</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Verifica se não é o último item</span>
+                <span class="n">titulo_nc_proxima_aula</span> <span class="o">=</span> <span class="n">arquivos_conteudo</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">]</span>
+                
+            <span class="c1"># Verifica se é conteúdo inicial e força TITULO_NC_PROXIMA_AULA como None</span>
+            <span class="n">nucleo</span> <span class="o">=</span> <span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">nucleo</span> <span class="o">==</span> <span class="s1">&#39;conteudo_inicial.json&#39;</span> <span class="ow">or</span> <span class="n">nucleo</span> <span class="o">==</span> <span class="s1">&#39;conteudo-inicial.json&#39;</span><span class="p">:</span>
+                <span class="n">titulo_nc_proxima_aula</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="c1"># Usa o mesmo ID fornecido</span>
+            <span class="n">inserir_arquivos_conteudo</span><span class="p">(</span>
+                <span class="n">ID</span><span class="o">=</span><span class="n">file_id</span><span class="p">,</span>
+                <span class="n">THEME</span><span class="o">=</span><span class="n">tema</span><span class="p">,</span>
+                <span class="n">MODULO</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;MODULO&#39;</span><span class="p">],</span>
+                <span class="n">NUCLEO</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;NUCLEO&#39;</span><span class="p">],</span>
+                <span class="n">TITULO_NC</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">],</span>
+                <span class="n">PATH</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">],</span>
+                <span class="n">JSON</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;JSON&#39;</span><span class="p">]),</span>
+                <span class="n">JSON_CONTEUDO</span><span class="o">=</span><span class="n">conteudo_atual</span><span class="p">[</span><span class="s1">&#39;JSON_CONTEUDO&#39;</span><span class="p">],</span>
+                <span class="n">TITULO_NC_PROXIMA_AULA</span><span class="o">=</span><span class="n">titulo_nc_proxima_aula</span>
+            <span class="p">)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conteúdo completo do arquivo com ID </span><span class="si">{</span><span class="n">file_id</span><span class="si">}</span><span class="s2"> atualizado com sucesso&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao atualizar conteúdo completo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

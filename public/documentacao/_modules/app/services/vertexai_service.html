@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.services.vertexai_service &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.services.vertexai_service</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.services.vertexai_service</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.common.palavras_chaves_prompt</span><span class="w"> </span><span class="kn">import</span> <span class="n">prompt_palavras_chaves_imagem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>  <span class="c1"># Importa settings do diretório pai</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">criaRoteiroPrompt</span><span class="p">,</span> <span class="n">audiobookprompt</span><span class="p">,</span> <span class="n">tratamentoJsonMatriz</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.vertexAi</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model</span><span class="p">,</span> <span class="n">init_vertex_ai</span><span class="p">,</span> <span class="n">get_generation_config</span><span class="p">,</span> <span class="n">generate_content</span>
+
+<div class="viewcode-block" id="prepare_text_topic">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.prepare_text_topic">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_text_topic</span><span class="p">(</span><span class="n">texto</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recebe um texto grande e gera um resumo com 15 palavras usando o Vertex AI com Gemini.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        texto (str): O texto grande a ser resumido.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">init_vertex_ai</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+    <span class="n">generation_config</span> <span class="o">=</span> <span class="n">get_generation_config</span><span class="p">()</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Resuma o seguinte texto em 15 palavras:</span><span class="se">\n\n</span><span class="si">{</span><span class="n">texto</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+            <span class="n">prompt</span><span class="p">,</span>
+            <span class="n">generation_config</span><span class="o">=</span><span class="n">generation_config</span><span class="p">,</span>
+            <span class="n">safety_settings</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">safety_settings</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">responses</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar resumo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="prepare_aula_3">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.prepare_aula_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_aula_3</span><span class="p">(</span><span class="n">texto</span><span class="p">):</span>
+    <span class="n">orientacoes_aula_3</span> <span class="o">=</span>  <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        faça uma analise do texto e me retorne da seguinte forma.</span>
+<span class="s2">        resumo_aula: string até 5 palavras</span>
+<span class="s2">        topico4: string 3 palavra</span>
+<span class="s2">        subtitulo4: string até 15 palavras</span>
+<span class="s2">        topico5: string 3 palavra</span>
+<span class="s2">        subtitulo5: string até 15 palavras</span>
+<span class="s2">        topico6: string 3 palavra</span>
+<span class="s2">        subtitulo6: string até 15 palavras</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="n">init_vertex_ai</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+    <span class="n">generation_config</span> <span class="o">=</span> <span class="n">get_generation_config</span><span class="p">()</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">orientacoes_aula_3</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Texto:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">texto</span>
+
+    <span class="n">responses</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="p">,</span>
+        <span class="n">generation_config</span><span class="o">=</span><span class="n">generation_config</span><span class="p">,</span>
+        <span class="n">safety_settings</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">safety_settings</span><span class="p">,</span>
+        <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">response_text</span> <span class="o">=</span> <span class="n">extrair_informacoes</span><span class="p">(</span><span class="n">responses</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    
+    <span class="n">dados</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span> <span class="c1"># Converte a string JSON para um dicionário Python</span>
+    <span class="k">return</span> <span class="n">dados</span> <span class="c1"># Retorna um dicionário Python</span></div>
+
+
+<div class="viewcode-block" id="extrair_informacoes">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.extrair_informacoes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extrair_informacoes</span><span class="p">(</span><span class="n">texto</span><span class="p">):</span>
+    
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">texto</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Linha inválida: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+    <span class="c1"># print(json.dumps(data, indent=4))</span>
+
+<div class="viewcode-block" id="resumo_texto_mil">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.resumo_texto_mil">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resumo_texto_mil</span><span class="p">(</span><span class="n">texto</span><span class="p">):</span>
+
+    <span class="n">init_vertex_ai</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+    <span class="n">generation_config</span> <span class="o">=</span> <span class="n">get_generation_config</span><span class="p">()</span>
+
+    <span class="n">prompt_for_resumo</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;Você esta apresentando uma aula é experiente e professora.</span>
+<span class="s2">    - Com base em todo material disponibilizado sobre a aula, você deve criar uma apresentação.</span>
+<span class="s2">    - O texto é esse.</span>
+<span class="s2">    - deve continuar a apresentação por um bom tempo.</span>
+<span class="s2">    - não parar de escrever</span>
+<span class="s2">    - tudo em uma linha só, sem quebra de linhas</span>
+<span class="s2">    - limite maximo de 1000 caracteres</span>
+<span class="s2">    </span><span class="se">\n\n</span><span class="si">{</span><span class="n">texto</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span>
+
+    <span class="n">responses</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+        <span class="n">prompt_for_resumo</span><span class="p">,</span>
+        <span class="n">generation_config</span><span class="o">=</span><span class="n">generation_config</span><span class="p">,</span>
+        <span class="n">safety_settings</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">safety_settings</span><span class="p">,</span>
+        <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">resumo</span> <span class="o">=</span> <span class="n">responses</span><span class="o">.</span><span class="n">text</span>
+    
+    <span class="k">return</span> <span class="n">resumo</span></div>
+
+
+<div class="viewcode-block" id="cria_roteiro_template">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.cria_roteiro_template">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cria_roteiro_template</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="c1"># Aqui, obtém os prompts, objetos e os componentes.</span>
+    <span class="n">component_classes</span> <span class="o">=</span> <span class="n">tratamentoJsonMatriz</span><span class="o">.</span><span class="n">get_component_classes</span><span class="p">()</span>
+    <span class="n">resultadoMatriz</span> <span class="o">=</span> <span class="n">tratamentoJsonMatriz</span><span class="o">.</span><span class="n">buscaPromptMatriz</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">component_classes</span><span class="p">)</span>
+
+    <span class="n">texto_completo</span> <span class="o">=</span> <span class="n">remove_html_tags</span><span class="p">(</span><span class="n">resultadoMatriz</span><span class="p">)</span> 
+    <span class="n">prompt_roteiro</span> <span class="o">=</span> <span class="n">criaRoteiroPrompt</span><span class="o">.</span><span class="n">cria_roteiro_prompt_template_1</span><span class="p">(</span><span class="n">texto_completo</span><span class="p">)</span> <span class="c1"># passa para um método a variável que concatena as diferentes tipografias ou conteudos modais.</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt_roteiro</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">responses</span><span class="p">:</span>
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">responses</span>
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">remove_html_tags</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>        
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response_text</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resposta do modelo está vazia.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>
+
+        <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json_data</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar vídeo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON: &quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="cria_roteiro_template_3">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.cria_roteiro_template_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cria_roteiro_template_3</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera um roteiro usando o modelo de template 3.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - data: Dados para gerar o roteiro</span>
+<span class="sd">    - num_cenas: Número de cenas desejado</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Roteiro gerado ou None se falhar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Aqui, obtém os prompts, objetos e os componentes.</span>
+        <span class="n">component_classes</span> <span class="o">=</span> <span class="n">tratamentoJsonMatriz</span><span class="o">.</span><span class="n">get_component_classes</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">component_classes</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Não foi possível obter as classes de componentes&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">texto_completo</span> <span class="o">=</span> <span class="n">tratamentoJsonMatriz</span><span class="o">.</span><span class="n">buscaPromptMatriz</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">component_classes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">texto_completo</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao processar o texto da matriz&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">prompt_roteiro</span> <span class="o">=</span> <span class="n">criaRoteiroPrompt</span><span class="o">.</span><span class="n">cria_roteiro_prompt_template_3</span><span class="p">(</span><span class="n">texto_completo</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">prompt_roteiro</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao criar o prompt do roteiro&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">responses</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt_roteiro</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">responses</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Não houve resposta do modelo de geração&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">responses</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">response_text</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Texto da resposta está vazio&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">remove_html_tags</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">response_text</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Texto após remoção de tags HTML está vazio&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">je</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON: </span><span class="si">{</span><span class="n">je</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">filename_json</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;output_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.json&quot;</span>
+                <span class="n">salvar_json</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">filename_json</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">io_err</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao salvar arquivo JSON: </span><span class="si">{</span><span class="n">io_err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Continua mesmo se falhar ao salvar o JSON</span>
+                
+            <span class="k">return</span> <span class="n">json_data</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar conteúdo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro geral em cria_roteiro_template_3: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="melhorar_texto_com_gemini">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.melhorar_texto_com_gemini">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">melhorar_texto_com_gemini</span><span class="p">(</span><span class="n">texto</span><span class="p">):</span>
+    
+    <span class="c1"># Gera o prompt com a função</span>
+    <span class="c1"># prompt_roteiro = audiobookprompt.audiobookprompt(texto)</span>
+    <span class="n">responses</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">texto</span><span class="p">)</span> <span class="c1"># chama o modelo antigo</span>
+        <span class="c1"># print(&quot;Chamada ao novo modelo&quot;)</span>
+        <span class="c1"># responses = generate(prompt_roteiro) # chama o novo modelo </span>
+    <span class="k">if</span> <span class="n">responses</span><span class="p">:</span>
+        <span class="n">response_text</span> <span class="o">=</span> <span class="n">responses</span>
+        <span class="n">response_text</span> <span class="o">=</span> <span class="n">remove_html_tags</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>        
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">response_text</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resposta do modelo está vazia.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Texto após Gemini: </span><span class="si">{</span><span class="n">response_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">response_text</span></div>
+
+
+
+<div class="viewcode-block" id="remove_html_tags">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.remove_html_tags">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_html_tags</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove HTML tags e as marcações ```json e ``` de uma string.&quot;&quot;&quot;</span>
+    <span class="n">clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&lt;.*?&gt;&#39;</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">clean</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;```json&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;```&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="salvar_json">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.salvar_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">salvar_json</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+     <span class="c1"># Criar o diretório se não existir</span>
+     <span class="n">diretorio</span> <span class="o">=</span> <span class="s2">&quot;output_jsons&quot;</span>
+
+     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">diretorio</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">diretorio</span><span class="p">)</span>
+
+    <span class="c1"># obter data e hora para nome unico de arquivo (YYYY-MM-DD_HH-MM-SS)</span>
+     <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">_%H-%M-%S&quot;</span><span class="p">)</span>
+     <span class="n">filename_com_timestamp</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+     <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">diretorio</span><span class="p">,</span> <span class="n">filename_com_timestamp</span><span class="p">)</span>
+
+     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JSON salvo em </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+     <span class="k">return</span> <span class="n">filename_com_timestamp</span></div>
+
+
+
+<div class="viewcode-block" id="encontrar_palavras_chaves_imagem">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.vertexai_service.encontrar_palavras_chaves_imagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encontrar_palavras_chaves_imagem</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span> <span class="n">quantidade_palavras_chaves</span><span class="p">,</span> <span class="n">quantidade_imagens</span><span class="p">):</span>
+    
+    <span class="n">prompt_palavras_chaves</span> <span class="o">=</span> <span class="n">prompt_palavras_chaves_imagem</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span> <span class="n">quantidade_palavras_chaves</span><span class="p">,</span> <span class="n">quantidade_imagens</span><span class="p">)</span> <span class="c1"># passa para um método a variável que concatena as diferentes tipografias ou conteudos modais.</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt_palavras_chaves</span><span class="p">)</span> <span class="c1"># chama o modelo antigo</span>
+        <span class="c1"># print(&quot;Chamada ao novo modelo&quot;)</span>
+        <span class="c1"># responses = generate(prompt_roteiro) # chama o novo modelo </span>
+        <span class="k">if</span> <span class="n">responses</span><span class="p">:</span>
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">responses</span>
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">remove_html_tags</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>        
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response_text</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resposta do modelo está vazia.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response_text</span><span class="p">)</span>
+        
+        <span class="c1">#Salva o arquivo JSON</span>
+        <span class="n">filename_json</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;estudio_output_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.json&quot;</span>  <span class="c1"># Define um nome de arquivo para a criação (timestamp)</span>
+        <span class="n">salvar_json</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span><span class="n">filename_json</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">json_data</span>
+    
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar vídeo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON: &quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

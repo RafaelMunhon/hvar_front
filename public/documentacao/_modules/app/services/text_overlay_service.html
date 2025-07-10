@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.services.text_overlay_service &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.services.text_overlay_service</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.services.text_overlay_service</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ffmpeg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.bd.bd</span><span class="w"> </span><span class="kn">import</span> <span class="n">inserir_video</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.speech_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">upload_video_to_bucket</span>
+
+<span class="c1"># Configuração básica do logger</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_temp_files_path">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.get_temp_files_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_temp_files_path</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retorna o caminho para o diretório de arquivos temporários.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))),</span> <span class="s2">&quot;arquivosTemporarios&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_videos_finalized_path">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.get_videos_finalized_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_videos_finalized_path</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retorna o caminho para o diretório de vídeos finalizados.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))),</span> <span class="s2">&quot;videosFinalizados&quot;</span><span class="p">)</span></div>
+
+
+<span class="n">temp_path</span> <span class="o">=</span> <span class="n">get_temp_files_path</span><span class="p">()</span>
+<span class="n">final_path</span> <span class="o">=</span> <span class="n">get_videos_finalized_path</span><span class="p">()</span>
+
+<div class="viewcode-block" id="encontrar_tempo_frase">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.encontrar_tempo_frase">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">frase</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    (Adaptada) Encontra o tempo de início e fim da primeira ocorrência de uma frase na transcrição.</span>
+<span class="sd">    Retorna (tempo_inicio, tempo_fim) se a frase for encontrada, caso contrário, (None, None).</span>
+
+<span class="sd">    Modificada para usar comparação parcial e ignorar diferenças de capitalização e pontuação.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">palavras_frase</span> <span class="o">=</span> <span class="p">[</span><span class="n">palavra</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.,;!?&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">frase</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+    <span class="n">len_frase</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras_frase</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">)</span> <span class="o">-</span> <span class="n">len_frase</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">palavras_transcricao</span> <span class="o">=</span> <span class="p">[</span><span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">][</span><span class="s2">&quot;word&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.,;!?&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">len_frase</span><span class="p">)]</span>
+        
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">palavras_frase</span><span class="p">,</span> <span class="n">palavras_transcricao</span><span class="p">)</span> <span class="k">if</span> <span class="n">p1</span> <span class="o">==</span> <span class="n">p2</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">matches</span> <span class="o">/</span> <span class="n">len_frase</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">:</span>
+          <span class="n">tempo_inicio</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span>
+          <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">len_frase</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frase &#39;</span><span class="si">{</span><span class="n">frase</span><span class="si">}</span><span class="s2">&#39; encontrada - Tempo de início: </span><span class="si">{</span><span class="n">tempo_inicio</span><span class="si">}</span><span class="s2">, Tempo de fim: </span><span class="si">{</span><span class="n">tempo_fim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frase &#39;</span><span class="si">{</span><span class="n">frase</span><span class="si">}</span><span class="s2">&#39; não encontrada na transcrição com threshold </span><span class="si">{</span><span class="n">threshold</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="gerar_drawtext_info">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.gerar_drawtext_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_drawtext_info</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera a lista de dicionários drawtext_info com base nas palavras encontradas e na transcrição.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">drawtext_info</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">palavras_encontradas</span><span class="p">:</span>
+        <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">palavra</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tempo_inicio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tempo_fim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">drawtext_info</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">palavra</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;h - 160&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;fontsize&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span>
+                <span class="s1">&#39;fontcolor&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;fadeInStart&#39;</span><span class="p">:</span> <span class="n">tempo_inicio</span><span class="p">,</span>
+                <span class="s1">&#39;fadeInEnd&#39;</span><span class="p">:</span> <span class="n">tempo_inicio</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;fadeOutStart&#39;</span><span class="p">:</span> <span class="n">tempo_fim</span><span class="p">,</span>
+                <span class="s1">&#39;fadeOutEnd&#39;</span><span class="p">:</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;fontfile&#39;</span><span class="p">:</span> <span class="s1">&#39;C:/projetos/YDUQS/fonte/Poppins-Bold.ttf&#39;</span><span class="p">,</span>  <span class="c1"># Caminho fixo da fonte</span>
+                <span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s1">&#39;boxcolor&#39;</span><span class="p">:</span> <span class="s1">&#39;0x37153B@0.99&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;boxborderw&#39;</span><span class="p">:</span> <span class="mi">25</span>
+            <span class="p">})</span>
+    <span class="k">return</span> <span class="n">drawtext_info</span></div>
+
+
+<div class="viewcode-block" id="gerar_overlay_info">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.gerar_overlay_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_overlay_info</span><span class="p">(</span><span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera a lista de dicionários overlay_info com base nas informações das imagens e na transcrição.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;gerar_overlay_info:  </span><span class="si">{</span><span class="n">imagem_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">overlay_info</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">img_info</span> <span class="ow">in</span> <span class="n">imagem_path</span><span class="p">:</span>
+        <span class="n">nome_arquivo</span> <span class="o">=</span> <span class="n">img_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nomeArquivo&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;img_info:  </span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">nome_arquivo</span><span class="p">)</span>
+
+        <span class="c1"># Se a URL estiver presente e o arquivo não existir, baixe a imagem</span>
+        <span class="k">if</span> <span class="s1">&#39;urlImg&#39;</span> <span class="ow">in</span> <span class="n">img_info</span> <span class="ow">and</span> <span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;urlImg&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">img_path</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;urlImg&#39;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem </span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2"> baixada e salva em: </span><span class="si">{</span><span class="n">img_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar imagem </span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="c1"># Encontra o tempo de início e fim usando o momentoChave</span>
+        <span class="n">momento_chave</span> <span class="o">=</span> <span class="n">img_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">)</span>
+
+        <span class="c1"># LOG - IMPRIMIR MOMENTO CHAVE</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Procurando tempo para imagem: </span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2"> - Momento chave: </span><span class="si">{</span><span class="n">momento_chave</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tempo_inicio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tempo_fim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">overlay_info</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;nomeArquivo&#39;</span><span class="p">:</span> <span class="n">nome_arquivo</span><span class="p">,</span>  <span class="c1"># Adiciona o nome do arquivo</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+                <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">tempo_inicio</span><span class="p">,</span>
+                <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">tempo_fim</span> <span class="c1"># 5 segundos de exibição da imagem</span>
+            <span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tempo não encontrado para a imagem </span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2"> com o momento chave &#39;</span><span class="si">{</span><span class="n">momento_chave</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">overlay_info</span></div>
+
+
+<div class="viewcode-block" id="criar_video">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.criar_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">duracao_video</span><span class="p">,</span> <span class="n">id_video</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria um vídeo com sobreposições de texto e imagem, incluindo efeitos de zoom e nitidez.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo de entrada.</span>
+<span class="sd">        palavras_encontradas (list): Lista de palavras a serem destacadas no vídeo.</span>
+<span class="sd">        imagem_path (list): Lista de dicionários com informações das imagens a serem sobrepostas.</span>
+<span class="sd">            Cada dicionário deve conter:</span>
+<span class="sd">            - nomeArquivo (str): Nome do arquivo de imagem</span>
+<span class="sd">            - urlImg (str): URL para download da imagem (opcional)</span>
+<span class="sd">            - momentoChave (str): Texto para sincronizar a imagem com a transcrição</span>
+<span class="sd">        transcricao_com_tempos (list): Lista de dicionários com a transcrição e tempos.</span>
+<span class="sd">            Cada dicionário deve conter:</span>
+<span class="sd">            - word (str): Palavra transcrita</span>
+<span class="sd">            - start_time (float): Tempo de início em segundos</span>
+<span class="sd">            - end_time (float): Tempo de fim em segundos</span>
+<span class="sd">        duracao_video (float): Duração total do vídeo em segundos.</span>
+<span class="sd">        id_video (str): Identificador único do vídeo.</span>
+<span class="sd">        theme (str): Tema visual a ser aplicado.</span>
+<span class="sd">        titulo_nc (str): Título do conteúdo.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ffmpeg.Error: Se houver erro durante o processamento do vídeo</span>
+<span class="sd">        Exception: Para outros erros durante o processamento</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando criação do vídeo: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Entrada de vídeo e áudio</span>
+        <span class="n">in_file</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Entrada de vídeo carregada com sucesso.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Geração de informações de texto e imagem</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando informações de texto...&quot;</span><span class="p">)</span>
+        <span class="n">drawtext_info</span> <span class="o">=</span> <span class="n">gerar_drawtext_info</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Informações de texto geradas: </span><span class="si">{</span><span class="n">drawtext_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando informações de imagem...&quot;</span><span class="p">)</span>
+        <span class="n">overlay_info</span> <span class="o">=</span> <span class="n">gerar_overlay_info</span><span class="p">(</span><span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Informações de imagem geradas: </span><span class="si">{</span><span class="n">overlay_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Geração de momentos aleatórios de zoom</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando momentos de zoom aleatórios...&quot;</span><span class="p">)</span>
+        <span class="n">momentos_zoom</span> <span class="o">=</span> <span class="n">gerar_momentos_zoom</span><span class="p">(</span><span class="n">duracao_video</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Momentos de zoom definidos: </span><span class="si">{</span><span class="n">momentos_zoom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Aplicação do filtro de zoom no vídeo</span>
+        <span class="n">current_stream</span> <span class="o">=</span> <span class="n">in_file</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span>  <span class="c1"># Usar apenas o stream de vídeo</span>
+        <span class="k">for</span> <span class="n">inicio</span><span class="p">,</span> <span class="n">fim</span> <span class="ow">in</span> <span class="n">momentos_zoom</span><span class="p">:</span>
+            <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="s1">&#39;zoompan&#39;</span><span class="p">,</span>
+                <span class="n">z</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;if(between(in_time,</span><span class="si">{</span><span class="n">inicio</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">fim</span><span class="si">}</span><span class="s2">),min(max(zoom,pzoom)+0.02,1.2),1)&quot;</span><span class="p">,</span>  <span class="c1"># 0.08 Velocidade, 1.5 Profundidade do zoom</span>
+                <span class="n">x</span><span class="o">=</span><span class="s1">&#39;iw/2-(iw/zoom/2)&#39;</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="s1">&#39;ih/4-(ih/zoom/2)&#39;</span><span class="p">,</span>
+                <span class="n">d</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zoom aplicado no intervalo: </span><span class="si">{</span><span class="n">inicio</span><span class="si">}</span><span class="s2">s - </span><span class="si">{</span><span class="n">fim</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Aplicar filtro de nitidez</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;unsharp&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Filtro unsharp aplicado com sucesso.&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao aplicar filtro unsharp: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Ajustar os timestamps do áudio para sincronizar com o vídeo</span>
+        <span class="n">audio_stream</span> <span class="o">=</span> <span class="n">in_file</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;asetpts&#39;</span><span class="p">,</span> <span class="s1">&#39;PTS-STARTPTS&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Timestamps do áudio ajustados.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Aplicação dos textos sobrepostos</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aplicando textos ao vídeo...&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">drawtext_info</span><span class="p">:</span>
+            <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">drawtext</span><span class="p">(</span>
+                <span class="n">fontfile</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;fontfile&#39;</span><span class="p">],</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">],</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;fontsize&#39;</span><span class="p">],</span>
+                <span class="n">fontcolor</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;fontcolor&#39;</span><span class="p">],</span>
+                <span class="n">enable</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;between(t,</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;fadeInStart&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;fadeOutEnd&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span>
+                <span class="n">box</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;box&#39;</span><span class="p">],</span>
+                <span class="n">boxcolor</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;boxcolor&#39;</span><span class="p">],</span>
+                <span class="n">boxborderw</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;boxborderw&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Textos aplicados com sucesso.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Aplicação das imagens sobrepostas</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aplicando imagens ao vídeo...&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">img_info</span> <span class="ow">in</span> <span class="n">overlay_info</span><span class="p">:</span>
+            <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;nomeArquivo&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">img_path</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sobrepondo imagem: </span><span class="si">{</span><span class="n">img_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Ajusta a imagem para preencher a tela sem distorção, garantindo proporção correta</span>
+                <span class="n">overlay_stream</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">ffmpeg</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> 
+                        <span class="s1">&#39;if(gt(iw/ih,1920/1080),1920,trunc(1080*iw/ih/2)*2)&#39;</span><span class="p">,</span> 
+                        <span class="s1">&#39;if(gt(iw/ih,1920/1080),trunc(1920*ih/iw/2)*2,1080)&#39;</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;pad&#39;</span><span class="p">,</span> <span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">,</span> <span class="s1">&#39;(ow-iw)/2&#39;</span><span class="p">,</span> <span class="s1">&#39;(oh-ih)/2&#39;</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">overlay</span><span class="p">(</span>
+                    <span class="n">overlay_stream</span><span class="p">,</span>
+                    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;(main_w-overlay_w)/2&#39;</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;(main_h-overlay_h)/2&#39;</span><span class="p">,</span>
+                    <span class="n">enable</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;between(t,</span><span class="si">{</span><span class="n">img_info</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">img_info</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span>
+                <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Imagens aplicadas com sucesso.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Configuração de saída</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">final_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;video_final_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.mp4&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configurando saída para: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">output</span><span class="p">(</span>
+            <span class="n">current_stream</span><span class="p">,</span> <span class="n">audio_stream</span><span class="p">,</span>  <span class="c1"># Usar o stream de áudio ajustado</span>
+            <span class="n">output_path</span><span class="p">,</span>
+            <span class="n">vcodec</span><span class="o">=</span><span class="s1">&#39;libx264&#39;</span><span class="p">,</span>
+            <span class="n">preset</span><span class="o">=</span><span class="s1">&#39;slow&#39;</span><span class="p">,</span>
+            <span class="n">acodec</span><span class="o">=</span><span class="s1">&#39;aac&#39;</span><span class="p">,</span>
+            <span class="n">audio_bitrate</span><span class="o">=</span><span class="s1">&#39;192k&#39;</span><span class="p">,</span>
+            <span class="n">crf</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>  <span class="c1"># Ajuste o CRF</span>
+            <span class="o">**</span><span class="p">{</span>
+                <span class="s1">&#39;b:v&#39;</span><span class="p">:</span> <span class="s1">&#39;10M&#39;</span><span class="p">,</span>  <span class="c1"># Aumente o bitrate (se necessário)</span>
+                <span class="s1">&#39;profile:v&#39;</span><span class="p">:</span> <span class="s1">&#39;high&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="s1">&#39;4.2&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;vsync&#39;</span><span class="p">:</span> <span class="s1">&#39;vfr&#39;</span><span class="p">,</span>  <span class="c1"># Sincronização de vídeo com taxa de quadros variável</span>
+                <span class="s1">&#39;async&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span>  <span class="c1"># Sincronização de áudio e vídeo</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Compilação do comando FFmpeg para debug</span>
+        <span class="n">comando_ffmpeg</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">overwrite_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Comando FFmpeg compilado: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comando_ffmpeg</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Execução do comando FFmpeg</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executando comando FFmpeg...&quot;</span><span class="p">)</span>
+        <span class="n">ffmpeg</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">overwrite_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo finalizado com sucesso: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># mandar o video para o bucket</span>
+        <span class="n">video_url</span> <span class="o">=</span> <span class="n">upload_video_to_bucket</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo enviado para o bucket: </span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># inserir o video no banco de dados</span>
+        <span class="n">insert_video_bd</span> <span class="o">=</span><span class="n">inserir_video</span><span class="p">(</span><span class="n">id_video</span><span class="p">,</span> <span class="n">video_url</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">,</span> <span class="s2">&quot;HEYGEN&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video inserido no banco de dados: </span><span class="si">{</span><span class="n">insert_video_bd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro no FFmpeg: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;comando_ffmpeg&#39;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Comando que falhou: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">comando_ffmpeg</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro inesperado: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="gerar_momentos_zoom">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.text_overlay_service.gerar_momentos_zoom">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_momentos_zoom</span><span class="p">(</span><span class="n">duracao_video</span><span class="p">,</span> <span class="n">qtd_zooms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">intervalo_minimo</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera momentos de zoom aleatórios espaçados pelo intervalo mínimo no vídeo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">momentos_zoom</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">tempo_atual</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="c1"># Divide o tempo total do vídeo em partes para garantir espaçamento entre os zooms</span>
+    <span class="n">espacamento</span> <span class="o">=</span> <span class="n">duracao_video</span> <span class="o">//</span> <span class="p">(</span><span class="n">qtd_zooms</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qtd_zooms</span><span class="p">):</span>
+        <span class="n">inicio_zoom</span> <span class="o">=</span> <span class="n">tempo_atual</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">espacamento</span> <span class="o">-</span> <span class="n">intervalo_minimo</span><span class="p">)</span>
+        <span class="n">fim_zoom</span> <span class="o">=</span> <span class="n">inicio_zoom</span> <span class="o">+</span> <span class="mi">15</span>  <span class="c1"># Duração do zoom de 15 segundos</span>
+
+        <span class="c1"># Garante que o zoom não ultrapasse o final do vídeo</span>
+        <span class="k">if</span> <span class="n">fim_zoom</span> <span class="o">&gt;</span> <span class="n">duracao_video</span><span class="p">:</span>
+            <span class="n">fim_zoom</span> <span class="o">=</span> <span class="n">duracao_video</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">momentos_zoom</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">inicio_zoom</span><span class="p">,</span> <span class="n">fim_zoom</span><span class="p">))</span>
+        <span class="n">tempo_atual</span> <span class="o">+=</span> <span class="n">espacamento</span>
+    
+    <span class="k">return</span> <span class="n">momentos_zoom</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,736 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.services.text_overlay_service_studio &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.services.text_overlay_service_studio</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.services.text_overlay_service_studio</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ffmpeg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_root_path</span>
+
+<span class="c1"># Configuração básica do logger</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Variável global para armazenar os últimos tempos usados</span>
+<span class="n">_ultimo_tempo_fim</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">_ultimo_tempo_fim_imagem</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Nova variável para imagens</span>
+
+<div class="viewcode-block" id="get_temp_files_path">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.get_temp_files_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_temp_files_path</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))),</span> <span class="s2">&quot;arquivosTemporarios&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_videos_finalized_path">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.get_videos_finalized_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_videos_finalized_path</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))),</span> <span class="s2">&quot;videosFinalizados&quot;</span><span class="p">)</span></div>
+
+
+<span class="n">temp_path</span> <span class="o">=</span> <span class="n">get_temp_files_path</span><span class="p">()</span>
+<span class="n">final_path</span> <span class="o">=</span> <span class="n">get_videos_finalized_path</span><span class="p">()</span>
+
+<div class="viewcode-block" id="encontrar_tempo_frase">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.encontrar_tempo_frase">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">frase</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">eh_imagem</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encontra o tempo de início e fim da primeira ocorrência de uma frase na transcrição</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_ultimo_tempo_fim</span><span class="p">,</span> <span class="n">_ultimo_tempo_fim_imagem</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Procurando tempo para </span><span class="si">{</span><span class="s1">&#39;imagem&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">eh_imagem</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;texto&#39;</span><span class="si">}</span><span class="s2"> ===&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frase original: &#39;</span><span class="si">{</span><span class="n">frase</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Simplifica a frase para palavras-chave principais</span>
+    <span class="n">palavras_frase</span> <span class="o">=</span> <span class="p">[</span><span class="n">palavra</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.,;!?&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">frase</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> 
+                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavra</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">palavra</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;para&#39;</span><span class="p">,</span> <span class="s1">&#39;como&#39;</span><span class="p">,</span> <span class="s1">&#39;esse&#39;</span><span class="p">,</span> <span class="s1">&#39;essa&#39;</span><span class="p">,</span> <span class="s1">&#39;foram&#39;</span><span class="p">,</span> <span class="s1">&#39;através&#39;</span><span class="p">]]</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Palavras-chave da frase: </span><span class="si">{</span><span class="n">palavras_frase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Se não houver palavras-chave válidas, usa todas as palavras</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">palavras_frase</span><span class="p">:</span>
+        <span class="n">palavras_frase</span> <span class="o">=</span> <span class="p">[</span><span class="n">palavra</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.,;!?&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">frase</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Usando todas as palavras: </span><span class="si">{</span><span class="n">palavras_frase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Se ainda assim não houver palavras, retorna None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">palavras_frase</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Nenhuma palavra encontrada na frase&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    
+    <span class="c1"># Procura as palavras-chave em sequência na transcrição</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">)):</span>
+        <span class="n">tempo_atual</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># Verifica se a palavra já foi usada recentemente</span>
+        <span class="n">ultimo_tempo</span> <span class="o">=</span> <span class="n">_ultimo_tempo_fim_imagem</span> <span class="k">if</span> <span class="n">eh_imagem</span> <span class="k">else</span> <span class="n">_ultimo_tempo_fim</span>
+        <span class="n">espaco_minimo</span> <span class="o">=</span> <span class="mi">5</span> <span class="k">if</span> <span class="n">eh_imagem</span> <span class="k">else</span> <span class="mi">2</span>
+        
+        <span class="k">if</span> <span class="n">ultimo_tempo</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">tempo_atual</span> <span class="o">-</span> <span class="n">ultimo_tempo</span> <span class="o">&lt;</span> <span class="n">espaco_minimo</span><span class="p">:</span>
+            <span class="k">continue</span>
+            
+        <span class="n">palavra_atual</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;word&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.,;!?&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">palavra_atual</span> <span class="o">==</span> <span class="n">palavras_frase</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>  <span class="c1"># Encontrou primeira palavra</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">ultima_palavra_idx</span> <span class="o">=</span> <span class="n">i</span>
+            
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Encontrou primeira palavra &#39;</span><span class="si">{</span><span class="n">palavra_atual</span><span class="si">}</span><span class="s2">&#39; em </span><span class="si">{</span><span class="n">tempo_atual</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Se só tem uma palavra, já considera encontrada</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras_frase</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">tempo_inicio</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span>
+                <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span>
+                
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Palavra única encontrada!&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tempo início: </span><span class="si">{</span><span class="n">tempo_inicio</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tempo fim: </span><span class="si">{</span><span class="n">tempo_fim</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">eh_imagem</span><span class="p">:</span>
+                    <span class="n">_ultimo_tempo_fim_imagem</span> <span class="o">=</span> <span class="n">tempo_fim</span>
+                    <span class="k">return</span> <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mi">3</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_ultimo_tempo_fim</span> <span class="o">=</span> <span class="n">tempo_fim</span>
+                    <span class="k">return</span> <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mi">1</span>
+            
+            <span class="c1"># Procura próximas palavras em uma janela de 15 palavras</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras_frase</span><span class="p">)):</span>
+                <span class="n">encontrou</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>  <span class="c1"># Janela de 15 palavras</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">):</span>
+                        <span class="k">break</span>
+                    <span class="n">palavra_transcricao</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">][</span><span class="s2">&quot;word&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.,;!?&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">palavra_transcricao</span> <span class="o">==</span> <span class="n">palavras_frase</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                        <span class="n">matches</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">ultima_palavra_idx</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">k</span>
+                        <span class="n">encontrou</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Encontrou palavra &#39;</span><span class="si">{</span><span class="n">palavra_transcricao</span><span class="si">}</span><span class="s2">&#39; em </span><span class="si">{</span><span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">encontrou</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Não encontrou palavra &#39;</span><span class="si">{</span><span class="n">palavras_frase</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                    <span class="k">break</span>
+            
+            <span class="n">match_ratio</span> <span class="o">=</span> <span class="n">matches</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras_frase</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Match ratio: </span><span class="si">{</span><span class="n">match_ratio</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">matches</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">palavras_frase</span><span class="p">)</span><span class="si">}</span><span class="s2"> palavras)&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">match_ratio</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="n">tempo_inicio</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span>
+                <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">transcricao_com_tempos</span><span class="p">[</span><span class="n">ultima_palavra_idx</span><span class="p">][</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span>
+                
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frase encontrada!&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tempo início: </span><span class="si">{</span><span class="n">tempo_inicio</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tempo fim: </span><span class="si">{</span><span class="n">tempo_fim</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">eh_imagem</span><span class="p">:</span>
+                    <span class="n">_ultimo_tempo_fim_imagem</span> <span class="o">=</span> <span class="n">tempo_fim</span>
+                    <span class="k">return</span> <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mi">3</span>  <span class="c1"># Mais tempo para imagens</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_ultimo_tempo_fim</span> <span class="o">=</span> <span class="n">tempo_fim</span>
+                    <span class="k">return</span> <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 1 segundo para textos</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frase não encontrada na transcrição&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="criar_efeitos_artisticos">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.criar_efeitos_artisticos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_efeitos_artisticos</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria uma coleção de efeitos artísticos e dinâmicos para texto em vídeos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">efeitos</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;movimentos_x&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">r</span><span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>  <span class="c1"># Centralizado</span>
+        <span class="p">],</span>
+        <span class="s1">&#39;movimentos_y&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">r</span><span class="s1">&#39;h*0.7&#39;</span><span class="p">,</span>  <span class="c1"># Abaixo do centro</span>
+            <span class="sa">r</span><span class="s1">&#39;h*0.7 + sin(t*3)*50&#39;</span><span class="p">,</span>              <span class="c1"># Flutuação vertical</span>
+            <span class="sa">r</span><span class="s1">&#39;h*0.7 + cos(t*2)*30&#39;</span><span class="p">,</span>              <span class="c1"># Ondulação suave</span>
+            <span class="sa">r</span><span class="s1">&#39;h*0.8 + sin(t)*20&#39;</span><span class="p">,</span>                <span class="c1"># Movimento próximo ao rodapé</span>
+            <span class="sa">r</span><span class="s1">&#39;h*0.8 + t*10&#39;</span><span class="p">,</span>                     <span class="c1"># Subida gradual</span>
+        <span class="p">],</span>
+        <span class="s1">&#39;estilos_texto&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;dinamico&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="s1">&#39;if(lt(t,1),t,1-min(1,max(0,(t-fadein)/(fadeout-fadein))))&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="s1">&#39;if(lt(t,1),1+t/2,1+sin(t*2)*0.1)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;rotation&#39;</span><span class="p">:</span> <span class="s1">&#39;sin(t*2)*5&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;fade_suave&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="s1">&#39;if(lt(t,1),t,1-min(1,max(0,(t-fadein)/(fadeout-fadein))))&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;zoom_sutil&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="s1">&#39;1 + sin(t)*0.05&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;sem_efeitos&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;rotation&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;cores_gradiente&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;0xFF0000&#39;</span><span class="p">,</span>  <span class="c1"># Vermelho</span>
+            <span class="s1">&#39;0x00FF00&#39;</span><span class="p">,</span>  <span class="c1"># Verde</span>
+            <span class="s1">&#39;0x0000FF&#39;</span><span class="p">,</span>  <span class="c1"># Azul</span>
+            <span class="s1">&#39;0xFFFF00&#39;</span><span class="p">,</span>  <span class="c1"># Amarelo</span>
+        <span class="p">],</span>
+        <span class="s1">&#39;sombras_artisticas&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;0x000000@0.5&#39;</span><span class="p">},</span>    <span class="c1"># Sombra clássica</span>
+            <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;0x000000@0.3&#39;</span><span class="p">},</span>  <span class="c1"># Sombra invertida</span>
+            <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;0x4169E1@0.4&#39;</span><span class="p">}</span>     <span class="c1"># Sombra azulada</span>
+        <span class="p">],</span>
+        <span class="s1">&#39;fontes_modernas&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;C:/projetos/YDUQS/fonte/Poppins-Bold.ttf&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;C:/projetos/YDUQS/fonte/Hypop-LightItalic.otf&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;C:/projetos/YDUQS/fonte/HappySeason-Bold.ttf&#39;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">efeitos</span></div>
+
+
+<div class="viewcode-block" id="gerar_drawtext_info">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.gerar_drawtext_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_drawtext_info</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera informações de texto com efeitos artísticos avançados.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        palavras_encontradas (list): Lista de palavras encontradas na transcrição</span>
+<span class="sd">        transcricao_com_tempos (list): Lista de dicionários com a transcrição e timestamps</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        list: Lista de dicionários com informações para overlay.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">efeitos</span> <span class="o">=</span> <span class="n">criar_efeitos_artisticos</span><span class="p">()</span>
+    <span class="n">drawtext_info</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">palavras_encontradas</span><span class="p">:</span>
+        <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">palavra</span><span class="p">,</span> <span class="n">eh_imagem</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">tempo_inicio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tempo_fim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Aumenta a duração dos efeitos</span>
+            <span class="n">duracao_efeito</span> <span class="o">=</span> <span class="n">tempo_fim</span> <span class="o">-</span> <span class="n">tempo_inicio</span>
+            <span class="n">tempo_inicio_efeito</span> <span class="o">=</span> <span class="n">tempo_inicio</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Inicia 1 segundo antes</span>
+            <span class="n">tempo_fim_efeito</span> <span class="o">=</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mi">2</span>        <span class="c1"># Termina 2 segundos depois</span>
+
+            <span class="c1"># Verifica se a palavra é composta por duas partes</span>
+            <span class="n">partes</span> <span class="o">=</span> <span class="n">palavra</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">partes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># Duração do movimento (em segundos)</span>
+                <span class="n">duracao_movimento</span> <span class="o">=</span> <span class="n">tempo_fim</span> <span class="o">-</span> <span class="n">tempo_inicio</span>
+
+                <span class="c1"># Decide aleatoriamente se usa efeitos ou não</span>
+                <span class="n">usar_efeitos</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.3</span>  <span class="c1"># 70% de chance de usar efeitos</span>
+
+                <span class="c1"># Posições Y para evitar sobreposição</span>
+                <span class="n">y1</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;h*0.6&#39;</span>  <span class="c1"># Primeira palavra acima do centro</span>
+                <span class="n">y2</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;h*0.8&#39;</span>  <span class="c1"># Segunda palavra abaixo do centro</span>
+
+                <span class="c1"># Primeira palavra: centralizada</span>
+                <span class="n">info_texto_esquerda</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">partes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>  <span class="c1"># Centralizado</span>
+                    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y1</span><span class="p">,</span>
+                    <span class="s1">&#39;fontsize&#39;</span><span class="p">:</span> <span class="mi">80</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavra</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">80</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">]),</span>
+                    <span class="s1">&#39;fontcolor&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;cores_gradiente&#39;</span><span class="p">]),</span>
+                    <span class="s1">&#39;fadeInStart&#39;</span><span class="p">:</span> <span class="n">tempo_inicio_efeito</span><span class="p">,</span>
+                    <span class="s1">&#39;fadeInEnd&#39;</span><span class="p">:</span> <span class="n">tempo_inicio_efeito</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Aumenta o tempo de fade-in</span>
+                    <span class="s1">&#39;fadeOutStart&#39;</span><span class="p">:</span> <span class="n">tempo_fim_efeito</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Aumenta o tempo de fade-out</span>
+                    <span class="s1">&#39;fadeOutEnd&#39;</span><span class="p">:</span> <span class="n">tempo_fim_efeito</span><span class="p">,</span>
+                    <span class="s1">&#39;fontfile&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;fontes_modernas&#39;</span><span class="p">]),</span>
+                <span class="p">}</span>
+
+                <span class="c1"># Segunda palavra: centralizada</span>
+                <span class="n">info_texto_direita</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">partes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>  <span class="c1"># Centralizado</span>
+                    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y2</span><span class="p">,</span>
+                    <span class="s1">&#39;fontsize&#39;</span><span class="p">:</span> <span class="mi">80</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavra</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">80</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">]),</span>
+                    <span class="s1">&#39;fontcolor&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;cores_gradiente&#39;</span><span class="p">]),</span>
+                    <span class="s1">&#39;fadeInStart&#39;</span><span class="p">:</span> <span class="n">tempo_inicio_efeito</span><span class="p">,</span>
+                    <span class="s1">&#39;fadeInEnd&#39;</span><span class="p">:</span> <span class="n">tempo_inicio_efeito</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Aumenta o tempo de fade-in</span>
+                    <span class="s1">&#39;fadeOutStart&#39;</span><span class="p">:</span> <span class="n">tempo_fim_efeito</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Aumenta o tempo de fade-out</span>
+                    <span class="s1">&#39;fadeOutEnd&#39;</span><span class="p">:</span> <span class="n">tempo_fim_efeito</span><span class="p">,</span>
+                    <span class="s1">&#39;fontfile&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;fontes_modernas&#39;</span><span class="p">]),</span>
+                <span class="p">}</span>
+
+                <span class="c1"># Adiciona efeitos dinâmicos (se aplicável)</span>
+                <span class="n">estilo_atual</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;estilos_texto&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="k">if</span> <span class="n">usar_efeitos</span> <span class="k">else</span> <span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;estilos_texto&#39;</span><span class="p">][</span><span class="s1">&#39;sem_efeitos&#39;</span><span class="p">]</span>
+                <span class="n">info_texto_esquerda</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;rotation&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rotation&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+                <span class="p">})</span>
+                <span class="n">info_texto_direita</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;rotation&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rotation&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+                <span class="p">})</span>
+
+                <span class="c1"># Adiciona sombra artística</span>
+                <span class="n">sombra</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;sombras_artisticas&#39;</span><span class="p">])</span>
+                <span class="n">info_texto_esquerda</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;shadowx&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;shadowy&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;shadowcolor&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+                <span class="p">})</span>
+                <span class="n">info_texto_direita</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;shadowx&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;shadowy&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;shadowcolor&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+                <span class="p">})</span>
+
+                <span class="c1"># Adiciona efeito de caixa ocasional</span>
+                <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.6</span><span class="p">:</span>
+                    <span class="n">info_texto_esquerda</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="s1">&#39;boxcolor&#39;</span><span class="p">:</span> <span class="s1">&#39;0x000000@0.3&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;boxborderw&#39;</span><span class="p">:</span> <span class="mi">15</span>
+                    <span class="p">})</span>
+                    <span class="n">info_texto_direita</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="s1">&#39;boxcolor&#39;</span><span class="p">:</span> <span class="s1">&#39;0x000000@0.3&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;boxborderw&#39;</span><span class="p">:</span> <span class="mi">15</span>
+                    <span class="p">})</span>
+
+                <span class="n">drawtext_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info_texto_esquerda</span><span class="p">)</span>
+                <span class="n">drawtext_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info_texto_direita</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Palavra única: mantém o comportamento original</span>
+                <span class="n">info_texto</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">palavra</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>  <span class="c1"># Centralizado</span>
+                    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;movimentos_y&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">=&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;fontsize&#39;</span><span class="p">:</span> <span class="mi">80</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavra</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">80</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">]),</span>
+                    <span class="s1">&#39;fontcolor&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;cores_gradiente&#39;</span><span class="p">]),</span>
+                    <span class="s1">&#39;fadeInStart&#39;</span><span class="p">:</span> <span class="n">tempo_inicio_efeito</span><span class="p">,</span>
+                    <span class="s1">&#39;fadeInEnd&#39;</span><span class="p">:</span> <span class="n">tempo_inicio_efeito</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Aumenta o tempo de fade-in</span>
+                    <span class="s1">&#39;fadeOutStart&#39;</span><span class="p">:</span> <span class="n">tempo_fim_efeito</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Aumenta o tempo de fade-out</span>
+                    <span class="s1">&#39;fadeOutEnd&#39;</span><span class="p">:</span> <span class="n">tempo_fim_efeito</span><span class="p">,</span>
+                    <span class="s1">&#39;fontfile&#39;</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;fontes_modernas&#39;</span><span class="p">]),</span>
+                <span class="p">}</span>
+
+                <span class="c1"># Adiciona efeitos dinâmicos</span>
+                <span class="n">estilo_atual</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;estilos_texto&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+                <span class="n">info_texto</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;rotation&#39;</span><span class="p">:</span> <span class="n">estilo_atual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rotation&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+                <span class="p">})</span>
+
+                <span class="c1"># Adiciona sombra artística</span>
+                <span class="n">sombra</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">efeitos</span><span class="p">[</span><span class="s1">&#39;sombras_artisticas&#39;</span><span class="p">])</span>
+                <span class="n">info_texto</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;shadowx&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;shadowy&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;shadowcolor&#39;</span><span class="p">:</span> <span class="n">sombra</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+                <span class="p">})</span>
+
+                <span class="c1"># Adiciona efeito de caixa ocasional</span>
+                <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.6</span><span class="p">:</span>
+                    <span class="n">info_texto</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="s1">&#39;box&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="s1">&#39;boxcolor&#39;</span><span class="p">:</span> <span class="s1">&#39;0x000000@0.3&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;boxborderw&#39;</span><span class="p">:</span> <span class="mi">15</span>
+                    <span class="p">})</span>
+
+                <span class="n">drawtext_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info_texto</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">drawtext_info</span></div>
+
+
+<div class="viewcode-block" id="gerar_overlay_info">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.gerar_overlay_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_overlay_info</span><span class="p">(</span><span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">):</span>
+    <span class="c1">#logger.info(&quot;\n=== Gerando overlay info ===&quot;)</span>
+    <span class="c1">#logger.info(f&quot;Recebido imagem_path com {len(imagem_path)} imagens&quot;)</span>
+    <span class="c1">#logger.info(f&quot;Dados das imagens: {imagem_path}&quot;)</span>
+    
+    <span class="n">overlay_info</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">img_info</span> <span class="ow">in</span> <span class="n">imagem_path</span><span class="p">:</span>
+        <span class="c1">#logger.info(f&quot;\nProcessando imagem: {img_info}&quot;)</span>
+        <span class="n">nome_arquivo</span> <span class="o">=</span> <span class="n">img_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nomeArquivo&#39;</span><span class="p">)</span>
+        <span class="n">momento_chave</span> <span class="o">=</span> <span class="n">img_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Passa eh_imagem=True para usar a lógica específica para imagens</span>
+        <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">eh_imagem</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="c1">#logger.info(f&quot;Momento chave: {momento_chave}&quot;)</span>
+        <span class="c1">#logger.info(f&quot;Tempo encontrado - início: {tempo_inicio}, fim: {tempo_fim}&quot;)</span>
+        
+        <span class="k">if</span> <span class="n">tempo_inicio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tempo_fim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">img_info</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;nomeArquivo&#39;</span><span class="p">:</span> <span class="n">nome_arquivo</span><span class="p">,</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">img_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">tempo_inicio</span><span class="p">,</span>
+                <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">tempo_fim</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">}</span>
+            <span class="n">overlay_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_info</span><span class="p">)</span>
+            <span class="c1">#logger.info(f&quot;Imagem será inserida: {img_info}&quot;)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tempo não encontrado para imagem </span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1">#logger.info(f&quot;\nTotal de imagens a serem inseridas: {len(overlay_info)}&quot;)</span>
+    <span class="k">return</span> <span class="n">overlay_info</span></div>
+
+
+<div class="viewcode-block" id="criar_video">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.criar_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">duracao_video</span><span class="p">,</span> <span class="n">semEfeitos</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria um vídeo com efeitos de texto e imagem sobrepostos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do vídeo de entrada</span>
+<span class="sd">        palavras_encontradas (list): Lista de palavras encontradas na transcrição</span>
+<span class="sd">        imagem_path (list): Lista de dicionários contendo informações das imagens</span>
+<span class="sd">        transcricao_com_tempos (list): Lista de dicionários com a transcrição e timestamps  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando criação do vídeo: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando palavras_encontradas: </span><span class="si">{</span><span class="n">palavras_encontradas</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando imagem_path: </span><span class="si">{</span><span class="n">imagem_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando duracao_video: </span><span class="si">{</span><span class="n">duracao_video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Entrada de vídeo</span>
+        <span class="n">in_file</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Entrada de vídeo carregada com sucesso.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Geração de informações de texto e imagem</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando informações de texto...&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">semEfeitos</span><span class="p">:</span>
+            <span class="c1"># Modo sem efeitos: usa o estilo antigo</span>
+            <span class="n">drawtext_info</span> <span class="o">=</span> <span class="n">gerar_drawtext_info_simples</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Modo com efeitos: usa o estilo novo</span>
+            <span class="n">drawtext_info</span> <span class="o">=</span> <span class="n">gerar_drawtext_info</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Informações de texto geradas: </span><span class="si">{</span><span class="n">drawtext_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando informações de imagem...&quot;</span><span class="p">)</span>
+        <span class="n">overlay_info</span> <span class="o">=</span> <span class="n">gerar_overlay_info</span><span class="p">(</span><span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Informações de imagem geradas: </span><span class="si">{</span><span class="n">overlay_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Aplicação dos textos sobrepostos</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Aplicando textos ao vídeo ===&quot;</span><span class="p">)</span>
+        <span class="n">current_stream</span> <span class="o">=</span> <span class="n">in_file</span>
+        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">drawtext_info</span><span class="p">:</span>
+            <span class="c1"># Primeiro aplica o background</span>
+            <span class="k">if</span> <span class="s1">&#39;background_image&#39;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+                <span class="n">bg</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;background_image&#39;</span><span class="p">])</span>
+                
+                <span class="c1"># Verifica se a palavra tem acento</span>
+                <span class="n">palavra</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+                <span class="n">tem_acento</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="s1">&#39;áéíóúâêîôûãõàèìòùäëïöüÁÉÍÓÚÂÊÎÔÛÃÕÀÈÌÒÙÄËÏÖÜ&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">palavra</span><span class="p">)</span>
+                
+                <span class="c1"># Ajusta a posição Y do background baseado na presença de acento</span>
+                <span class="n">bg_y</span> <span class="o">=</span> <span class="s1">&#39;(H*0.75-9)&#39;</span> <span class="k">if</span> <span class="n">tem_acento</span> <span class="k">else</span> <span class="s1">&#39;(H*0.75-18)&#39;</span>
+                
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Aplicando background para: </span><span class="si">{</span><span class="n">palavra</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- Tem acento: </span><span class="si">{</span><span class="n">tem_acento</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- Posição Y: </span><span class="si">{</span><span class="n">bg_y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">overlay</span><span class="p">(</span>
+                    <span class="n">bg</span><span class="p">,</span>
+                    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;(W-w)/2&#39;</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">bg_y</span><span class="p">,</span>
+                    <span class="n">enable</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;enable&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
+            
+            <span class="c1">#logger.info(f&quot;\nAplicando texto: {info[&#39;text&#39;]}&quot;)</span>
+            <span class="c1">#logger.info(f&quot;- Fonte: {info[&#39;fontfile&#39;]}&quot;)</span>
+            <span class="c1">#logger.info(f&quot;- Tamanho: {info[&#39;fontsize&#39;]}&quot;)</span>
+            <span class="c1">#logger.info(f&quot;- Posição Y do texto: (h*0.75)&quot;)</span>
+            <span class="c1">#logger.info(f&quot;- Enable: {info[&#39;enable&#39;]}&quot;)</span>
+            
+            <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">drawtext</span><span class="p">(</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">],</span>
+                <span class="n">fontfile</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;fontfile&#39;</span><span class="p">],</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;fontsize&#39;</span><span class="p">],</span>
+                <span class="n">fontcolor</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;fontcolor&#39;</span><span class="p">],</span>
+                <span class="n">x</span><span class="o">=</span><span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="s1">&#39;(h*0.75)&#39;</span><span class="p">,</span>   <span class="c1"># Mantém a posição original</span>
+                <span class="n">enable</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;enable&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+            
+        <span class="c1"># Aplicação das imagens sobrepostas</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Aplicando imagens ao vídeo ===&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">img_info</span> <span class="ow">in</span> <span class="n">overlay_info</span><span class="p">:</span>
+            <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;nomeArquivo&#39;</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processando imagem: </span><span class="si">{</span><span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;nomeArquivo&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- Caminho completo: </span><span class="si">{</span><span class="n">img_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- Existe arquivo? </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">img_path</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Iniciando sobreposição da imagem...&quot;</span><span class="p">)</span>
+                <span class="c1"># Ajusta a imagem para preencher a tela sem distorção</span>
+                <span class="n">overlay_stream</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">ffmpeg</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> 
+                        <span class="s1">&#39;if(gt(iw/ih,1920/1080),1920,trunc(1080*iw/ih/2)*2)&#39;</span><span class="p">,</span> 
+                        <span class="s1">&#39;if(gt(iw/ih,1920/1080),trunc(1920*ih/iw/2)*2,1080)&#39;</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;pad&#39;</span><span class="p">,</span> <span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">,</span> <span class="s1">&#39;(ow-iw)/2&#39;</span><span class="p">,</span> <span class="s1">&#39;(oh-ih)/2&#39;</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="n">current_stream</span> <span class="o">=</span> <span class="n">current_stream</span><span class="o">.</span><span class="n">overlay</span><span class="p">(</span>
+                    <span class="n">overlay_stream</span><span class="p">,</span>
+                    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;(main_w-overlay_w)/2&#39;</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;(main_h-overlay_h)/2&#39;</span><span class="p">,</span>
+                    <span class="n">enable</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;between(t,</span><span class="si">{</span><span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">img_info</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Imagem sobreposta com sucesso&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo de imagem não encontrado: </span><span class="si">{</span><span class="n">img_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Imagens aplicadas com sucesso.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Configuração de saída</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">final_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;video_final_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.mp4&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configurando saída para: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">out</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">output</span><span class="p">(</span>
+            <span class="n">current_stream</span><span class="p">,</span> <span class="n">in_file</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">],</span>
+            <span class="n">output_path</span><span class="p">,</span>
+            <span class="n">vcodec</span><span class="o">=</span><span class="s1">&#39;libx264&#39;</span><span class="p">,</span>
+            <span class="n">preset</span><span class="o">=</span><span class="s1">&#39;fast&#39;</span><span class="p">,</span>
+            <span class="n">acodec</span><span class="o">=</span><span class="s1">&#39;aac&#39;</span><span class="p">,</span>
+            <span class="n">audio_bitrate</span><span class="o">=</span><span class="s1">&#39;192k&#39;</span><span class="p">,</span>
+            <span class="n">crf</span><span class="o">=</span><span class="mi">18</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Log do comando ffmpeg</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Comando FFmpeg Completo ===&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ffmpeg </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">get_args</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Execução do comando FFmpeg</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executando comando FFmpeg...&quot;</span><span class="p">)</span>
+        <span class="n">ffmpeg</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">overwrite_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo finalizado com sucesso: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">output_path</span>  <span class="c1"># Retorna o caminho do vídeo processado</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stack trace completo:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="gerar_drawtext_info_simples">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.gerar_drawtext_info_simples">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_drawtext_info_simples</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">):</span>
+    <span class="n">drawtext_info</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">palavras_encontradas</span><span class="p">:</span>
+        <span class="n">tempo_inicio</span><span class="p">,</span> <span class="n">tempo_fim</span> <span class="o">=</span> <span class="n">encontrar_tempo_frase</span><span class="p">(</span><span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">palavra</span><span class="p">,</span> <span class="n">eh_imagem</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tempo_inicio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tempo_fim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Posição Y comum para texto e background (75% da altura do vídeo)</span>
+            <span class="n">posicao_y</span> <span class="o">=</span> <span class="s1">&#39;(h*0.75)&#39;</span>  <span class="c1"># Alterado de 0.8 para 0.75</span>
+            
+            <span class="c1">#logger.info(&quot;\n=== Gerando informações de texto ===&quot;)</span>
+            <span class="c1">#logger.info(f&quot;Palavra: {palavra}&quot;)</span>
+            <span class="c1">#logger.info(f&quot;Tempo início: {tempo_inicio}, Tempo fim: {tempo_fim}&quot;)</span>
+            
+            <span class="c1"># Cria background personalizado</span>
+            <span class="n">fonte_size</span> <span class="o">=</span> <span class="mi">50</span>
+            <span class="n">bg_path</span> <span class="o">=</span> <span class="n">criar_background_arredondado</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">fonte_size</span><span class="p">)</span>
+            
+            <span class="c1">#logger.info(f&quot;Background gerado: {bg_path}&quot;)</span>
+            <span class="c1">#logger.info(f&quot;Posição Y definida: {posicao_y}&quot;)</span>
+            
+            <span class="n">fonte_style</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_root_path</span><span class="p">(),</span> <span class="s2">&quot;fonte&quot;</span><span class="p">,</span> <span class="s2">&quot;Poppins-Bold.ttf&quot;</span><span class="p">)</span>
+            <span class="c1">#logger.info(f&quot;Fonte: {fonte_style}&quot;)</span>
+            
+            <span class="c1"># Configura o texto</span>
+            <span class="n">text_info</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">palavra</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="s1">&#39;(w-tw)/2&#39;</span><span class="p">,</span>  <span class="c1"># w = largura do vídeo, tw = largura do texto</span>
+                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">posicao_y</span><span class="p">,</span>
+                <span class="s1">&#39;fontsize&#39;</span><span class="p">:</span> <span class="n">fonte_size</span><span class="p">,</span>
+                <span class="s1">&#39;fontcolor&#39;</span><span class="p">:</span> <span class="s1">&#39;white&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;fadeInStart&#39;</span><span class="p">:</span> <span class="n">tempo_inicio</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
+                <span class="s1">&#39;fadeInEnd&#39;</span><span class="p">:</span> <span class="n">tempo_inicio</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span>
+                <span class="s1">&#39;fadeOutStart&#39;</span><span class="p">:</span> <span class="n">tempo_fim</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span>
+                <span class="s1">&#39;fadeOutEnd&#39;</span><span class="p">:</span> <span class="n">tempo_fim</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span>
+                <span class="s1">&#39;fontstyle&#39;</span><span class="p">:</span> <span class="n">fonte_style</span><span class="p">,</span>
+                <span class="s1">&#39;fontfile&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fonte_style</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;background_image&#39;</span><span class="p">:</span> <span class="n">bg_path</span><span class="p">,</span>
+                <span class="s1">&#39;background_y&#39;</span><span class="p">:</span> <span class="n">posicao_y</span><span class="p">,</span>
+                <span class="s1">&#39;enable&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;between(t,</span><span class="si">{</span><span class="n">tempo_inicio</span><span class="o">-</span><span class="mf">0.5</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">tempo_fim</span><span class="o">+</span><span class="mf">0.5</span><span class="si">}</span><span class="s1">)&#39;</span>
+            <span class="p">}</span>
+            <span class="c1">#logger.info(f&quot;Informações de texto geradas: {text_info}&quot;)</span>
+            <span class="n">drawtext_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text_info</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="n">drawtext_info</span></div>
+
+
+
+<div class="viewcode-block" id="gerar_momentos_zoom">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.gerar_momentos_zoom">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_momentos_zoom</span><span class="p">(</span><span class="n">duracao_video</span><span class="p">,</span> <span class="n">qtd_zooms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">intervalo_minimo</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera momentos de zoom aleatórios espaçados pelo intervalo mínimo no vídeo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">momentos_zoom</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">tempo_atual</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="c1"># Divide o tempo total do vídeo em partes para garantir espaçamento entre os zooms</span>
+    <span class="n">espacamento</span> <span class="o">=</span> <span class="n">duracao_video</span> <span class="o">//</span> <span class="p">(</span><span class="n">qtd_zooms</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qtd_zooms</span><span class="p">):</span>
+        <span class="n">inicio_zoom</span> <span class="o">=</span> <span class="n">tempo_atual</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">espacamento</span> <span class="o">-</span> <span class="n">intervalo_minimo</span><span class="p">)</span>
+        <span class="n">fim_zoom</span> <span class="o">=</span> <span class="n">inicio_zoom</span> <span class="o">+</span> <span class="mi">15</span>  <span class="c1"># Duração do zoom de 15 segundos</span>
+
+        <span class="c1"># Garante que o zoom não ultrapasse o final do vídeo</span>
+        <span class="k">if</span> <span class="n">fim_zoom</span> <span class="o">&gt;</span> <span class="n">duracao_video</span><span class="p">:</span>
+            <span class="n">fim_zoom</span> <span class="o">=</span> <span class="n">duracao_video</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">momentos_zoom</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">inicio_zoom</span><span class="p">,</span> <span class="n">fim_zoom</span><span class="p">))</span>
+        <span class="n">tempo_atual</span> <span class="o">+=</span> <span class="n">espacamento</span>
+    
+    <span class="k">return</span> <span class="n">momentos_zoom</span></div>
+
+
+<div class="viewcode-block" id="criar_background_arredondado">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.services.text_overlay_service_studio.criar_background_arredondado">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_background_arredondado</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span> <span class="n">fonte_size</span><span class="p">,</span> <span class="n">padding_horizontal</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padding_vertical</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria um background com cantos arredondados que se adapta ao tamanho do texto.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Estima o tamanho do texto (aproximado)</span>
+    <span class="n">texto_width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">texto</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">fonte_size</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">)</span>  <span class="c1"># Aumentado de 0.7 para 0.8</span>
+    
+    <span class="c1"># Adiciona uma largura mínima para palavras curtas</span>
+    <span class="n">largura_minima</span> <span class="o">=</span> <span class="n">fonte_size</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># Garante um mínimo de 2 caracteres de largura</span>
+    <span class="n">texto_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">texto_width</span><span class="p">,</span> <span class="n">largura_minima</span><span class="p">)</span>
+    
+    <span class="n">texto_height</span> <span class="o">=</span> <span class="n">fonte_size</span>
+    
+    <span class="c1"># Adiciona padding</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">texto_width</span> <span class="o">+</span> <span class="p">(</span><span class="n">padding_horizontal</span><span class="p">))</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">texto_height</span> <span class="o">+</span> <span class="p">(</span><span class="n">padding_vertical</span><span class="p">))</span>
+    
+    <span class="c1"># Cria uma imagem com transparência</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGBA&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    
+    <span class="c1"># Desenha o retângulo com cantos arredondados</span>
+    <span class="n">rect</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)]</span>
+    <span class="n">draw</span><span class="o">.</span><span class="n">rounded_rectangle</span><span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="p">(</span><span class="mi">55</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">235</span><span class="p">))</span>
+    
+    <span class="c1"># Salva a imagem</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;bg_</span><span class="si">{</span><span class="n">texto</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">)</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">output_path</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

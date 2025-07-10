@@ -1,0 +1,712 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.common.tratamentoJsonMatriz &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/common_utils.html">Utilitários Comuns</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.common.tratamentoJsonMatriz</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.common.tratamentoJsonMatriz</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">bigquery</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="c1"># Adicionar o diretório raiz do projeto ao sys.path</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">model</span>
+
+
+<div class="viewcode-block" id="get_component_classes">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.tratamentoJsonMatriz.get_component_classes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_component_classes</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém as classes de componentes disponíveis.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Dicionário com as classes de componentes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">component</span><span class="p">:</span> <span class="bp">cls</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">cls</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">BaseModel</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;component&quot;</span><span class="p">)</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="buscaPromptMatriz">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.tratamentoJsonMatriz.buscaPromptMatriz">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">buscaPromptMatriz</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]],</span> <span class="n">component_classes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Busca o prompt da matriz de componentes.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - data: Dados para buscar o prompt</span>
+<span class="sd">    - component_classes: Classes de componentes disponíveis </span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Texto completo com os prompts das matrizes de componentes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">componentes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1">#Verifica se data é uma lista, se for, usa o tratamento anterior.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+          <span class="n">conteudo_do_componente</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span>  <span class="p">(</span><span class="s1">&#39;conteudo&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">or</span> <span class="s1">&#39;conteudo_introducao&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
+      <span class="n">conteudo_do_componente</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;conteudo&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;conteudo_introducao&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+          <span class="c1"># Caso o data seja diretamente um componente (json sem &quot;conteudo&quot;)</span>
+        <span class="n">conteudo_do_componente</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">conteudo_do_componente</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">conteudo_do_componente</span><span class="p">:</span>
+            <span class="n">componente</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__component&#39;</span><span class="p">)</span>
+            <span class="n">variante</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;variante&#39;</span><span class="p">)</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="n">consultar_bigquery</span><span class="p">(</span><span class="n">componente</span><span class="p">,</span> <span class="n">variante</span><span class="p">)</span> <span class="k">if</span> <span class="n">componente</span> <span class="k">else</span> <span class="kc">None</span>
+            
+            <span class="k">if</span> <span class="n">componente</span><span class="p">:</span>
+                
+                <span class="n">componente_obj</span> <span class="o">=</span> <span class="n">mapear_componente</span><span class="p">(</span><span class="n">componente</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">component_classes</span><span class="p">)</span>
+                <span class="n">componentes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;componente&quot;</span><span class="p">:</span> <span class="n">componente</span><span class="p">,</span>
+                    <span class="s2">&quot;variante&quot;</span><span class="p">:</span> <span class="n">variante</span><span class="p">,</span>
+                    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
+                    <span class="s2">&quot;objeto&quot;</span><span class="p">:</span> <span class="n">componente_obj</span><span class="p">,</span>
+                   <span class="s2">&quot;nao_mapeado&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="s2">&quot;sem_prompt&quot;</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">prompt</span> <span class="o">==</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+                <span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c1"># componente não mapeado (novo else)</span>
+                 <span class="n">componentes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                      <span class="s2">&quot;componente&quot;</span><span class="p">:</span> <span class="n">componente</span><span class="p">,</span>
+                      <span class="s2">&quot;variante&quot;</span><span class="p">:</span> <span class="n">variante</span><span class="p">,</span>
+                      <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
+                      <span class="s2">&quot;objeto&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">,</span>
+                      <span class="s2">&quot;nao_mapeado&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="s2">&quot;sem_prompt&quot;</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">prompt</span> <span class="o">==</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+                  <span class="p">})</span>
+    <span class="n">resultado</span> <span class="o">=</span> <span class="n">tratamentoObjetoComponentes</span><span class="p">(</span><span class="n">componentes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resultado</span></div>
+
+
+<div class="viewcode-block" id="tratamentoObjetoComponentes">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.tratamentoJsonMatriz.tratamentoObjetoComponentes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tratamentoObjetoComponentes</span><span class="p">(</span><span class="n">arrayMatriz</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trata os objetos de componentes.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - arrayMatriz: Lista de dicionários com informações sobre os componentes</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Texto completo com os prompts das matrizes de componentes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">texto_completo</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">arrayMatriz</span><span class="p">:</span>
+        <span class="n">promptMatriz</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Informações para o Roteiro: </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prompt&#39;</span><span class="p">)</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prompt&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">objeto</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;objeto&#39;</span><span class="p">)</span>
+        <span class="n">componente</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;componente&#39;</span><span class="p">)</span>
+        <span class="n">texto_componente</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    
+         <span class="c1"># Adiciona o prompt no início de cada iteração</span>
+        <span class="n">texto_componente</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">promptMatriz</span><span class="si">}</span><span class="s2"> Texto:</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nao_mapeado&quot;</span><span class="p">):</span> <span class="c1">#Tratamento caso não tenha mapeado o component</span>
+            <span class="n">texto_componente</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Atenção: O texto abaixo também faz parte do conteúdo, mesmo que o componente &#39;</span><span class="si">{</span><span class="n">componente</span><span class="si">}</span><span class="s2">&#39; não tenha um tratamento específico configurado. </span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sem_prompt&quot;</span><span class="p">):</span> <span class="c1">#Tratamento caso o prompt não seja encontrado para determinado component</span>
+            <span class="n">texto_componente</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Atenção: O texto abaixo também faz parte do conteúdo, e não foi encontrado um prompt específico no BigQuery para o componente &#39;</span><span class="si">{</span><span class="n">componente</span><span class="si">}</span><span class="s2">&#39;. </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">componente</span> <span class="ow">in</span> <span class="n">component_extractors</span><span class="p">:</span> <span class="c1"># se o componente é mapeado ele é processado da mesma forma que antes, por garantia. </span>
+               <span class="n">texto_extraido</span> <span class="o">=</span> <span class="n">component_extractors</span><span class="p">[</span><span class="n">componente</span><span class="p">](</span><span class="n">objeto</span><span class="p">)</span>
+               <span class="n">texto_componente</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">texto_extraido</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">texto_extraido</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> 
+
+        <span class="k">elif</span> <span class="n">componente</span> <span class="ow">in</span> <span class="n">component_extractors</span><span class="p">:</span> <span class="c1"># Tratamento para o component que esta mapeado e existe um prompt associado. </span>
+                <span class="n">texto_extraido</span> <span class="o">=</span> <span class="n">component_extractors</span><span class="p">[</span><span class="n">componente</span><span class="p">](</span><span class="n">objeto</span><span class="p">)</span>
+                <span class="n">texto_componente</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">texto_extraido</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">texto_extraido</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+
+        <span class="n">texto_completo</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">texto_componente</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="n">texto_completo</span></div>
+
+
+<div class="viewcode-block" id="consultar_bigquery">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.tratamentoJsonMatriz.consultar_bigquery">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">consultar_bigquery</span><span class="p">(</span><span class="n">componente</span><span class="p">,</span> <span class="n">variante</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Consulta o prompt da matriz de componentes no BigQuery.</span>
+
+<span class="sd">  Recebe:</span>
+<span class="sd">  - componente: Nome do componente a ser consultado</span>
+<span class="sd">  - variante: Variante do componente a ser consultada (opcional)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+  
+  <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT PROMPT</span>
+<span class="s2">      FROM `yduqs-dev-443513.YDUQS.PROMPT_IA`</span>
+<span class="s2">      WHERE COMPONENT = @componente</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+  <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+    <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+      <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;componente&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">componente</span><span class="p">)</span>
+      <span class="p">])</span>
+    
+  <span class="k">if</span> <span class="n">variante</span> <span class="ow">and</span> <span class="n">componente</span> <span class="o">==</span> <span class="s2">&quot;principais.tipografia&quot;</span><span class="p">:</span>
+     <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT PROMPT</span>
+<span class="s2">    FROM `yduqs-dev-443513.YDUQS.PROMPT_IA`</span>
+<span class="s2">    WHERE COMPONENT = @componente AND VARIANTE = @variante</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+     <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">(</span>
+         <span class="n">query_parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;componente&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">componente</span><span class="p">),</span>
+            <span class="n">bigquery</span><span class="o">.</span><span class="n">ScalarQueryParameter</span><span class="p">(</span><span class="s2">&quot;variante&quot;</span><span class="p">,</span> <span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">variante</span><span class="p">)</span>
+            <span class="p">]</span>
+         <span class="p">)</span>
+        
+  <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">)</span>
+  <span class="n">results</span> <span class="o">=</span> <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+  
+  <span class="k">return</span> <span class="nb">next</span><span class="p">((</span><span class="n">row</span><span class="o">.</span><span class="n">PROMPT</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mapear_componente">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.tratamentoJsonMatriz.mapear_componente">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mapear_componente</span><span class="p">(</span><span class="n">componente</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">component_classes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mapeia o componente para a classe correspondente.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - componente: Nome do componente a ser mapeado</span>
+<span class="sd">    - item: Item a ser mapeado</span>
+<span class="sd">    - component_classes: Classes de componentes disponíveis</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Objeto mapeado ou None se não encontrado</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">componente_classe</span> <span class="o">=</span> <span class="n">component_classes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">componente</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">componente_classe</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">componente_classe</span><span class="p">(</span><span class="o">**</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Componente não mapeado: </span><span class="si">{</span><span class="n">componente</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="extrair_texto_de_html">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.tratamentoJsonMatriz.extrair_texto_de_html">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extrair_texto_de_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">html_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">textos_p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;p.*?&gt;(.*?)&lt;/p&gt;&#39;</span><span class="p">,</span> <span class="n">html_string</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos_p</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_card</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo_card&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título do Card: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo_card&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;descricao_card&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Descrição do Card: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;descricao_card&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_item_carrossel</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo_texto&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título do Item do Carrossel: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo_texto&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo_texto&#39;</span><span class="p">):</span>
+        <span class="n">conteudo_texto</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo_texto&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conteúdo do Item do Carrossel: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">conteudo_texto</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">conteudo_texto</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;legenda&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagem&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span> <span class="s1">&#39;formats&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="o">.</span><span class="n">formats</span> <span class="ow">and</span> <span class="s1">&#39;medium&#39;</span> <span class="ow">in</span> <span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="o">.</span><span class="n">formats</span><span class="p">:</span>
+       <span class="n">medium_url</span> <span class="o">=</span> <span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="o">.</span><span class="n">formats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;medium&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da Imagem (Medium): </span><span class="si">{</span><span class="n">medium_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_alternativa</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;alternativa_resposta&#39;</span><span class="p">):</span>
+     <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Alternativa Resposta: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;alternativa_resposta&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;legenda&#39;</span><span class="p">):</span>
+     <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_card_timeline</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label do Card Timeline: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;label&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título do Card Timeline: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;subtitulo&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subtítulo do Card Timeline: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;subtitulo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;descricao&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Descrição do Card Timeline: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;descricao&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;legenda&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   
+   <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_imagem</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagem&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span><span class="s1">&#39;url&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">)</span>
+        <span class="n">legenda</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">url</span> <span class="ow">or</span> <span class="n">legenda</span><span class="p">:</span>
+            <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+                <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da Imagem: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">legenda</span><span class="p">:</span>
+                <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda: </span><span class="si">{</span><span class="n">legenda</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span>
+   <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_zoom</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;legenda&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;imagem_zoom&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem_zoom</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem_zoom</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+          <span class="n">url_imagem_zoom</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem_zoom</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">)</span>
+          <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL Imagem Zoom: </span><span class="si">{</span><span class="n">url_imagem_zoom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_antes_depois</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;descricao&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Descrição: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;descricao&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_atividade_pratica</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;enunciado_atividade_pratica&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Enunciado: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;enunciado_atividade_pratica&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo_atividade_pratica&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo_atividade_pratica&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_caixa_formula</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título da Caixa Fórmula: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;legenda&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda da Caixa Fórmula: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;transcricao&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcrição da Caixa Fórmula: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;transcricao&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formula da Caixa Fórmula: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;formula&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_card_comparativo</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="n">card1_text</span> <span class="o">=</span> <span class="n">_extrair_texto_card</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;card1&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;card1&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+   <span class="n">card2_text</span> <span class="o">=</span> <span class="n">_extrair_texto_card</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;card2&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;card2&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+   <span class="k">if</span> <span class="n">card1_text</span><span class="p">:</span>
+     <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card 1:</span><span class="se">\n</span><span class="si">{</span><span class="n">card1_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">card2_text</span><span class="p">:</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card 2:</span><span class="se">\n</span><span class="si">{</span><span class="n">card2_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_card_feedback</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+     <span class="n">card</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;card&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+     <span class="k">if</span> <span class="n">card</span><span class="p">:</span>
+          <span class="n">card_text</span> <span class="o">=</span>  <span class="n">_extrair_texto_card</span><span class="p">(</span><span class="n">card</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;card&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+          <span class="k">return</span>  <span class="sa">f</span><span class="s2">&quot;Card Feedback:</span><span class="se">\n</span><span class="si">{</span><span class="n">card_text</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="k">if</span> <span class="n">card_text</span> <span class="k">else</span> <span class="kc">None</span>
+     <span class="k">return</span> <span class="kc">None</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_card_player</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo_card&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título do Card Player: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo_card&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;descricao_card&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Descrição do Card Player: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;descricao_card&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+  
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_card_tematico</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;titulo_card_tematico&#39;</span><span class="p">):</span>
+    <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título do Card Temático: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo_card_tematico&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo_card_tematico&#39;</span><span class="p">):</span>
+      <span class="n">conteudo</span> <span class="o">=</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo_card_tematico&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conteúdo do Card Temático: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">conteudo</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">conteudo</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+  <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_carrossel</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;itens_carrossel&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;itens_carrossel&#39;</span><span class="p">),</span><span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item_carrossel</span> <span class="ow">in</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;itens_carrossel&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">item_carrossel_text</span> <span class="o">=</span> <span class="n">_extrair_texto_item_carrossel</span><span class="p">(</span><span class="n">item_carrossel</span><span class="p">)</span> <span class="k">if</span> <span class="n">item_carrossel</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">item_carrossel_text</span><span class="p">:</span>
+               <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item_carrossel_text</span><span class="p">)</span>
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_chave_resposta</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo_feedback&#39;</span><span class="p">):</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item_feedback</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo_feedback&#39;</span><span class="p">):</span>
+          <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">item_feedback</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chave Resposta </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+  <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_code_snippet</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;snippet_codigo&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Snippet de Código: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;snippet_codigo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;linguagem&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Linguagem do Snippet de Código: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;linguagem&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_code_compiler</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;codigo_padrao&#39;</span><span class="p">):</span>
+         <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Código Padrão: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;codigo_padrao&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;linguagem&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Linguagem: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;linguagem&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+ 
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_destaque_texto</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;conteudo&#39;</span><span class="p">):</span>
+       <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Conteúdo do Destaque: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;conteudo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_grupo_accordion</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;accordions&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;accordions&#39;</span><span class="p">),</span><span class="nb">list</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">item_accordion</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;accordions&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">textos_item</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">item_accordion</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+             <span class="n">textos_item</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos_item</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+   <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_grupo_card_player</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;cards&#39;</span><span class="p">),</span><span class="nb">list</span><span class="p">):</span>
+     <span class="k">for</span> <span class="n">card_player</span> <span class="ow">in</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;cards&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+         <span class="n">card_player_text</span> <span class="o">=</span> <span class="n">_extrair_texto_card_player</span><span class="p">(</span><span class="n">card_player</span><span class="p">)</span>
+         <span class="k">if</span> <span class="n">card_player_text</span><span class="p">:</span>
+              <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card Player:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">card_player_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="k">if</span> <span class="n">textos</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_grupo_card</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;cards&#39;</span><span class="p">,[]):</span>
+            <span class="n">card_text</span> <span class="o">=</span> <span class="n">_extrair_texto_card</span><span class="p">(</span><span class="n">card</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">card_text</span><span class="p">:</span>
+               <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card:</span><span class="se">\n</span><span class="si">{</span><span class="n">card_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">card</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">card</span><span class="p">,</span><span class="s1">&#39;imagem&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">card</span><span class="o">.</span><span class="n">imagem</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">card</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span><span class="s1">&#39;url&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">card</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">url_imagem</span> <span class="o">=</span> <span class="n">card</span><span class="o">.</span><span class="n">imagem</span><span class="o">.</span><span class="n">url</span>
+                <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da Imagem: </span><span class="si">{</span><span class="n">url_imagem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_grupo_imagem</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagens&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;imagens&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">imagem</span> <span class="ow">in</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;imagens&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+           <span class="n">text_imagem</span> <span class="o">=</span> <span class="n">_extrair_texto_imagem</span><span class="p">(</span><span class="n">imagem</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">text_imagem</span><span class="p">:</span>
+            <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem:</span><span class="se">\n</span><span class="si">{</span><span class="n">text_imagem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_grupo_zoom</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagens&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagens&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+       <span class="k">for</span> <span class="n">zoom</span> <span class="ow">in</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagens&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">text_zoom</span> <span class="o">=</span> <span class="n">_extrair_texto_zoom</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">text_zoom</span><span class="p">:</span>
+                <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zoom:</span><span class="se">\n</span><span class="si">{</span><span class="n">text_zoom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="k">if</span> <span class="n">textos</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_patterns_imagem</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;texto&#39;</span><span class="p">):</span>
+       <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Texto do Pattern Imagem: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;texto&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;legenda&#39;</span><span class="p">):</span>
+          <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Legenda do Pattern Imagem: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;legenda&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;imagem&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span><span class="s1">&#39;url&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="o">.</span><span class="n">imagem</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">)</span>
+            <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da Imagem do Pattern: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+    
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_questao</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;enunciado_questao&#39;</span><span class="p">):</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Enunciado da Questão: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;enunciado_questao&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;alternativas&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;alternativas&#39;</span><span class="p">),</span><span class="nb">list</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">alternativa</span> <span class="ow">in</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;alternativas&#39;</span><span class="p">,[]):</span>
+           <span class="n">alternativa_text</span> <span class="o">=</span> <span class="n">_extrair_texto_alternativa</span><span class="p">(</span><span class="n">alternativa</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">alternativa_text</span><span class="p">:</span>
+              <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Alternativa:</span><span class="se">\n</span><span class="si">{</span><span class="n">alternativa_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+           
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;feedback_positivo&#39;</span><span class="p">)</span> <span class="p">:</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Feedback Positivo: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;feedback_positivo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;feedback_negativo&#39;</span><span class="p">):</span>
+         <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Feedback Negativo: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;feedback_negativo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+        
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_quote</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;texto&#39;</span><span class="p">):</span>
+         <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Texto do Quote: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;texto&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;autor&#39;</span><span class="p">):</span>
+      <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Autor do Quote: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;autor&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_tab_destaque</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;tabs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;tabs&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item_tab</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;tabs&#39;</span><span class="p">,[]):</span>
+          <span class="n">textos_item</span> <span class="o">=</span> <span class="p">[]</span>
+          <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">item_tab</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+               <span class="n">textos_item</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+          <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos_item</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="ow">or</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_texto</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;titulo&#39;</span><span class="p">):</span>
+    <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título do Texto: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;titulo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;conteudo_texto&#39;</span><span class="p">):</span>
+        <span class="n">conteudo_texto</span> <span class="o">=</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;conteudo_texto&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conteúdo do Texto: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">conteudo_texto</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">conteudo_texto</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+    
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_texto_com_background</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+  <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;texto&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Texto: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;texto&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+  <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_timeline</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards_timeline&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;cards_timeline&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+       <span class="k">for</span> <span class="n">card_timeline</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards_timeline&#39;</span><span class="p">,[]):</span>
+           <span class="n">card_timeline_text</span> <span class="o">=</span> <span class="n">_extrair_texto_card_timeline</span><span class="p">(</span><span class="n">card_timeline</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">card_timeline_text</span><span class="p">:</span>
+                <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card Timeline:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">card_timeline_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_timeline_horizontal</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards_timeline&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards_timeline&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+       <span class="k">for</span> <span class="n">card_timeline</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;cards_timeline&#39;</span><span class="p">,[]):</span>
+           <span class="n">card_timeline_text</span> <span class="o">=</span> <span class="n">_extrair_texto_card_timeline</span><span class="p">(</span><span class="n">card_timeline</span><span class="p">)</span>
+           <span class="k">if</span> <span class="n">card_timeline_text</span><span class="p">:</span>
+                <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Card Timeline:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">card_timeline_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+   <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_tipografia</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;texto&#39;</span><span class="p">):</span>
+        <span class="n">texto</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;texto&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">texto</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span> <span class="ow">and</span>  <span class="s2">&quot;&lt;p&quot;</span> <span class="ow">in</span> <span class="n">texto</span> <span class="k">else</span> <span class="n">texto</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_tipografia_modal</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">textos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;texto&#39;</span><span class="p">):</span>
+          <span class="n">texto</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;texto&#39;</span><span class="p">)</span>
+          <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Texto da Tipografia Modal: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">texto</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="s1">&#39;&lt;p&#39;</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">texto</span><span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="n">texto</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">texto</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;modais&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;modais&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">):</span>
+       <span class="k">for</span> <span class="n">modal</span> <span class="ow">in</span>  <span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;modais&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+          <span class="n">textos_modal</span> <span class="o">=</span> <span class="p">[]</span>
+          <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">modal</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+              <span class="n">textos_modal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">extrair_texto_de_html</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span><span class="w"> </span><span class="ow">and</span><span class="w">  </span><span class="s1">&#39;&lt;p&#39;</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+          <span class="n">textos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textos_modal</span><span class="p">)</span> <span class="k">if</span> <span class="n">textos_modal</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">textos</span> <span class="k">if</span> <span class="n">t</span><span class="p">])</span> <span class="k">if</span> <span class="n">textos</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_video</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+   <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;urlVideo&#39;</span><span class="p">):</span>
+      <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;URL do Video: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;urlVideo&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+   <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extrair_texto_audio</span><span class="p">(</span><span class="n">objeto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">objeto</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span> <span class="s1">&#39;url_audio&#39;</span><span class="p">):</span>
+      <span class="k">return</span>  <span class="sa">f</span><span class="s2">&quot;URL do Audio: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">objeto</span><span class="p">,</span><span class="s1">&#39;url_audio&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="n">component_extractors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;aux-card.card&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_card</span><span class="p">,</span>
+    <span class="s2">&quot;aux-carrossel.item-carrossel&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_item_carrossel</span><span class="p">,</span>
+    <span class="s2">&quot;aux-questao.alternativa&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_alternativa</span><span class="p">,</span>
+    <span class="s2">&quot;aux-card.card-timeline&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_card_timeline</span><span class="p">,</span>
+    <span class="s2">&quot;aux-imagem.imagem&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_imagem</span><span class="p">,</span>
+    <span class="s2">&quot;aux-zoom.zoom&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_zoom</span><span class="p">,</span>
+    <span class="s2">&quot;principais.antes-depois&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_antes_depois</span><span class="p">,</span>
+    <span class="s2">&quot;principais.atividade-pratica&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_atividade_pratica</span><span class="p">,</span>
+    <span class="s2">&quot;principais.caixa-formula&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_caixa_formula</span><span class="p">,</span>
+    <span class="s2">&quot;principais.card-comparativo&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_card_comparativo</span><span class="p">,</span>
+     <span class="s2">&quot;principais.card-feedback&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_card_feedback</span><span class="p">,</span>
+     <span class="s2">&quot;principais.card-player&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_card_player</span><span class="p">,</span>
+    <span class="s2">&quot;principais.card-tematico&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_card_tematico</span><span class="p">,</span>
+    <span class="s2">&quot;principais.carrossel&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_carrossel</span><span class="p">,</span>
+     <span class="s2">&quot;principais.chave-resposta&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_chave_resposta</span><span class="p">,</span>
+     <span class="s2">&quot;principais.code-snippet&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_code_snippet</span><span class="p">,</span>
+    <span class="s2">&quot;principais.code-compiler&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_code_compiler</span><span class="p">,</span>
+    <span class="s2">&quot;principais.destaque-texto&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_destaque_texto</span><span class="p">,</span>
+    <span class="s2">&quot;principais.grupo-accordion&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_grupo_accordion</span><span class="p">,</span>
+    <span class="s2">&quot;principais.grupo-card-player&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_grupo_card_player</span><span class="p">,</span>
+    <span class="s2">&quot;principais.grupo-card&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_grupo_card</span><span class="p">,</span>
+    <span class="s2">&quot;principais.grupo-imagem&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_grupo_imagem</span><span class="p">,</span>
+      <span class="s2">&quot;principais.grupo-zoom&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_grupo_zoom</span><span class="p">,</span>
+    <span class="s2">&quot;principais.patterns-imagem&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_patterns_imagem</span><span class="p">,</span>
+     <span class="s2">&quot;principais.questao&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_questao</span><span class="p">,</span>
+    <span class="s2">&quot;principais.quote&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_quote</span><span class="p">,</span>
+    <span class="s2">&quot;principais.tab-destaque&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_tab_destaque</span><span class="p">,</span>
+     <span class="s2">&quot;principais.texto&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_texto</span><span class="p">,</span>
+    <span class="s2">&quot;principais.texto-com-background&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_texto_com_background</span><span class="p">,</span>
+    <span class="s2">&quot;principais.timeline&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_timeline</span><span class="p">,</span>
+    <span class="s2">&quot;principais.timeline-horizontal&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_timeline_horizontal</span><span class="p">,</span>
+    <span class="s2">&quot;principais.tipografia&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_tipografia</span><span class="p">,</span>
+    <span class="s2">&quot;principais.tipografia-modal&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_tipografia_modal</span><span class="p">,</span>
+    <span class="s2">&quot;principais.video&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_video</span><span class="p">,</span>
+     <span class="s2">&quot;principais.audio&quot;</span><span class="p">:</span> <span class="n">_extrair_texto_audio</span>
+<span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

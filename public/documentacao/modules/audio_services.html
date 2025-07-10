@@ -1,0 +1,526 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Serviços de Áudio &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Video 100% IA API" href="video_ia.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Serviços de Áudio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#audiobook">Audiobook</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.api.audiobook.create_audiobook"><code class="docutils literal notranslate"><span class="pre">create_audiobook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.api.audiobook.list_files"><code class="docutils literal notranslate"><span class="pre">list_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.api.audiobook.delete_audios"><code class="docutils literal notranslate"><span class="pre">delete_audios()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#servico-de-audiobook">Serviço de Audiobook</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.upload_blob"><code class="docutils literal notranslate"><span class="pre">upload_blob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.salvar_arquivo_audio"><code class="docutils literal notranslate"><span class="pre">salvar_arquivo_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.audiobook"><code class="docutils literal notranslate"><span class="pre">audiobook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.extrair_dados_do_path"><code class="docutils literal notranslate"><span class="pre">extrair_dados_do_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.extrair_texto_do_json"><code class="docutils literal notranslate"><span class="pre">extrair_texto_do_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.gerar_nome_arquivo"><code class="docutils literal notranslate"><span class="pre">gerar_nome_arquivo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.extrair_info_modulo_nucleo"><code class="docutils literal notranslate"><span class="pre">extrair_info_modulo_nucleo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.gerar_audiobook"><code class="docutils literal notranslate"><span class="pre">gerar_audiobook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.pos_processar_roteiro"><code class="docutils literal notranslate"><span class="pre">pos_processar_roteiro()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.configurar_audio"><code class="docutils literal notranslate"><span class="pre">configurar_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audiobook_service.sintetizar_audio"><code class="docutils literal notranslate"><span class="pre">sintetizar_audio()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#audio-q-a">Audio Q&amp;A</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.api.audioqa.create_audioqa"><code class="docutils literal notranslate"><span class="pre">create_audioqa()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#servico-de-q-a">Serviço de Q&amp;A</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.audioqa"><code class="docutils literal notranslate"><span class="pre">audioqa()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.extrair_texto_do_json"><code class="docutils literal notranslate"><span class="pre">extrair_texto_do_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.gerar_nome_arquivo"><code class="docutils literal notranslate"><span class="pre">gerar_nome_arquivo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.gerar_audioqa"><code class="docutils literal notranslate"><span class="pre">gerar_audioqa()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.configurar_voz"><code class="docutils literal notranslate"><span class="pre">configurar_voz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.configurar_audio"><code class="docutils literal notranslate"><span class="pre">configurar_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.sintetizar_audio"><code class="docutils literal notranslate"><span class="pre">sintetizar_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.audioqa_service.salvar_arquivo_audio"><code class="docutils literal notranslate"><span class="pre">salvar_arquivo_audio()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#podcast">Podcast</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.api.podcast.create_podcast"><code class="docutils literal notranslate"><span class="pre">create_podcast()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#servico-de-podcast">Serviço de Podcast</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.podcast"><code class="docutils literal notranslate"><span class="pre">podcast()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.extrair_texto_do_json"><code class="docutils literal notranslate"><span class="pre">extrair_texto_do_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.gerar_nome_arquivo"><code class="docutils literal notranslate"><span class="pre">gerar_nome_arquivo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.gerar_podcast"><code class="docutils literal notranslate"><span class="pre">gerar_podcast()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.configurar_voz_professor"><code class="docutils literal notranslate"><span class="pre">configurar_voz_professor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.configurar_voz_aluna"><code class="docutils literal notranslate"><span class="pre">configurar_voz_aluna()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.configurar_audio"><code class="docutils literal notranslate"><span class="pre">configurar_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.salvar_arquivo_audio"><code class="docutils literal notranslate"><span class="pre">salvar_arquivo_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.conversas_podcast"><code class="docutils literal notranslate"><span class="pre">conversas_podcast()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.formatar_texto_ssml"><code class="docutils literal notranslate"><span class="pre">formatar_texto_ssml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.podcast_service.audioclient"><code class="docutils literal notranslate"><span class="pre">audioclient()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#microlearning">Microlearning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.api.microlearning.create_microlearning"><code class="docutils literal notranslate"><span class="pre">create_microlearning()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#servico-de-microlearning">Serviço de Microlearning</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.microlearning"><code class="docutils literal notranslate"><span class="pre">microlearning()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.extrair_texto_do_json"><code class="docutils literal notranslate"><span class="pre">extrair_texto_do_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.gerar_nome_arquivo"><code class="docutils literal notranslate"><span class="pre">gerar_nome_arquivo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.gerar_audiomicrolearning"><code class="docutils literal notranslate"><span class="pre">gerar_audiomicrolearning()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.configurar_voz"><code class="docutils literal notranslate"><span class="pre">configurar_voz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.configurar_audio"><code class="docutils literal notranslate"><span class="pre">configurar_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.sintetizar_audio"><code class="docutils literal notranslate"><span class="pre">sintetizar_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#app.services.microlearning_service.salvar_arquivo_audio"><code class="docutils literal notranslate"><span class="pre">salvar_arquivo_audio()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#fluxo-de-trabalho">Fluxo de Trabalho</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Audiobook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Audio Q&amp;A</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Podcast</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Microlearning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Serviços de Áudio</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/audio_services.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="servicos-de-audio">
+<h1>Serviços de Áudio<a class="headerlink" href="#servicos-de-audio" title="Link to this heading"></a></h1>
+<section id="audiobook">
+<h2>Audiobook<a class="headerlink" href="#audiobook" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-app.api.audiobook">
+<dt class="sig sig-object py" id="app.api.audiobook.create_audiobook">
+<span class="sig-prename descclassname"><span class="pre">app.api.audiobook.</span></span><span class="sig-name descname"><span class="pre">create_audiobook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/audiobook.html#create_audiobook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.audiobook.create_audiobook" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.api.audiobook.list_files">
+<span class="sig-prename descclassname"><span class="pre">app.api.audiobook.</span></span><span class="sig-name descname"><span class="pre">list_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/audiobook.html#list_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.audiobook.list_files" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.api.audiobook.delete_audios">
+<span class="sig-prename descclassname"><span class="pre">app.api.audiobook.</span></span><span class="sig-name descname"><span class="pre">delete_audios</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/audiobook.html#delete_audios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.audiobook.delete_audios" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<section id="servico-de-audiobook">
+<h3>Serviço de Audiobook<a class="headerlink" href="#servico-de-audiobook" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.services.audiobook_service">
+<dt class="sig sig-object py" id="app.services.audiobook_service.upload_blob">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">upload_blob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bucket_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_blob_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#upload_blob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.upload_blob" title="Link to this definition"></a></dt>
+<dd><p>Uploads a file to the bucket.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.salvar_arquivo_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">salvar_arquivo_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo_saida</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_content</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#salvar_arquivo_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.salvar_arquivo_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.audiobook">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">audiobook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_titulo_nc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_conteudo_inicial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_atual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nucleo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#audiobook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.audiobook" title="Link to this definition"></a></dt>
+<dd><p>Gera um audiobook a partir do conteúdo fornecido.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Dados do conteúdo para gerar o audiobook</p></li>
+<li><p><strong>relative_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Caminho relativo para salvar o arquivo</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Diretório de saída</p></li>
+<li><p><strong>next_titulo_nc</strong> (<em>str</em><em>, </em><em>optional</em>) – Título do próximo conteúdo</p></li>
+<li><p><strong>is_conteudo_inicial</strong> (<em>bool</em>) – Indica se é conteúdo inicial</p></li>
+<li><p><strong>titulo_atual</strong> (<em>str</em><em>, </em><em>optional</em>) – Título atual do conteúdo</p></li>
+<li><p><strong>modulo</strong> (<em>str</em><em>, </em><em>optional</em>) – Módulo do conteúdo</p></li>
+<li><p><strong>nucleo</strong> (<em>str</em><em>, </em><em>optional</em>) – Núcleo do conteúdo</p></li>
+<li><p><strong>content_id</strong> (<em>str</em><em>, </em><em>optional</em>) – ID do conteúdo</p></li>
+<li><p><strong>theme</strong> (<em>str</em><em>, </em><em>optional</em>) – Tema do conteúdo</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl>
+<dt>Dicionário com status da operação e URL do arquivo gerado</dt><dd><dl class="simple">
+<dt>{</dt><dd><p>‘success’: bool,
+‘message’: str,
+‘file_url’: str</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.extrair_dados_do_path">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">extrair_dados_do_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#extrair_dados_do_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.extrair_dados_do_path" title="Link to this definition"></a></dt>
+<dd><p>Extrai título e slug do path do arquivo JSON.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.extrair_texto_do_json">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">extrair_texto_do_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dados</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#extrair_texto_do_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.extrair_texto_do_json" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.gerar_nome_arquivo">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">gerar_nome_arquivo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">titulo_nc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#gerar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.gerar_nome_arquivo" title="Link to this definition"></a></dt>
+<dd><p>Gera um nome de arquivo único usando UUID e o título.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.extrair_info_modulo_nucleo">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">extrair_info_modulo_nucleo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#extrair_info_modulo_nucleo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.extrair_info_modulo_nucleo" title="Link to this definition"></a></dt>
+<dd><p>Extrai informações do módulo e núcleo conceitual do slug.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>slug</strong> – O slug do conteúdo.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Um dicionário contendo o número do módulo e o número do núcleo conceitual,
+ou None se o slug não for válido ou se não for possível extrair.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.gerar_audiobook">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">gerar_audiobook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_nc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_titulo_nc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_conteudo_inicial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo_atual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nucleo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#gerar_audiobook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.gerar_audiobook" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.pos_processar_roteiro">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">pos_processar_roteiro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#pos_processar_roteiro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.pos_processar_roteiro" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.configurar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">configurar_audio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#configurar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.configurar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audiobook_service.sintetizar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.audiobook_service.</span></span><span class="sig-name descname"><span class="pre">sintetizar_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloco</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audiobook_service.html#sintetizar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audiobook_service.sintetizar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+<section id="audio-q-a">
+<h2>Audio Q&amp;A<a class="headerlink" href="#audio-q-a" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-app.api.audioqa">
+<dt class="sig sig-object py" id="app.api.audioqa.create_audioqa">
+<span class="sig-prename descclassname"><span class="pre">app.api.audioqa.</span></span><span class="sig-name descname"><span class="pre">create_audioqa</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/audioqa.html#create_audioqa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.audioqa.create_audioqa" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<section id="servico-de-q-a">
+<h3>Serviço de Q&amp;A<a class="headerlink" href="#servico-de-q-a" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.services.audioqa_service">
+<dt class="sig sig-object py" id="app.services.audioqa_service.audioqa">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">audioqa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#audioqa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.audioqa" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.extrair_texto_do_json">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">extrair_texto_do_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#extrair_texto_do_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.extrair_texto_do_json" title="Link to this definition"></a></dt>
+<dd><p>Extrai o texto do JSON no formato do Strapi</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.gerar_nome_arquivo">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">gerar_nome_arquivo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#gerar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.gerar_nome_arquivo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.gerar_audioqa">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">gerar_audioqa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#gerar_audioqa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.gerar_audioqa" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.configurar_voz">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">configurar_voz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#configurar_voz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.configurar_voz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.configurar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">configurar_audio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#configurar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.configurar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.sintetizar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">sintetizar_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#sintetizar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.sintetizar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.audioqa_service.salvar_arquivo_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.audioqa_service.</span></span><span class="sig-name descname"><span class="pre">salvar_arquivo_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo_saida</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_content</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/audioqa_service.html#salvar_arquivo_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.audioqa_service.salvar_arquivo_audio" title="Link to this definition"></a></dt>
+<dd><p>Salva o arquivo de áudio no GCS.</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="podcast">
+<h2>Podcast<a class="headerlink" href="#podcast" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-app.api.podcast">
+<dt class="sig sig-object py" id="app.api.podcast.create_podcast">
+<span class="sig-prename descclassname"><span class="pre">app.api.podcast.</span></span><span class="sig-name descname"><span class="pre">create_podcast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/podcast.html#create_podcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.podcast.create_podcast" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<section id="servico-de-podcast">
+<h3>Serviço de Podcast<a class="headerlink" href="#servico-de-podcast" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.services.podcast_service">
+<dt class="sig sig-object py" id="app.services.podcast_service.podcast">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">podcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#podcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.podcast" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.extrair_texto_do_json">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">extrair_texto_do_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#extrair_texto_do_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.extrair_texto_do_json" title="Link to this definition"></a></dt>
+<dd><p>Extrai o texto do JSON no formato do Strapi</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.gerar_nome_arquivo">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">gerar_nome_arquivo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#gerar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.gerar_nome_arquivo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.gerar_podcast">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">gerar_podcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#gerar_podcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.gerar_podcast" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.configurar_voz_professor">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">configurar_voz_professor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#configurar_voz_professor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.configurar_voz_professor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.configurar_voz_aluna">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">configurar_voz_aluna</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#configurar_voz_aluna"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.configurar_voz_aluna" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.configurar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">configurar_audio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#configurar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.configurar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.salvar_arquivo_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">salvar_arquivo_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo_saida</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_content</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#salvar_arquivo_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.salvar_arquivo_audio" title="Link to this definition"></a></dt>
+<dd><p>Salva o arquivo de áudio no GCS.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.conversas_podcast">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">conversas_podcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#conversas_podcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.conversas_podcast" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.formatar_texto_ssml">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">formatar_texto_ssml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#formatar_texto_ssml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.formatar_texto_ssml" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.podcast_service.audioclient">
+<span class="sig-prename descclassname"><span class="pre">app.services.podcast_service.</span></span><span class="sig-name descname"><span class="pre">audioclient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">texto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/podcast_service.html#audioclient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.podcast_service.audioclient" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+<section id="microlearning">
+<h2>Microlearning<a class="headerlink" href="#microlearning" title="Link to this heading"></a></h2>
+<dl class="py function" id="module-app.api.microlearning">
+<dt class="sig sig-object py" id="app.api.microlearning.create_microlearning">
+<span class="sig-prename descclassname"><span class="pre">app.api.microlearning.</span></span><span class="sig-name descname"><span class="pre">create_microlearning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/api/microlearning.html#create_microlearning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.microlearning.create_microlearning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<section id="servico-de-microlearning">
+<h3>Serviço de Microlearning<a class="headerlink" href="#servico-de-microlearning" title="Link to this heading"></a></h3>
+<dl class="py function" id="module-app.services.microlearning_service">
+<dt class="sig sig-object py" id="app.services.microlearning_service.microlearning">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">microlearning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#microlearning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.microlearning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.extrair_texto_do_json">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">extrair_texto_do_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#extrair_texto_do_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.extrair_texto_do_json" title="Link to this definition"></a></dt>
+<dd><p>Extrai o texto do JSON no formato do Strapi</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.gerar_nome_arquivo">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">gerar_nome_arquivo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#gerar_nome_arquivo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.gerar_nome_arquivo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.gerar_audiomicrolearning">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">gerar_audiomicrolearning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#gerar_audiomicrolearning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.gerar_audiomicrolearning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.configurar_voz">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">configurar_voz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#configurar_voz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.configurar_voz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.configurar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">configurar_audio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#configurar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.configurar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.sintetizar_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">sintetizar_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roteiro</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#sintetizar_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.sintetizar_audio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.services.microlearning_service.salvar_arquivo_audio">
+<span class="sig-prename descclassname"><span class="pre">app.services.microlearning_service.</span></span><span class="sig-name descname"><span class="pre">salvar_arquivo_audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nome_arquivo_saida</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_content</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/app/services/microlearning_service.html#salvar_arquivo_audio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.services.microlearning_service.salvar_arquivo_audio" title="Link to this definition"></a></dt>
+<dd><p>Salva o arquivo de áudio no GCS.</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="fluxo-de-trabalho">
+<h2>Fluxo de Trabalho<a class="headerlink" href="#fluxo-de-trabalho" title="Link to this heading"></a></h2>
+<section id="id1">
+<h3>Audiobook<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe o texto do conteúdo</p></li>
+<li><p>Processa e melhora o texto usando IA</p></li>
+<li><p>Converte o texto em áudio usando TTS</p></li>
+<li><p>Salva o audiobook no GCS</p></li>
+<li><p>Registra no banco de dados</p></li>
+</ol>
+</section>
+<section id="id2">
+<h3>Audio Q&amp;A<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe perguntas do usuário</p></li>
+<li><p>Gera respostas usando IA</p></li>
+<li><p>Converte respostas em áudio</p></li>
+<li><p>Retorna áudio da resposta</p></li>
+</ol>
+</section>
+<section id="id3">
+<h3>Podcast<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe conteúdo do tema</p></li>
+<li><p>Gera roteiro de podcast</p></li>
+<li><p>Converte em áudio</p></li>
+<li><p>Adiciona efeitos e música</p></li>
+<li><p>Salva o podcast finalizado</p></li>
+</ol>
+</section>
+<section id="id4">
+<h3>Microlearning<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Recebe conteúdo educacional</p></li>
+<li><p>Adapta para formato curto</p></li>
+<li><p>Gera áudio do microconteúdo</p></li>
+<li><p>Salva versão final</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="video_ia.html" class="btn btn-neutral float-left" title="Video 100% IA API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

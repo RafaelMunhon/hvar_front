@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.services.video_service &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/common_utils.html">Utilitários Comuns</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.services.video_service</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.services.video_service</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">file_manager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.editandoVideo.edicao_video</span><span class="w"> </span><span class="kn">import</span> <span class="n">editandoVideo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.searchImagens</span><span class="w"> </span><span class="kn">import</span> <span class="n">searchImagens_Envato</span><span class="p">,</span> <span class="n">searchImagens_Pexel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services</span><span class="w"> </span><span class="kn">import</span> <span class="n">vertexai_service</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">criaRoteiroPrompt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unidecode</span><span class="w"> </span><span class="kn">import</span> <span class="n">unidecode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ffmpeg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">HEYGEN_API_KEY</span><span class="p">,</span> <span class="n">HEYGEN_HEADERS</span>  <span class="c1"># Importar configurações</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">pasta_videos_heygen</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_videos_heygen_path</span><span class="p">()</span>
+<span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_videos_heygen</span><span class="p">)</span>
+
+<span class="c1"># Carregar variáveis do arquivo .env</span>
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+<div class="viewcode-block" id="aguardar_geracao_video">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.aguardar_geracao_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">aguardar_geracao_video</span><span class="p">(</span><span class="n">video_id</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aguarda a conclusão da geração do vídeo.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - video_id: ID do vídeo</span>
+<span class="sd">    - headers: Headers para requisição  </span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - URL do vídeo gerado</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">video_status_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.heygen.com/v1/video_status.get?video_id=</span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">video_status_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;video_url&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;processing&quot;</span> <span class="ow">or</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;pending&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Vídeo ainda sendo processado. Verificando status...&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;failed&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A geração do vídeo falhou. &#39;</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="salvar_video">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.salvar_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">salvar_video</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">caminho_destino</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Salva o vídeo em um arquivo, adicionando verificação de integridade.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        video_url (str): A URL do vídeo.</span>
+<span class="sd">        filename (str): O nome do arquivo para salvar o vídeo.</span>
+<span class="sd">        caminho_destino (str): (Opcional) local que o video sera salvo por padrao no metodo</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool|None: `True` se o video for salvo corretamente, `None` caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+       
+        <span class="k">if</span> <span class="n">caminho_destino</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1">#Usar o filename caso não existe caminho destino.</span>
+              <span class="n">caminho_final</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="k">else</span><span class="p">:</span>
+              <span class="n">caminho_final</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">caminho_destino</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>   <span class="c1"># Cria caminho usando parametro opcional com join, que é ideal</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando download do vídeo: </span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2"> para </span><span class="si">{</span><span class="n">caminho_final</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Verifica se houve erros HTTP</span>
+         
+        <span class="n">total_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-length&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="c1"># Obter o tamanho do vídeo no header, ele pode ser `None`, por isso o segundo argumento.</span>
+
+        <span class="k">if</span> <span class="n">total_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+           <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Não foi possível obter o tamanho do arquivo do cabeçalho HTTP. Prosseguindo sem verificação de tamanho.&quot;</span><span class="p">)</span>
+
+        <span class="n">bytes_baixados</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">caminho_final</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">video_file</span><span class="p">:</span>
+              <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                  <span class="n">video_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                  <span class="n">bytes_baixados</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+            
+        <span class="k">if</span> <span class="n">total_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+              <span class="k">if</span> <span class="n">bytes_baixados</span> <span class="o">==</span> <span class="n">total_size</span><span class="p">:</span>
+                   <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado e salvo com sucesso, e tamanho correto: </span><span class="si">{</span><span class="n">caminho_final</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                   <span class="k">return</span> <span class="kc">True</span> <span class="c1"># Retornando quando estiver tudo OK</span>
+              <span class="k">else</span><span class="p">:</span>
+                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado e salvo. O tamanho do arquivo difere do tamanho informado no cabeçalho. O download pode estar incompleto: </span><span class="si">{</span><span class="n">caminho_final</span><span class="si">}</span><span class="s2">. Baixados </span><span class="si">{</span><span class="n">bytes_baixados</span><span class="si">}</span><span class="s2">, Total </span><span class="si">{</span><span class="n">total_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+              <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado e salvo: </span><span class="si">{</span><span class="n">caminho_final</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+              <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo da URL </span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+         <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao salvar vídeo no arquivo </span><span class="si">{</span><span class="n">caminho_final</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+          <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="gerar_video_template_3_roteiro">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.gerar_video_template_3_roteiro">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_video_template_3_roteiro</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">buscaImagem</span><span class="p">,</span> <span class="n">avatar_number</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera um vídeo usando um template pré-definido e um roteiro.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - data: Dados para gerar o roteiro</span>
+<span class="sd">    - buscaImagem: Lista de imagens para overlay</span>
+<span class="sd">    - avatar_number: Número do avatar a ser usado</span>
+<span class="sd">    - id: Identificador único do vídeo</span>
+<span class="sd">    - theme: Tema visual a ser aplicado</span>
+<span class="sd">    - titulo_nc: Título do conteúdo</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - URL do vídeo gerado   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">HEYGEN_API_KEY</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;HEYGEN_API_KEY não configurada!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+        
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Iniciando geração de vídeo com HeyGen&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Template: </span><span class="si">{</span><span class="n">buscaImagem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;avatar_number: </span><span class="si">{</span><span class="n">avatar_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Verifica se data é None</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Dados recebidos são None&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Verifica se data é um dicionário</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dados recebidos não são um dicionário. Tipo: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Tenta converter para dicionário se for string JSON</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Não foi possível converter os dados para dicionário&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao converter dados: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">template_id</span><span class="p">,</span> <span class="n">num_cenas</span> <span class="o">=</span> <span class="n">get_template_id</span><span class="p">(</span><span class="n">avatar_number</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;template_id: </span><span class="si">{</span><span class="n">template_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;num_cenas: </span><span class="si">{</span><span class="n">num_cenas</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Usa o novo método que faz as tentativas</span>
+        <span class="n">dados</span> <span class="o">=</span> <span class="n">gerarRoteiroComVerificacao</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dados</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Não foi possível gerar um roteiro válido&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">buscaImagem</span><span class="p">:</span>
+            <span class="c1">#inicio busca Imagem Envato</span>
+            <span class="n">lista_imagens</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">lista_imagens</span> <span class="o">=</span> <span class="n">list_imagem_envato</span><span class="p">(</span><span class="n">dados</span><span class="p">,</span><span class="n">lista_imagens</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;lista_imagens list_imagem_envato: </span><span class="si">{</span><span class="n">lista_imagens</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lista_imagens</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1">#fim busca Imagem Envato</span>
+        
+        <span class="c1"># Log da API Key e Headers</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API Key configurada: </span><span class="si">{</span><span class="s1">&#39;Sim&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">HEYGEN_API_KEY</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;Não&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API Key: </span><span class="si">{</span><span class="n">HEYGEN_API_KEY</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span> <span class="c1"># Mostra só o início da key</span>
+        
+        <span class="c1"># Usa os headers globais</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">HEYGEN_HEADERS</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Headers para requisição: </span><span class="si">{</span><span class="n">headers</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">criaRoteiroPrompt</span><span class="o">.</span><span class="n">criar_payload_heygen_template_3</span><span class="p">(</span><span class="n">dados</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Payload criado com sucesso&quot;</span><span class="p">)</span>
+
+        <span class="n">generate_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.heygen.com/v2/template/</span><span class="si">{</span><span class="n">template_id</span><span class="si">}</span><span class="s2">/generate&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da requisição: </span><span class="si">{</span><span class="n">generate_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Desabilitar a verificação de certificado SSL (não recomendado para produção)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">generate_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status code da resposta: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resposta da API: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro na API HeyGen: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># ou lance uma exceção</span>
+
+            <span class="n">video_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="c1"># Resposta do Heygen</span>
+            <span class="n">video_id</span> <span class="o">=</span> <span class="n">video_data</span><span class="p">[</span><span class="s2">&quot;video_id&quot;</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo gerado com sucesso! ID: </span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">video_url</span> <span class="o">=</span> <span class="n">aguardar_geracao_video</span><span class="p">(</span><span class="n">video_id</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span> <span class="c1"># Aguarda a conclusão do processamento</span>
+
+            <span class="k">if</span> <span class="n">video_url</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo pronto! URL: </span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># salva video se teve resultado na url.</span>
+                <span class="n">filename_video</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;video_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+                <span class="n">salvou_video</span> <span class="o">=</span> <span class="n">salvar_video</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">filename_video</span><span class="p">,</span> <span class="n">pasta_videos_heygen</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">salvou_video</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video foi salvo com sucesso, na uri: </span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">editandoVideo</span><span class="p">(</span><span class="n">filename_video</span><span class="p">,</span> <span class="n">dados</span><span class="p">,</span> <span class="n">lista_imagens</span><span class="p">,</span> <span class="n">buscaImagem</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Video não salvo! Um problema ocorreu, verifique os logs&quot;</span><span class="p">)</span>
+                
+                <span class="k">return</span> <span class="n">video_url</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha na geração do vídeo.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao fazer requisição para API HeyGen: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="verificar_continuacao">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.verificar_continuacao">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verificar_continuacao</span><span class="p">():</span>
+    <span class="n">controle</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_temp_files_path</span><span class="p">(),</span> <span class="s2">&quot;controle.txt&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">controle</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">status</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;continuar&#39;</span></div>
+
+
+<div class="viewcode-block" id="list_imagem_envato">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.list_imagem_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_imagem_envato</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">lista_imagens</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lista imagens a partir de uma descrição de busca.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - json_data: Dados para gerar o roteiro</span>
+<span class="sd">    - lista_imagens: Lista de imagens</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Lista de imagens</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pasta_arquivos_temporarios</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_temp_files_path</span><span class="p">()</span>
+    <span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">imagem</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;imagens&quot;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem: </span><span class="si">{</span><span class="n">imagem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Verifica se &#39;urlimg&#39; existe e é uma string</span>
+                <span class="k">if</span> <span class="s1">&#39;descricaoBuscaEnvato&#39;</span> <span class="ow">in</span> <span class="n">imagem</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;descricaoBuscaEnvato&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+                    
+                    <span class="c1"># Extrair nome base da URL</span>
+                    <span class="n">url_img_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;descricaoBuscaEnvato&quot;</span><span class="p">])</span>  <span class="c1"># Pega a url para extrair a parte que nomeia as fotos.</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;url_img_base: </span><span class="si">{</span><span class="n">url_img_base</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">nome_base_imagem_aux</span> <span class="o">=</span> <span class="n">url_img_base</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                    <span class="n">nome_base_imagem</span> <span class="o">=</span> <span class="n">nome_base_imagem_aux</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># Tira o .jpg .jpeg ou qualquer outro do nome.</span>
+                    
+                    <span class="n">momento_chave</span> <span class="o">=</span> <span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">filename_imagem</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nome_base_imagem</span><span class="si">}</span><span class="s2">.jpg&quot;</span>  <span class="c1"># Utilizando o nome customizado e sempre salva como png</span>
+                    <span class="n">path_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nome_base_imagem</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">)</span>
+
+                    <span class="n">lista_imagens</span> <span class="o">=</span> <span class="n">searchImagens_Envato</span><span class="o">.</span><span class="n">buscar_imagens_envato</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;descricaoBuscaEnvato&#39;</span><span class="p">),</span> <span class="n">filename_imagem</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span>
+                    <span class="c1">#lista_imagens = searchImagens_Pexel.busca_imagens_pexels(lista_imagens, imagem.get(&#39;descricaoBuscaEnvato&#39;), filename_imagem, path_name, momento_chave)</span>
+    <span class="k">return</span> <span class="n">lista_imagens</span></div>
+
+    
+
+<div class="viewcode-block" id="get_video_duration">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.get_video_duration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém a duração de um arquivo de vídeo em segundos.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">        video_path (str): Caminho completo para o arquivo de vídeo.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        float|None: Duração do vídeo em segundos se bem sucedido, None caso contrário.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo de vídeo não encontrado: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">probe</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;format&#39;</span> <span class="ow">in</span> <span class="n">probe</span> <span class="ow">and</span> <span class="s1">&#39;duration&#39;</span> <span class="ow">in</span> <span class="n">probe</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]:</span>
+            <span class="n">duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">probe</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">][</span><span class="s2">&quot;duration&quot;</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração do vídeo: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> segundos&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">duration</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Informações de duração não encontradas nos metadados do vídeo: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">except</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro do FFmpeg ao obter a duração do vídeo: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Log stderr for more details</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro inesperado ao obter a duração do vídeo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Use exception for traceback</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_template_id">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.get_template_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_template_id</span><span class="p">(</span><span class="n">avatar_number</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém o template_id e o número de cenas correspondentes ao avatar_number.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - avatar_number: Número do avatar a ser usado</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - template_id: ID do template a ser usado</span>
+<span class="sd">    - num_cenas: Número de cenas do template</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Dicionário para mapear avatar_number para template_id e número de cenas</span>
+    <span class="n">template_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;18c7370997844bcc8996222113f30d0a&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">5</span>
+        <span class="p">},</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d651ee063f3f40e491aa2fa8520a515f&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">6</span>
+        <span class="p">},</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;063f23cbd3164f348c4e982dc076212c&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">7</span>
+        <span class="p">},</span>
+        <span class="mi">4</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;02af38f5ad12450ea5c38481bc81921c&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="mi">5</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e882c07f804c42918026433d7a051e3f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">5</span>
+        <span class="p">},</span>
+        <span class="mi">6</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b8ff0a87e8a6440fbf8413cb6233e7e1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">6</span>
+        <span class="p">},</span>
+        <span class="mi">7</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;3b2623e8638f4784970e95f869680507&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">7</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="c1"># Converte avatar_number para inteiro para garantir a comparação correta</span>
+    <span class="n">avatar_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">avatar_number</span><span class="p">)</span>
+    
+    <span class="c1"># Retorna o template_id e num_cenas correspondentes ou valores padrão</span>
+    <span class="n">template_info</span> <span class="o">=</span> <span class="n">template_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">avatar_num</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0add0af20ead43169bbfed11f68d21e3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;num_cenas&quot;</span><span class="p">:</span> <span class="mi">5</span>
+    <span class="p">})</span>
+    
+    <span class="k">return</span> <span class="n">template_info</span><span class="p">[</span><span class="s2">&quot;template_id&quot;</span><span class="p">],</span> <span class="n">template_info</span><span class="p">[</span><span class="s2">&quot;num_cenas&quot;</span><span class="p">]</span></div>
+
+
+
+
+<div class="viewcode-block" id="verificarRoteiroImagem">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.verificarRoteiroImagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verificarRoteiroImagem</span><span class="p">(</span><span class="n">roteiro</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verifica se os momentos-chave das imagens existem nos scripts das cenas.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        roteiro (dict): O roteiro em formato JSON</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True se todos os momentos-chave existem em algum script, False caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Verificando se os momentos-chave das imagens existem nos scripts&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Verifica se existem imagens</span>
+    <span class="k">if</span> <span class="s1">&#39;imagens&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">roteiro</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">roteiro</span><span class="p">[</span><span class="s1">&#39;imagens&#39;</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Roteiro não contém imagens&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+        
+    <span class="c1"># Concatena todos os scripts em um único texto</span>
+    <span class="n">todos_scripts</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cena</span><span class="p">[</span><span class="s1">&#39;script&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">cena</span> <span class="ow">in</span> <span class="n">roteiro</span><span class="p">[</span><span class="s1">&#39;cenas&#39;</span><span class="p">])</span>
+    
+    <span class="c1"># Verifica cada momento-chave</span>
+    <span class="k">for</span> <span class="n">imagem</span> <span class="ow">in</span> <span class="n">roteiro</span><span class="p">[</span><span class="s1">&#39;imagens&#39;</span><span class="p">]:</span>
+        <span class="n">momento_chave</span> <span class="o">=</span> <span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">momento_chave</span> <span class="ow">and</span> <span class="n">momento_chave</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">todos_scripts</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Momento-chave não encontrado nos scripts: </span><span class="si">{</span><span class="n">momento_chave</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Todos os momentos-chave foram encontrados nos scripts&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="geraRoteiro">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.geraRoteiro">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">geraRoteiro</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera o roteiro usando o modelo de template 3.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - data: Dados para gerar o roteiro</span>
+<span class="sd">    - num_cenas: Número de cenas desejado</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Roteiro gerado ou None se falhar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Gera o roteiro</span>
+    <span class="n">dados</span> <span class="o">=</span> <span class="n">vertexai_service</span><span class="o">.</span><span class="n">cria_roteiro_template_3</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dados</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao gerar roteiro&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">dados</span></div>
+
+
+<div class="viewcode-block" id="gerarRoteiroComVerificacao">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.services.video_service.gerarRoteiroComVerificacao">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerarRoteiroComVerificacao</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">,</span> <span class="n">max_tentativas</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera o roteiro e verifica se os momentos-chave das imagens existem nos scripts.</span>
+<span class="sd">    Tenta novamente até conseguir ou atingir o número máximo de tentativas.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        data (dict): Dados para gerar o roteiro</span>
+<span class="sd">        num_cenas (int): Número de cenas desejado</span>
+<span class="sd">        max_tentativas (int): Número máximo de tentativas para gerar o roteiro</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Roteiro gerado com momentos-chave válidos ou None se falhar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">tentativa</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_tentativas</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">tentativa</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> de </span><span class="si">{</span><span class="n">max_tentativas</span><span class="si">}</span><span class="s2"> de gerar roteiro&quot;</span><span class="p">)</span>
+        
+        <span class="n">dados</span> <span class="o">=</span> <span class="n">geraRoteiro</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_cenas</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dados</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao gerar roteiro&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+            
+        <span class="k">if</span> <span class="n">verificarRoteiroImagem</span><span class="p">(</span><span class="n">dados</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Roteiro gerado com sucesso na tentativa </span><span class="si">{</span><span class="n">tentativa</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dados</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">tentativa</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: Momentos-chave não encontrados nos scripts&quot;</span><span class="p">)</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Falha ao gerar roteiro após </span><span class="si">{</span><span class="n">max_tentativas</span><span class="si">}</span><span class="s2"> tentativas&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

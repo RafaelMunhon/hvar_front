@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.videoPexel.utils &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.videoPexel.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.videoPexel.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_temp_files_path</span><span class="p">,</span> <span class="n">get_temp_files_pexel_path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<div class="viewcode-block" id="remove_html_tags">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.remove_html_tags">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_html_tags</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove todas as tags HTML de um texto.</span>
+
+<span class="sd">    Recebe um texto que pode conter tags HTML e retorna o mesmo texto</span>
+<span class="sd">    com todas as tags removidas, mantendo apenas o conteúdo textual.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): O texto contendo possíveis tags HTML</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: O texto limpo, sem as tags HTML</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&lt;.*?&gt;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">clean</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="adjust_text_for_duration">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.adjust_text_for_duration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">adjust_text_for_duration</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">target_duration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ajusta um texto para caber em uma duração alvo.</span>
+
+<span class="sd">    Recebe um texto e uma duração alvo em segundos, e ajusta o texto para que sua narração</span>
+<span class="sd">    caiba aproximadamente nessa duração. O ajuste é feito estimando a velocidade média de</span>
+<span class="sd">    fala em 1.8 palavras por segundo e truncando o texto se necessário.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): O texto a ser ajustado</span>
+<span class="sd">        target_duration (float): A duração alvo em segundos</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: O texto ajustado para caber na duração alvo.</span>
+<span class="sd">             Se o texto original já couber na duração, retorna o próprio texto.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">palavras</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="n">duracao_estimada</span> <span class="o">=</span> <span class="n">palavras</span> <span class="o">/</span> <span class="mf">1.8</span>  <span class="c1"># Estimativa de palavras por segundo</span>
+    
+    <span class="k">if</span> <span class="n">duracao_estimada</span> <span class="o">&gt;</span> <span class="n">target_duration</span><span class="p">:</span>
+        <span class="n">palavras_alvo</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_duration</span> <span class="o">*</span> <span class="mf">1.8</span><span class="p">)</span>
+        <span class="n">palavras_texto</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">texto_ajustado</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">palavras_texto</span><span class="p">[:</span><span class="n">palavras_alvo</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">texto_ajustado</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="clean_temp_folder">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.clean_temp_folder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_temp_folder</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Limpa a pasta temporária removendo todos os arquivos e subdiretórios.</span>
+
+<span class="sd">    Remove todos os arquivos e subdiretórios dentro da pasta temporária definida em</span>
+<span class="sd">    get_temp_files_path(). Útil para liberar espaço em disco e remover arquivos</span>
+<span class="sd">    temporários que não são mais necessários.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pasta_temp</span> <span class="o">=</span> <span class="n">get_temp_files_path</span><span class="p">()</span>
+    
+    <span class="c1"># Cria as pastas se não existirem</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># Lista todos os arquivos na pasta temp</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">):</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Erro ao deletar </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_video_duration">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.get_video_duration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém a duração de um arquivo de vídeo em segundos.</span>
+
+<span class="sd">    Utiliza o ffprobe para extrair a duração do vídeo especificado.</span>
+<span class="sd">    Executa um comando ffprobe que retorna apenas o valor da duração,</span>
+<span class="sd">    sem formatação adicional.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Duração do vídeo em segundos se bem sucedido</span>
+<span class="sd">        None: Em caso de erro ao obter a duração</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffprobe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-show_entries&quot;</span><span class="p">,</span> <span class="s2">&quot;format=duration&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-of&quot;</span><span class="p">,</span> <span class="s2">&quot;default=noprint_wrappers=1:nokey=1&quot;</span><span class="p">,</span>
+            <span class="n">video_path</span>
+        <span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao obter duração do vídeo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="extract_main_term">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.extract_main_term">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_main_term</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extrai o termo principal de um texto, removendo caracteres especiais.</span>
+
+<span class="sd">    Recebe um texto e retorna a primeira palavra encontrada após remover caracteres especiais</span>
+<span class="sd">    e espaços extras. Se o texto estiver vazio ou não contiver palavras válidas, retorna &quot;video&quot;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): O texto do qual extrair o termo principal</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A primeira palavra do texto processado ou &quot;video&quot; se o texto for inválido</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;video&quot;</span>
+    
+    <span class="c1"># Remove caracteres especiais e espaços extras</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    
+    <span class="c1"># Retorna a primeira palavra ou &quot;video&quot; se não houver palavras</span>
+    <span class="k">return</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">words</span> <span class="k">else</span> <span class="s2">&quot;video&quot;</span></div>
+
+
+<div class="viewcode-block" id="criar_diretorio_se_nao_existir">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.criar_diretorio_se_nao_existir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria um diretório se ele não existir.</span>
+
+<span class="sd">    Verifica se o diretório especificado existe e o cria caso não exista.</span>
+<span class="sd">    Imprime uma mensagem informando quando um novo diretório é criado.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path (str): Caminho do diretório a ser verificado/criado</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: O mesmo caminho passado como argumento</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Diretório criado: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+<div class="viewcode-block" id="cleanup_temp_files">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.utils.cleanup_temp_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cleanup_temp_files</span><span class="p">(</span><span class="o">*</span><span class="n">files</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove arquivos temporários gerados durante o processamento.</span>
+
+<span class="sd">    Recebe uma lista variável de arquivos ou listas de arquivos e tenta removê-los,</span>
+<span class="sd">    preservando apenas os arquivos finais (que terminam com &#39;_final.mp4&#39;).</span>
+<span class="sd">    Imprime mensagens informando quais arquivos foram removidos ou preservados.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *files: Lista variável de strings com caminhos de arquivos ou listas/tuplas de caminhos.</span>
+<span class="sd">               Cada argumento pode ser uma string com caminho de arquivo ou uma lista/tupla de caminhos.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">cleanup_temp_files</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">file</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_final.mp4&#39;</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arquivo temporário removido: </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao remover </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Preservando vídeo final: </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao limpar arquivos temporários: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

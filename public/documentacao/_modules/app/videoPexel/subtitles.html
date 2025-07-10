@@ -1,0 +1,627 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.videoPexel.subtitles &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.videoPexel.subtitles</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.videoPexel.subtitles</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOGO_SCALE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.speech_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">transcribe_with_timestamps_v2</span> <span class="k">as</span> <span class="n">transcribe_audio</span>
+
+<div class="viewcode-block" id="split_long_sentence">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.split_long_sentence">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_long_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">,</span> <span class="n">max_words</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">max_chars</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">format_type</span><span class="o">=</span><span class="s2">&quot;desktop&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Divide uma frase longa em partes menores para melhor legibilidade.</span>
+
+<span class="sd">    Recebe uma frase e divide em partes menores baseado em limites de palavras e caracteres,</span>
+<span class="sd">    considerando o formato do vídeo (desktop/mobile). Tenta fazer divisões naturais em pontuações.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sentence (str): A frase a ser dividida</span>
+<span class="sd">        max_words (int, optional): Número máximo de palavras por linha. Padrão é 12.</span>
+<span class="sd">        max_chars (int, optional): Número máximo de caracteres por linha. Padrão é 60.</span>
+<span class="sd">        format_type (str, optional): Tipo de formato do vídeo (&#39;desktop&#39; ou &#39;mobile&#39;). Padrão é &#39;desktop&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lista de strings contendo as partes da frase dividida.</span>
+<span class="sd">              Se a frase original estiver dentro dos limites, retorna lista com apenas a frase original.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ajusta limites baseado no formato</span>
+    <span class="k">if</span> <span class="n">format_type</span> <span class="o">==</span> <span class="s2">&quot;mobile&quot;</span><span class="p">:</span>
+        <span class="n">max_words</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># Palavras por linha para mobile</span>
+        <span class="n">max_chars</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># Caracteres por linha para mobile</span>
+    
+    <span class="n">words</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_words</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_chars</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sentence</span><span class="p">]</span>
+        
+    <span class="c1"># Tenta dividir em duas linhas naturalmente</span>
+    <span class="n">mid_point</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    
+    <span class="c1"># Procura por pontuações naturais próximas ao meio</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mid_point</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">mid_point</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)):</span>
+                <span class="n">mid_point</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="k">break</span>
+    
+    <span class="n">line1</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">[:</span><span class="n">mid_point</span><span class="p">])</span>
+    <span class="n">line2</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">mid_point</span><span class="p">:])</span>
+    
+    <span class="k">return</span> <span class="p">[</span><span class="n">line1</span><span class="p">,</span> <span class="n">line2</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="add_subtitles">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.add_subtitles">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_subtitles</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">transcription</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">start_delay</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adiciona legendas a um vídeo usando FFmpeg.</span>
+
+<span class="sd">    Recebe um vídeo e sua transcrição com timestamps, e gera um novo vídeo com legendas</span>
+<span class="sd">    sobrepostas. As legendas são formatadas e posicionadas de acordo com o tipo de formato</span>
+<span class="sd">    do vídeo (desktop/mobile).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo de entrada</span>
+<span class="sd">        transcription (list): Lista de dicionários contendo as palavras e seus timestamps</span>
+<span class="sd">        format_type (str): Tipo de formato do vídeo (&#39;desktop&#39; ou &#39;mobile&#39;)</span>
+<span class="sd">        output_path (str): Caminho onde o vídeo com legendas será salvo</span>
+<span class="sd">        start_delay (float, optional): Atraso inicial em segundos antes da primeira legenda. </span>
+<span class="sd">                                     Padrão é 5.0 segundos.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do vídeo com legendas adicionadas em caso de sucesso</span>
+<span class="sd">        None: Em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERRO: Vídeo não encontrado em: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;format_type: </span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Define o tamanho da fonte baseado no formato</span>
+        <span class="n">font_sizes</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;mobile&quot;</span><span class="p">:</span> <span class="s2">&quot;h/50&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;desktop&quot;</span><span class="p">:</span> <span class="s2">&quot;h/30&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;stories&quot;</span><span class="p">:</span> <span class="s2">&quot;h/15&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">font_size</span> <span class="o">=</span> <span class="n">font_sizes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">format_type</span><span class="p">,</span> <span class="s2">&quot;h/30&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Usando tamanho de fonte: </span><span class="si">{</span><span class="n">font_size</span><span class="si">}</span><span class="s2"> para formato </span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Agrupa palavras em frases maiores</span>
+        <span class="n">current_phrase</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">phrases</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_start</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">last_end_time</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">transcription</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;word&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">word</span><span class="p">:</span>
+                <span class="k">continue</span>
+                
+            <span class="k">if</span> <span class="n">current_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">current_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                
+            <span class="n">current_phrase</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">[</span><span class="s1">&#39;word&#39;</span><span class="p">])</span>
+            <span class="n">current_end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end_time&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            
+            <span class="c1"># Condições para quebrar a frase:</span>
+            <span class="c1"># 1. Palavra termina com pontuação forte</span>
+            <span class="c1"># 2. Frase tem mais de X palavras</span>
+            <span class="c1"># 3. Gap de tempo grande entre palavras (pausa natural)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">word</span><span class="p">[</span><span class="s1">&#39;word&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;!&#39;</span><span class="p">,</span> <span class="s1">&#39;?&#39;</span><span class="p">))</span> <span class="ow">or</span> 
+                <span class="nb">len</span><span class="p">(</span><span class="n">current_phrase</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">15</span> <span class="ow">or</span>  <span class="c1"># Aumentado para frases maiores</span>
+                <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">current_phrase</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span> <span class="ow">and</span> <span class="n">current_end</span> <span class="o">-</span> <span class="n">last_end_time</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)):</span>  <span class="c1"># Pausa de 0.5s</span>
+                
+                <span class="n">phrases</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_phrase</span><span class="p">),</span>
+                    <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">current_start</span> <span class="o">+</span> <span class="n">start_delay</span><span class="p">,</span>
+                    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">current_end</span> <span class="o">+</span> <span class="n">start_delay</span> <span class="c1">#+ 0.3  # Pequeno delay extra no final</span>
+                <span class="p">})</span>
+                <span class="n">current_phrase</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">current_start</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="n">last_end_time</span> <span class="o">=</span> <span class="n">current_end</span>
+        
+        <span class="c1"># Adiciona última frase se houver</span>
+        <span class="k">if</span> <span class="n">current_phrase</span><span class="p">:</span>
+            <span class="n">last_word</span> <span class="o">=</span> <span class="n">transcription</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">phrases</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_phrase</span><span class="p">),</span>
+                <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">current_start</span> <span class="o">+</span> <span class="n">start_delay</span><span class="p">,</span>
+                <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">last_word</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end_time&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="n">start_delay</span> <span class="o">+</span> <span class="mf">0.3</span>
+            <span class="p">})</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Frases processadas:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">phrases</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Texto: </span><span class="si">{</span><span class="n">phrase</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Início: </span><span class="si">{</span><span class="n">phrase</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fim: </span><span class="si">{</span><span class="n">phrase</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Constrói o filtro de legendas</span>
+        <span class="n">filter_complex</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">phrases</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">phrase</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+                <span class="k">continue</span>
+                
+            <span class="c1"># Escapa caracteres especiais</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Divide texto longo em duas linhas se necessário</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">split_long_sentence</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">format_type</span><span class="o">=</span><span class="n">format_type</span><span class="p">)</span>
+            
+            <span class="c1"># Ajusta posição vertical baseado no número de linhas</span>
+            <span class="n">y_positions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;h*0.85&#39;</span><span class="p">,</span> <span class="s1">&#39;h*0.9&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="s1">&#39;h*0.9&#39;</span><span class="p">]</span>
+            
+            <span class="k">for</span> <span class="n">line_num</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+                <span class="n">filter_text</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;drawtext=text=&#39;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&#39;:fontfile=/projetos/YDUQS/fonte/Poppins-Bold.ttf&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;:fontcolor=white:fontsize=</span><span class="si">{</span><span class="n">font_size</span><span class="si">}</span><span class="s2">:box=1:boxcolor=black@0.7&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;:boxborderw=10:x=(w-text_w)/2:y=</span><span class="si">{</span><span class="n">y_positions</span><span class="p">[</span><span class="n">line_num</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;:enable=&#39;between(t,</span><span class="si">{</span><span class="n">phrase</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">phrase</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&#39;:line_spacing=10&quot;</span>
+                <span class="p">)</span>
+                <span class="n">filter_complex</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_text</span><span class="p">)</span>
+
+        <span class="c1"># Junta todos os filtros</span>
+        <span class="n">final_filter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filter_complex</span><span class="p">)</span>
+        
+        <span class="c1"># Prepara o comando ffmpeg</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span>
+            <span class="s2">&quot;-vf&quot;</span><span class="p">,</span> <span class="n">final_filter</span><span class="p">,</span>
+            <span class="s2">&quot;-c:a&quot;</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Comando ffmpeg:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar legendas: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Legendas adicionadas com sucesso!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar legendas: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s1">&#39;__traceback__&#39;</span><span class="p">):</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Traceback completo:&quot;</span><span class="p">)</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_tb</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_video_duration">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.get_video_duration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém a duração de um arquivo de vídeo em segundos.</span>
+
+<span class="sd">    Utiliza o ffprobe para extrair a duração do vídeo especificado.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Duração do vídeo em segundos</span>
+<span class="sd">        0: Em caso de erro ou se não for possível obter a duração</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffprobe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-v&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-show_entries&quot;</span><span class="p">,</span> <span class="s2">&quot;format=duration&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-of&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+            <span class="n">video_path</span>
+        <span class="p">]</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">][</span><span class="s1">&#39;duration&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="add_logo_and_blur">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.add_logo_and_blur">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_logo_and_blur</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adiciona logo com efeito de blur ao vídeo.</span>
+
+<span class="sd">    Recebe um vídeo e adiciona uma logo com efeito de blur ao fundo. A logo é posicionada </span>
+<span class="sd">    no centro do vídeo e dimensionada de acordo com o formato (desktop/mobile). O fundo </span>
+<span class="sd">    da logo recebe um efeito de desfoque (blur) para melhor visibilidade.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo de entrada</span>
+<span class="sd">        format_type (str): Tipo de formato do vídeo (&#39;desktop&#39; ou &#39;mobile&#39;)</span>
+<span class="sd">        output_path (str): Caminho onde o vídeo com logo será salvo</span>
+<span class="sd">        duration (float, optional): Duração desejada do vídeo em segundos. </span>
+<span class="sd">                                  Se não fornecido, usa 10 segundos</span>
+<span class="sd">        start_time (float, optional): Tempo inicial do vídeo em segundos. </span>
+<span class="sd">                                    Padrão é 0</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do vídeo com logo adicionada em caso de sucesso</span>
+<span class="sd">        None: Em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando logo com blur ao vídeo...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Verifica se o vídeo existe</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERRO: Vídeo não encontrado em: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Caminho do logo</span>
+        <span class="c1">#logo_path = r&quot;C:\projetos\YDUQS\app\videoPexel\logo\logo-autenticare-02.png&quot;</span>
+        <span class="n">logo_path</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\projetos\YDUQS\app\videoPexel\logo\logo_yduqs.png&quot;</span>
+        <span class="c1">#logo_path = r&quot;C:\projetos\YDUQS\app\videoPexel\logo\logo_puc_minas.png&quot;</span>
+        
+        <span class="c1"># Escala do logo baseada no formato do vídeo</span>
+        <span class="n">logo_scale</span> <span class="o">=</span> <span class="n">LOGO_SCALE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">format_type</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">)</span>
+        
+        <span class="c1"># Comando ffmpeg - Reorganizado para incluir corte e efeitos em uma única operação</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">logo_path</span><span class="p">,</span>
+            <span class="s2">&quot;-filter_complex&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;[0:v]split=2[v1][v2];&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;[v2]scale=iw:-1,boxblur=10:5[blurred];&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;[v1][blurred]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[v3];&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;[1:v]scale=iw*</span><span class="si">{</span><span class="n">logo_scale</span><span class="si">}</span><span class="s2">:-1[logo];&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;[v3][logo]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[out]&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-map&quot;</span><span class="p">,</span> <span class="s2">&quot;[out]&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-map&quot;</span><span class="p">,</span> <span class="s2">&quot;0:a?&quot;</span><span class="p">,</span>  <span class="c1"># Mantém o áudio original se existir</span>
+            <span class="s2">&quot;-c:a&quot;</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>  <span class="c1"># Copia o áudio sem recodificar</span>
+            <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="k">if</span> <span class="n">duration</span> <span class="k">else</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span>  <span class="c1"># Duração padrão de 10s se não especificada</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Comando ffmpeg:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="c1"># Verifica se o arquivo foi gerado e tem tamanho adequado</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar logo com blur: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro: Arquivo de saída não foi gerado corretamente&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tamanho do arquivo: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="mi">0</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saída do ffmpeg:&quot;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Logo com blur adicionado com sucesso!&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tamanho do arquivo: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar logo com blur: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="cut_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.cut_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cut_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Corta um vídeo para uma duração específica a partir de um ponto inicial.</span>
+
+<span class="sd">    Recebe um vídeo e o corta para a duração desejada, começando do ponto inicial </span>
+<span class="sd">    especificado. Se o vídeo original for menor que a duração solicitada, retorna </span>
+<span class="sd">    o vídeo original sem modificações.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo de entrada</span>
+<span class="sd">        output_path (str): Caminho onde o vídeo cortado será salvo</span>
+<span class="sd">        duration (float): Duração desejada em segundos</span>
+<span class="sd">        start_time (float, optional): Tempo inicial do corte em segundos. Padrão é 0.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do vídeo cortado em caso de sucesso</span>
+<span class="sd">        None: Em caso de erro ou se o vídeo não for encontrado</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERRO: Vídeo não encontrado em: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Obtém a duração atual do vídeo</span>
+        <span class="n">current_duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">current_duration</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Erro ao obter duração do vídeo&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Se o vídeo for menor que a duração desejada, retorna o vídeo original</span>
+        <span class="k">if</span> <span class="n">current_duration</span> <span class="o">&lt;=</span> <span class="n">duration</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo já tem duração menor que </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">s. Usando vídeo original.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">video_path</span>
+            
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Cortando vídeo para </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> segundos...&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo original: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração original: </span><span class="si">{</span><span class="n">current_duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração desejada: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Início em: </span><span class="si">{</span><span class="n">start_time</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Comando ffmpeg para cortar o vídeo - usando recodificação para corte preciso</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span>
+            <span class="s2">&quot;-ss&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">start_time</span><span class="p">),</span>
+            <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">),</span>
+            <span class="s2">&quot;-c:v&quot;</span><span class="p">,</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>     <span class="c1"># Usa recodificação para corte preciso</span>
+            <span class="s2">&quot;-preset&quot;</span><span class="p">,</span> <span class="s2">&quot;fast&quot;</span><span class="p">,</span>      <span class="c1"># Preset rápido para não demorar muito</span>
+            <span class="s2">&quot;-crf&quot;</span><span class="p">,</span> <span class="s2">&quot;23&quot;</span><span class="p">,</span>          <span class="c1"># Qualidade razoável</span>
+            <span class="s2">&quot;-c:a&quot;</span><span class="p">,</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>         <span class="c1"># Recodifica áudio também</span>
+            <span class="s2">&quot;-avoid_negative_ts&quot;</span><span class="p">,</span> <span class="s2">&quot;make_zero&quot;</span><span class="p">,</span>  <span class="c1"># Evita timestamps negativos</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Executando comando de corte:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao cortar vídeo: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Verifica se o arquivo foi gerado corretamente</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Erro: Arquivo de saída não foi gerado&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Verifica a duração do vídeo cortado</span>
+        <span class="n">new_duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração do vídeo cortado: </span><span class="si">{</span><span class="n">new_duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_duration</span> <span class="o">-</span> <span class="n">duration</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>  <span class="c1"># Permite 0.5 segundo de diferença</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AVISO: Duração do vídeo cortado (</span><span class="si">{</span><span class="n">new_duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s) difere da duração desejada (</span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">s)&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_duration</span> <span class="o">&lt;</span> <span class="n">duration</span><span class="o">/</span><span class="mi">2</span><span class="p">:</span>  <span class="c1"># Se o vídeo ficou muito curto</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Erro: Vídeo cortado ficou muito curto&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Vídeo cortado com sucesso!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao cortar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s1">&#39;__traceback__&#39;</span><span class="p">):</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Traceback completo:&quot;</span><span class="p">)</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_tb</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="limit_video_duration">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.limit_video_duration">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">limit_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Limita a duração de um vídeo ao número máximo de segundos especificado.</span>
+
+<span class="sd">    Recebe um vídeo e gera uma versão mais curta mantendo apenas os primeiros X segundos,</span>
+<span class="sd">    onde X é a duração máxima especificada. Útil para adequar vídeos a limites de duração</span>
+<span class="sd">    de plataformas.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo de entrada</span>
+<span class="sd">        output_path (str): Caminho onde o vídeo cortado será salvo</span>
+<span class="sd">        max_duration (int, optional): Duração máxima em segundos. Padrão é 15 segundos.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do vídeo cortado em caso de sucesso</span>
+<span class="sd">        None: Em caso de erro ou se o vídeo já estiver dentro do limite</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Obtém a duração atual do vídeo</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="n">max_duration</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo já está dentro do limite de </span><span class="si">{</span><span class="n">max_duration</span><span class="si">}</span><span class="s2"> segundos&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">video_path</span>
+            
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Limitando vídeo para </span><span class="si">{</span><span class="n">max_duration</span><span class="si">}</span><span class="s2"> segundos...&quot;</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span>
+            <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_duration</span><span class="p">),</span>
+            <span class="s2">&quot;-c:v&quot;</span><span class="p">,</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-c:a&quot;</span><span class="p">,</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao limitar duração: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Duração do vídeo limitada com sucesso!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao limitar duração: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="sync_text_with_audio">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.subtitles.sync_text_with_audio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sync_text_with_audio</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">audio_path</span><span class="p">,</span> <span class="n">video_duration</span><span class="p">,</span> <span class="n">format_type</span><span class="o">=</span><span class="s2">&quot;desktop&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sincroniza um texto com um arquivo de áudio, gerando timestamps para legendas.</span>
+
+<span class="sd">    Recebe um texto e um arquivo de áudio e tenta sincronizar o texto com a fala,</span>
+<span class="sd">    gerando timestamps precisos para cada parte do texto. Usa reconhecimento de fala</span>
+<span class="sd">    e alinhamento de texto para determinar quando cada parte deve aparecer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): O texto a ser sincronizado</span>
+<span class="sd">        audio_path (str): Caminho do arquivo de áudio</span>
+<span class="sd">        video_duration (float): Duração total do vídeo em segundos</span>
+<span class="sd">        format_type (str, optional): Tipo de formato do vídeo (&#39;desktop&#39; ou &#39;mobile&#39;). </span>
+<span class="sd">                                   Padrão é &#39;desktop&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lista de dicionários contendo o texto e seus timestamps no formato:</span>
+<span class="sd">              [{&#39;text&#39;: str, &#39;start&#39;: float, &#39;end&#39;: float}, ...]</span>
+<span class="sd">        None: Em caso de erro na sincronização</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sincronizando texto com áudio...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Divide o texto em partes menores</span>
+        <span class="n">text_parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">split_long_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">format_type</span><span class="o">=</span><span class="n">format_type</span><span class="p">)</span>
+            <span class="n">text_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+            
+        <span class="c1"># Usa Whisper para obter timestamps precisos</span>
+        <span class="n">transcription</span> <span class="o">=</span> <span class="n">transcribe_audio</span><span class="p">(</span><span class="n">audio_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">transcription</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">transcribe_audio</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">video_duration</span><span class="p">)</span>
+            
+        <span class="c1"># Alinha o texto com a transcrição usando similaridade de texto</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">difflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">SequenceMatcher</span>
+        
+        <span class="k">def</span><span class="w"> </span><span class="nf">similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">SequenceMatcher</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">ratio</span><span class="p">()</span>
+            
+        <span class="n">subtitles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">text_parts</span><span class="p">:</span>
+            <span class="c1"># Encontra o segmento mais similar na transcrição</span>
+            <span class="n">best_match</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">transcription</span><span class="p">,</span> 
+                           <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">similarity</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]))</span>
+            
+            <span class="n">subtitles</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">part</span><span class="p">,</span>
+                <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">best_match</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">best_match</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span>
+            <span class="p">})</span>
+            
+        <span class="c1"># Ordena por tempo de início</span>
+        <span class="n">subtitles</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">])</span>
+        
+        <span class="k">return</span> <span class="n">subtitles</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao sincronizar: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transcribe_audio</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">video_duration</span><span class="p">)</span> </div>
+
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

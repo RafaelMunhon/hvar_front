@@ -1,0 +1,594 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.services.audiobook_service &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.services.audiobook_service</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.services.audiobook_service</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">texttospeech</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.bd.bd</span><span class="w"> </span><span class="kn">import</span> <span class="n">inserir_audio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.vertexai_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">melhorar_texto_com_gemini</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.common.audiobookprompt</span><span class="w"> </span><span class="kn">import</span> <span class="n">audiobookprompt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">storage</span>  <span class="c1"># Importe a biblioteca do GCS</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>  <span class="c1"># Importe a biblioteca tempfile</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Configurações do GCS</span>
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="s2">&quot;yduqs-dev-443513&quot;</span>
+<span class="n">BUCKET_NAME</span> <span class="o">=</span> <span class="s2">&quot;yduqs-audio-web&quot;</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PROJECT_ID: </span><span class="si">{</span><span class="n">PROJECT_ID</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BUCKET_NAME: </span><span class="si">{</span><span class="n">BUCKET_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="upload_blob">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.upload_blob">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">upload_blob</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">source_file_name</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Uploads a file to the bucket.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando upload para o GCS. Bucket: </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">, Arquivo de origem: </span><span class="si">{</span><span class="n">source_file_name</span><span class="si">}</span><span class="s2">, Destino: </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">storage_client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">PROJECT_ID</span><span class="p">)</span>  <span class="c1"># Especifica o projeto</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="n">storage_client</span><span class="o">.</span><span class="n">bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fazendo upload do arquivo </span><span class="si">{</span><span class="n">source_file_name</span><span class="si">}</span><span class="s2"> para o bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_filename</span><span class="p">(</span><span class="n">source_file_name</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Arquivo </span><span class="si">{</span><span class="n">source_file_name</span><span class="si">}</span><span class="s2"> foi uploadado para </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2"> no bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">gcs_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://storage.cloud.google.com/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL do GCS: </span><span class="si">{</span><span class="n">gcs_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Log da URL gerada</span>
+        <span class="k">return</span> <span class="n">gcs_url</span>  <span class="c1"># Retorna a URL do objeto no GCS</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao fazer upload para o GCS: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="salvar_arquivo_audio">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.salvar_arquivo_audio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">salvar_arquivo_audio</span><span class="p">(</span><span class="n">nome_arquivo_saida</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">relative_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">audio_content</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando salvamento do arquivo de áudio. Nome do arquivo: </span><span class="si">{</span><span class="n">nome_arquivo_saida</span><span class="si">}</span><span class="s2">, Output dir: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">, Relative path: </span><span class="si">{</span><span class="n">relative_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Gerar um nome de arquivo único</span>
+        <span class="n">unique_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;audiobook_</span><span class="si">{</span><span class="n">unique_id</span><span class="si">}</span><span class="s2">.mp3&quot;</span>
+
+        <span class="c1"># Cria um nome de arquivo temporário</span>
+        <span class="n">temp_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">filename</span><span class="p">)</span>  <span class="c1"># Use o filename</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Caminho do arquivo temporário: </span><span class="si">{</span><span class="n">temp_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">audio_content</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Conteúdo de áudio detectado. Escrevendo no arquivo temporário.&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_file_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">audio_content</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Arquivo temporário escrito com sucesso.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Define o nome do blob no bucket</span>
+            <span class="n">destination_blob_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">relative_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>  <span class="c1"># Combine relative_path e filename</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Destination blob name: </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Faz o upload para o GCS</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando upload para o GCS. Bucket: </span><span class="si">{</span><span class="n">BUCKET_NAME</span><span class="si">}</span><span class="s2">, Arquivo de origem: </span><span class="si">{</span><span class="n">temp_file_path</span><span class="si">}</span><span class="s2">, Destino: </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">gcs_url</span> <span class="o">=</span> <span class="n">upload_blob</span><span class="p">(</span><span class="n">BUCKET_NAME</span><span class="p">,</span> <span class="n">temp_file_path</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">)</span>
+
+            <span class="c1"># Remove o arquivo temporário</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removendo arquivo temporário: </span><span class="si">{</span><span class="n">temp_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">temp_file_path</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Arquivo temporário removido com sucesso.&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">gcs_url</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL do GCS obtida com sucesso: </span><span class="si">{</span><span class="n">gcs_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">gcs_url</span>  <span class="c1"># Retorna a URL do GCS</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Falha ao obter a URL do GCS após o upload.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># Retorna None em caso de falha no upload</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Nenhum conteúdo de áudio para salvar.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># Retorna None se não houver conteúdo de áudio</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao salvar arquivo de áudio: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="audiobook">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.audiobook">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">audiobook</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">relative_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">next_titulo_nc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_conteudo_inicial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">titulo_atual</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nucleo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">content_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">theme</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera um audiobook a partir do conteúdo fornecido.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (dict): Dados do conteúdo para gerar o audiobook</span>
+<span class="sd">        relative_path (str, optional): Caminho relativo para salvar o arquivo</span>
+<span class="sd">        output_dir (str, optional): Diretório de saída</span>
+<span class="sd">        next_titulo_nc (str, optional): Título do próximo conteúdo</span>
+<span class="sd">        is_conteudo_inicial (bool): Indica se é conteúdo inicial</span>
+<span class="sd">        titulo_atual (str, optional): Título atual do conteúdo</span>
+<span class="sd">        modulo (str, optional): Módulo do conteúdo</span>
+<span class="sd">        nucleo (str, optional): Núcleo do conteúdo</span>
+<span class="sd">        content_id (str, optional): ID do conteúdo</span>
+<span class="sd">        theme (str, optional): Tema do conteúdo</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Dicionário com status da operação e URL do arquivo gerado</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;success&#39;: bool,</span>
+<span class="sd">                &#39;message&#39;: str,</span>
+<span class="sd">                &#39;file_url&#39;: str</span>
+<span class="sd">            }</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Iniciando processo de criação do audiobook.&quot;</span><span class="p">)</span>
+
+        <span class="n">titulo_nc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;titulo_nc&quot;</span><span class="p">)</span>
+        <span class="n">slug</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slug&quot;</span><span class="p">)</span>
+
+        <span class="c1"># if not titulo_nc or not slug:</span>
+        <span class="c1">#    if json_path:</span>
+        <span class="c1">#       titulo_nc, slug = extrair_dados_do_path(json_path)</span>
+        <span class="c1">#       logging.info(f&quot;Título e Slug extraídos do path: Título = {titulo_nc}, Slug = {slug}&quot;)</span>
+        <span class="c1">#    else:</span>
+        <span class="c1">#       titulo_nc = &quot;Tema Desconhecido&quot;</span>
+        <span class="c1">#       slug = &quot;Módulo Desconhecido&quot;</span>
+        <span class="c1">#       logging.info(f&quot;Título e Slug não encontrados, usando padrão: Título = {titulo_nc}, Slug = {slug}&quot;)</span>
+
+        <span class="n">json_data</span> <span class="o">=</span> <span class="n">extrair_texto_do_json</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">json_data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;JSON de entrada inválido ou sem conteúdo suficiente.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Declare nome_arquivo_saida aqui</span>
+        <span class="c1"># if json_path:</span>
+        <span class="c1">#   nome_arquivo_saida = os.path.basename(json_path).replace(&quot;.json&quot;, &quot;.mp3&quot;)</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#   nome_arquivo_saida = gerar_nome_arquivo(titulo_nc)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;relative_path: </span><span class="si">{</span><span class="n">relative_path</span><span class="si">}</span><span class="s2">, output_dir: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">relative_path</span> <span class="ow">and</span> <span class="n">output_dir</span><span class="p">:</span>
+            <span class="n">audio_content</span> <span class="o">=</span> <span class="n">gerar_audiobook</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">relative_path</span><span class="p">,</span> <span class="n">next_titulo_nc</span><span class="o">=</span><span class="n">next_titulo_nc</span><span class="p">,</span> <span class="n">is_conteudo_inicial</span><span class="o">=</span><span class="n">is_conteudo_inicial</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">titulo_atual</span><span class="o">=</span><span class="n">titulo_atual</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="n">modulo</span><span class="p">,</span> <span class="n">nucleo</span><span class="o">=</span><span class="n">nucleo</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;reconhecimento se está chegando aqui&quot;</span><span class="p">)</span>  
+            <span class="n">gcs_url</span> <span class="o">=</span> <span class="n">salvar_arquivo_audio</span><span class="p">(</span><span class="n">nome_arquivo_saida</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">relative_path</span><span class="o">=</span><span class="n">relative_path</span><span class="p">,</span> <span class="n">audio_content</span><span class="o">=</span><span class="n">audio_content</span><span class="p">)</span>  <span class="c1"># Agora retorna a URL do GCS</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">audio_content</span> <span class="o">=</span> <span class="n">gerar_audiobook</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">relative_path</span><span class="p">,</span> <span class="n">next_titulo_nc</span><span class="o">=</span><span class="n">next_titulo_nc</span><span class="p">,</span> <span class="n">is_conteudo_inicial</span><span class="o">=</span><span class="n">is_conteudo_inicial</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">titulo_atual</span><span class="o">=</span><span class="n">titulo_atual</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="n">modulo</span><span class="p">,</span> <span class="n">nucleo</span><span class="o">=</span><span class="n">nucleo</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;reconhecimento se está chegando aqui&quot;</span><span class="p">)</span> 
+            <span class="c1"># gcs_url = salvar_arquivo_audio(nome_arquivo_saida) #não utilizamos mais assim</span>
+            <span class="n">gcs_url</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># quando não tiver path, setamos o gcs_url como None</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Audiobook gerado com sucesso!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gcs_url</span><span class="p">:</span>
+            <span class="n">inserir_audio</span><span class="p">(</span><span class="n">content_id</span><span class="p">,</span> <span class="n">gcs_url</span><span class="p">,</span> <span class="s2">&quot;audiobook&quot;</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">titulo_atual</span><span class="p">)</span>  <span class="c1"># Insere no BD</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Audiobook gerado com sucesso!&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;file_url&quot;</span><span class="p">:</span> <span class="n">gcs_url</span><span class="p">}</span>  <span class="c1"># Retorna a URL</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao salvar o audiobook no GCS.&quot;</span><span class="p">}</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro no processo de criação do audiobook: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro interno ao criar audiobook.&quot;</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="extrair_dados_do_path">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.extrair_dados_do_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extrair_dados_do_path</span><span class="p">(</span><span class="n">json_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extrai título e slug do path do arquivo JSON.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">normalized_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">normalized_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">modulo</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">nome_arquivo</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">slug</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">modulo</span><span class="si">}</span><span class="s2">//</span><span class="si">{</span><span class="n">nome_arquivo</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">slug</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="n">titulo_nc</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">titulo_nc</span><span class="p">,</span> <span class="n">slug</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao extrair dados do path: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;Tema Desconhecido&quot;</span><span class="p">,</span> <span class="s2">&quot;Módulo Desconhecido&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="extrair_texto_do_json">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.extrair_texto_do_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extrair_texto_do_json</span><span class="p">(</span><span class="n">dados</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">texto</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;descricao&quot;</span><span class="p">,</span> <span class="s2">&quot;conteudo_introducao&quot;</span><span class="p">,</span> <span class="s2">&quot;conteudo_conclusao&quot;</span><span class="p">,</span> <span class="s2">&quot;conteudo&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dados</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dados</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">texto</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;texto&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dados</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">if</span>
+                                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dados</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">texto</span> <span class="o">+=</span> <span class="n">dados</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;conteudo&quot;</span> <span class="ow">in</span> <span class="n">dados</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dados</span><span class="p">[</span><span class="s2">&quot;conteudo&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">questao</span> <span class="ow">in</span> <span class="n">dados</span><span class="p">[</span><span class="s2">&quot;conteudo&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">questao</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">texto</span> <span class="o">+=</span> <span class="n">questao</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enunciado_questao&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+                    <span class="k">if</span> <span class="s2">&quot;alternativas&quot;</span> <span class="ow">in</span> <span class="n">questao</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">questao</span><span class="p">[</span><span class="s2">&quot;alternativas&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">alternativa</span> <span class="ow">in</span> <span class="n">questao</span><span class="p">[</span><span class="s2">&quot;alternativas&quot;</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">alternativa</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                                <span class="n">texto</span> <span class="o">+=</span> <span class="n">alternativa</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alternativa_resposta&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+                    <span class="k">if</span> <span class="s2">&quot;conteudo_feedback_positivo&quot;</span> <span class="ow">in</span> <span class="n">questao</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+                            <span class="n">questao</span><span class="p">[</span><span class="s2">&quot;conteudo_feedback_positivo&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">texto</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;texto&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">questao</span><span class="p">[</span><span class="s2">&quot;conteudo_feedback_positivo&quot;</span><span class="p">]</span> <span class="k">if</span>
+                                            <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+                    <span class="k">if</span> <span class="s2">&quot;conteudo_feedback_negativo&quot;</span> <span class="ow">in</span> <span class="n">questao</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+                            <span class="n">questao</span><span class="p">[</span><span class="s2">&quot;conteudo_feedback_negativo&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">texto</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;texto&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">questao</span><span class="p">[</span><span class="s2">&quot;conteudo_feedback_negativo&quot;</span><span class="p">]</span> <span class="k">if</span>
+                                            <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">texto</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Erro: Não foi possível encontrar texto em nenhuma chave conhecida.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Texto não encontrado no JSON de entrada.&quot;</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Texto extraído do JSON com sucesso.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">texto</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar JSON: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">raise</span></div>
+
+
+
+<div class="viewcode-block" id="gerar_nome_arquivo">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.gerar_nome_arquivo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_nome_arquivo</span><span class="p">(</span><span class="n">titulo_nc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gera um nome de arquivo único usando UUID e o título.&quot;&quot;&quot;</span>
+    <span class="n">titulo_limpo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s-]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">titulo_hifenizado</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">titulo_limpo</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">unique_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;audiobook__</span><span class="si">{</span><span class="n">titulo_hifenizado</span><span class="si">}</span><span class="s2">__</span><span class="si">{</span><span class="n">unique_id</span><span class="si">}</span><span class="s2">.mp3&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="extrair_info_modulo_nucleo">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.extrair_info_modulo_nucleo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extrair_info_modulo_nucleo</span><span class="p">(</span><span class="n">slug</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extrai informações do módulo e núcleo conceitual do slug.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        slug: O slug do conteúdo.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Um dicionário contendo o número do módulo e o número do núcleo conceitual,</span>
+<span class="sd">        ou None se o slug não for válido ou se não for possível extrair.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">slug</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">slug</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Slug inválido para extração de informações: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">slug</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;modulo-(\d+).*page-(\d+)&quot;</span><span class="p">,</span> <span class="n">slug</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">numero_modulo</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">numero_nucleo</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;numero_modulo&quot;</span><span class="p">:</span> <span class="n">numero_modulo</span><span class="p">,</span> <span class="s2">&quot;numero_nucleo&quot;</span><span class="p">:</span> <span class="n">numero_nucleo</span><span class="p">}</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="n">VOICE_INTRO_RESUMO</span> <span class="o">=</span> <span class="n">texttospeech</span><span class="o">.</span><span class="n">VoiceSelectionParams</span><span class="p">(</span>
+    <span class="n">language_code</span><span class="o">=</span><span class="s2">&quot;pt-BR&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pt-BR-Wavenet-D&quot;</span>
+<span class="p">)</span>
+
+<span class="n">VOICE_CONTEUDO</span> <span class="o">=</span> <span class="n">texttospeech</span><span class="o">.</span><span class="n">VoiceSelectionParams</span><span class="p">(</span>
+    <span class="n">language_code</span><span class="o">=</span><span class="s2">&quot;pt-BR&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pt-BR-Wavenet-E&quot;</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="gerar_audiobook">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.gerar_audiobook">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gerar_audiobook</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">json_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">next_titulo_nc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">is_conteudo_inicial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titulo_atual</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nucleo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Entrou na função (next_titulo_nc): &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">next_titulo_nc</span><span class="p">))</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Criando o audiobook.&quot;</span><span class="p">)</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">texttospeech</span><span class="o">.</span><span class="n">TextToSpeechClient</span><span class="p">()</span>
+
+        <span class="n">audio_config</span> <span class="o">=</span> <span class="n">configurar_audio</span><span class="p">()</span>
+
+        <span class="n">info_modulo_nucleo</span> <span class="o">=</span> <span class="n">extrair_info_modulo_nucleo</span><span class="p">(</span><span class="n">slug</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">info_modulo_nucleo</span><span class="p">:</span>
+           <span class="c1"># modulo = info_modulo_nucleo.get(&quot;numero_modulo&quot;, &quot;Desconhecido&quot;)</span>
+           <span class="c1"># nucleo = info_modulo_nucleo.get(&quot;numero_nucleo&quot;, &quot;Desconhecido&quot;)</span>
+
+            <span class="n">nucleo</span> <span class="o">=</span> <span class="n">nucleo</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;nc-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">nucleo</span> <span class="o">=</span> <span class="n">nucleo</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">audio_modulo</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Módulo </span><span class="si">{</span><span class="n">modulo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">,</span>
+                                            <span class="n">bloco</span><span class="o">=</span><span class="n">modulo</span><span class="p">)</span>
+            <span class="n">audio_nucleo</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Núcleo Conceitual </span><span class="si">{</span><span class="n">nucleo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">,</span>
+                                            <span class="n">bloco</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Núcleo Conceitual </span><span class="si">{</span><span class="n">nucleo</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;nc-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">audio_tema</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tema: </span><span class="si">{</span><span class="n">titulo_atual</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">,</span> <span class="n">bloco</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Tema: </span><span class="si">{</span><span class="n">titulo_atual</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">pausa</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&lt;speak&gt;&lt;break time=&quot;1000ms&quot;/&gt;&lt;/speak&gt;&#39;</span>
+            <span class="n">audio_content_introducao_inicial</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">audio_modulo</span><span class="p">,</span> <span class="n">pausa</span><span class="p">,</span> <span class="n">audio_nucleo</span><span class="p">,</span> <span class="n">pausa</span><span class="p">,</span> <span class="n">audio_tema</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">audio_content_introducao_inicial</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>  <span class="c1"># Se não houver info_modulo_nucleo, inicializa como vazio</span>
+
+        <span class="c1"># Inicializa audio_content_conteudo</span>
+        <span class="n">audio_content_conteudo</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">is_conteudo_inicial</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Gerando áudio especial para &#39;conteudo-inicial.json&#39;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Extrai dados do JSON (se estiverem disponíveis)</span>
+            <span class="n">titulo_tema</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;titulo_tema&quot;</span><span class="p">,</span> <span class="s2">&quot;Tema Desconhecido&quot;</span><span class="p">)</span>
+            <span class="n">descricao</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;descricao&quot;</span><span class="p">,</span> <span class="s2">&quot;Descrição não disponível&quot;</span><span class="p">)</span>
+            <span class="n">conteudo_introducao</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;conteudo_introducao&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+            <span class="n">objetivos_resumidos</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conteudo_introducao</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">conteudo_introducao</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__component&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;principais.tipografia&quot;</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="s2">&quot;variante&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;paragraph&quot;</span><span class="p">:</span>
+                        <span class="n">objetivos_resumidos</span> <span class="o">+=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;texto&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+            <span class="c1"># Constrói o prompt customizado, formatando as strings</span>
+            <span class="n">prompt_especial</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Transforme o seguinte texto em um roteiro detalhado para um audiobook educativo de INTRODUÇÃO, com tom formal e acadêmico.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;O roteiro deve seguir a seguinte estrutura, utilizando as informações fornecidas no JSON:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;1. **Apresentação:** Comece com &#39;Seja bem-vindo! Este é um áudio introdutório do tema </span><span class="se">\&quot;</span><span class="si">{</span><span class="n">titulo_tema</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">, onde serão apresentados os principais tópicos deste curso.&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;2. **Visão Geral Direta:** Apresente o conteúdo de forma direta, sem explicações aprofundadas. Use as informações do campo &#39;descricao&#39; do JSON para criar uma visão geral do que será abordado. Use frases como &#39;Durante este curso, abordaremos: </span><span class="si">{</span><span class="n">descricao</span><span class="si">}</span><span class="s2">&#39; ou &#39;Neste módulo, você vai aprender sobre: </span><span class="si">{</span><span class="n">descricao</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;3. **Objetivos (Opcional):** Se o campo &#39;conteudo_introducao&#39; contiver informações sobre os objetivos, resuma-os brevemente. Resumo dos objetivos: </span><span class="si">{</span><span class="n">objetivos_resumidos</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+           <span class="c1"># &quot;4. **Inclua uma transição para o resumo:** Use a frase &#39;Agora, vamos revisar os principais pontos desta aula.&#39;\n&quot;</span>
+           <span class="c1"># &quot;5. **Gere um resumo conciso:** Apresente um resumo conciso dos principais tópicos abordados na introdução.\n&quot;</span>
+            <span class="s2">&quot;6. **Encerramento da Introdução:** Finalize o áudio de introdução com a seguinte frase exata: &#39;Bem, espero que esta introdução tenha lhe dado uma visão geral sobre todos os pontos que abordaremos durante o curso! Nos vemos na próxima aula!&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Não inclua nenhuma descrição de música, transição, título de roteiro ou áudio, apenas o conteúdo a ser falado.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Texto a ser transformado (dados adicionais):</span><span class="se">\n</span><span class="s2">&quot;</span>  <span class="c1"># Adiciona o texto extraído do JSON ao prompt</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">descricao</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">objetivos_resumidos</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">prompt_completo</span> <span class="o">=</span> <span class="n">prompt_especial</span>  <span class="c1"># Use o prompt especial</span>
+            <span class="n">roteiro_completo</span> <span class="o">=</span> <span class="n">melhorar_texto_com_gemini</span><span class="p">(</span><span class="n">prompt_completo</span><span class="p">)</span>
+            <span class="n">roteiro_completo</span> <span class="o">=</span> <span class="n">pos_processar_roteiro</span><span class="p">(</span><span class="n">roteiro_completo</span><span class="p">)</span>
+
+            <span class="c1"># Sintetiza TODO o conteúdo do roteiro (introdução e transição)</span>
+            <span class="n">audio_content_introducao</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_completo</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+            <span class="c1"># Monta o áudio, adicionando a introdução inicial</span>
+            <span class="n">audio_content</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">audio_content_introducao_inicial</span><span class="p">,</span> <span class="n">audio_content_introducao</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Verifica se é um arquivo &quot;Verificando o aprendizado&quot;</span>
+            <span class="n">is_verificando_aprendizado</span> <span class="o">=</span> <span class="s2">&quot;Verificando o aprendizado&quot;</span> <span class="ow">in</span> <span class="n">titulo_atual</span> <span class="k">if</span> <span class="n">titulo_atual</span> <span class="k">else</span> <span class="kc">False</span>
+            
+            <span class="n">prompt_completo</span> <span class="o">=</span> <span class="n">audiobookprompt</span><span class="p">(</span><span class="n">texto</span><span class="p">)</span>  <span class="c1"># Usa o prompt padrão</span>
+            <span class="n">roteiro_completo</span> <span class="o">=</span> <span class="n">melhorar_texto_com_gemini</span><span class="p">(</span><span class="n">prompt_completo</span><span class="p">)</span>
+            <span class="n">roteiro_completo</span> <span class="o">=</span> <span class="n">pos_processar_roteiro</span><span class="p">(</span><span class="n">roteiro_completo</span><span class="p">)</span>
+
+            <span class="n">partes</span> <span class="o">=</span> <span class="n">roteiro_completo</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;[pausa]&#39;</span><span class="p">)</span>
+            <span class="n">roteiro_introducao</span> <span class="o">=</span> <span class="n">partes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">roteiro_conteudo</span> <span class="o">=</span> <span class="n">partes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">partes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">roteiro_resumo</span> <span class="o">=</span> <span class="n">partes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">partes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">roteiro_proxima_aula</span> <span class="o">=</span> <span class="n">partes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">partes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="n">audio_content_introducao</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_introducao</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+            <span class="n">audio_content_conteudo</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_conteudo</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_CONTEUDO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+
+            <span class="c1"># Se for um arquivo &quot;Verificando o aprendizado&quot;, pula o resumo final</span>
+            <span class="k">if</span> <span class="n">is_verificando_aprendizado</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Arquivo &#39;Verificando o aprendizado&#39; detectado. Pulando resumo final.&quot;</span><span class="p">)</span>
+                <span class="c1"># Monta o áudio, sem adicionar o resumo para os arquivos &quot;Verificando o aprendizado&quot;</span>
+                <span class="n">audio_content</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">audio_content_introducao_inicial</span><span class="p">,</span> <span class="n">audio_content_introducao</span><span class="p">,</span> <span class="n">audio_content_conteudo</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Transição e Resumo</span>
+                <span class="n">transicao_resumo</span> <span class="o">=</span> <span class="s2">&quot;Agora, vamos revisar os principais pontos desta aula.&quot;</span>
+                <span class="n">audio_content_transicao</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">transicao_resumo</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+                <span class="n">audio_content_resumo</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_resumo</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+
+                <span class="c1"># Monta o áudio, adicionando a introdução inicial</span>
+                <span class="n">audio_content</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">audio_content_introducao_inicial</span><span class="p">,</span> <span class="n">audio_content_introducao</span><span class="p">,</span> <span class="n">audio_content_conteudo</span><span class="p">,</span>
+                                        <span class="n">audio_content_transicao</span><span class="p">,</span> <span class="n">audio_content_resumo</span><span class="p">])</span>
+
+        <span class="n">audio_content_conteudo</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+
+        <span class="n">roteiro_proxima_aula</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Inicializa roteiro_proxima_aula com string vazia</span>
+
+        <span class="c1"># Próxima aula (sempre) - Condicionado para não executar em conteudo_inicial</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_conteudo_inicial</span><span class="p">:</span>
+            <span class="c1"># Verifica se é um arquivo &quot;Verificando o aprendizado&quot;</span>
+            <span class="k">if</span> <span class="n">is_verificando_aprendizado</span><span class="p">:</span>
+                <span class="n">roteiro_proxima_aula</span> <span class="o">=</span> <span class="s2">&quot;Chegamos ao final deste módulo. Esperamos que o conteúdo tenha sido proveitoso.&quot;</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Usando mensagem de encerramento de módulo para arquivo &#39;Verificando o aprendizado&#39;&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Usando voz pt-BR-Wavenet-D para mensagem de encerramento&quot;</span><span class="p">)</span>
+                <span class="n">audio_content_proxima_aula</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_proxima_aula</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_INTRO_RESUMO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">next_titulo_nc</span> <span class="o">==</span> <span class="s2">&quot;Verificando o aprendizado&quot;</span><span class="p">:</span>
+                <span class="n">roteiro_proxima_aula</span> <span class="o">=</span> <span class="s2">&quot;Na próxima aula, iremos revisar todo o conteúdo passado durante este módulo.&quot;</span>
+                <span class="n">audio_content_proxima_aula</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_proxima_aula</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_CONTEUDO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">next_titulo_nc</span><span class="p">:</span>
+                <span class="n">roteiro_proxima_aula</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Na próxima aula, abordaremos o tema: </span><span class="si">{</span><span class="n">next_titulo_nc</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="n">audio_content_proxima_aula</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_proxima_aula</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_CONTEUDO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">roteiro_proxima_aula</span> <span class="o">=</span> <span class="s2">&quot;Chegamos ao final deste módulo. Esperamos que o conteúdo tenha sido proveitoso.&quot;</span>  <span class="c1"># Mensagem para o ultimo arquivo</span>
+                <span class="n">audio_content_proxima_aula</span> <span class="o">=</span> <span class="n">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro_proxima_aula</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">VOICE_CONTEUDO</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">)</span>
+            
+            <span class="n">audio_content</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">audio_content</span><span class="p">,</span> <span class="n">audio_content_proxima_aula</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">audio_content</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao criar audiobook: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">raise</span></div>
+
+
+
+<div class="viewcode-block" id="pos_processar_roteiro">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.pos_processar_roteiro">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pos_processar_roteiro</span><span class="p">(</span><span class="n">roteiro</span><span class="p">):</span>
+    <span class="n">roteiro</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Roteiro para Audiobook Educativo:.*&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">roteiro</span><span class="p">)</span>
+    <span class="n">roteiro</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Introdução&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">roteiro</span><span class="p">)</span>
+    <span class="n">roteiro</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Desenvolvimento&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">roteiro</span><span class="p">)</span>
+    <span class="n">roteiro</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Conclusão&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">roteiro</span><span class="p">)</span>
+
+    <span class="n">roteiro</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\*+[\s\w]+\*+&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">roteiro</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_outside_tags</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(&lt;[^&gt;]*&gt;)&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\n\s*\n&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="n">roteiro</span> <span class="o">=</span> <span class="n">replace_outside_tags</span><span class="p">(</span><span class="n">roteiro</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">roteiro</span></div>
+
+
+
+<div class="viewcode-block" id="configurar_audio">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.configurar_audio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">configurar_audio</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">texttospeech</span><span class="o">.</span><span class="n">AudioConfig</span><span class="p">(</span>
+        <span class="n">audio_encoding</span><span class="o">=</span><span class="n">texttospeech</span><span class="o">.</span><span class="n">AudioEncoding</span><span class="o">.</span><span class="n">MP3</span><span class="p">,</span>
+        <span class="n">speaking_rate</span><span class="o">=</span><span class="mf">1.0</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="sintetizar_audio">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.services.audiobook_service.sintetizar_audio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sintetizar_audio</span><span class="p">(</span><span class="n">roteiro</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">voice</span><span class="p">,</span> <span class="n">audio_config</span><span class="p">,</span> <span class="n">bloco</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">audio_content</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="n">log_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Processando bloco: </span><span class="si">{</span><span class="n">bloco</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">bloco</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">roteiro</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bloco</span><span class="p">:</span>
+            <span class="n">ssml_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;speak&gt;&lt;prosody rate=&quot;medium&quot; pitch=&quot;default&quot;&gt;</span><span class="si">{</span><span class="n">bloco</span><span class="si">}</span><span class="s1">&lt;/prosody&gt;&lt;/speak&gt;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ssml_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;speak&gt;&lt;prosody rate=&quot;medium&quot; pitch=&quot;default&quot;&gt;</span><span class="si">{</span><span class="n">roteiro</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s1">&lt;/prosody&gt;&lt;/speak&gt;&#39;</span>
+
+        <span class="n">max_bytes</span> <span class="o">=</span> <span class="mi">4500</span>
+        <span class="n">encoded_text</span> <span class="o">=</span> <span class="n">ssml_text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoded_text</span><span class="p">),</span> <span class="n">max_bytes</span><span class="p">):</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="n">encoded_text</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">max_bytes</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">input_text</span> <span class="o">=</span> <span class="n">texttospeech</span><span class="o">.</span><span class="n">SynthesisInput</span><span class="p">(</span><span class="n">ssml</span><span class="o">=</span><span class="n">block</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">synthesize_speech</span><span class="p">(</span>
+                <span class="nb">input</span><span class="o">=</span><span class="n">input_text</span><span class="p">,</span>
+                <span class="n">voice</span><span class="o">=</span><span class="n">voice</span><span class="p">,</span>
+                <span class="n">audio_config</span><span class="o">=</span><span class="n">audio_config</span>
+            <span class="p">)</span>
+            <span class="n">audio_content</span> <span class="o">+=</span> <span class="n">response</span><span class="o">.</span><span class="n">audio_content</span>
+        <span class="k">return</span> <span class="n">audio_content</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao sintetizar áudio: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">raise</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

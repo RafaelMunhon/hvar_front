@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.config.vertexAi &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/common_utils.html">Utilitários Comuns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/vertex_ai.html">Vertex AI</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.config.vertexAi</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.config.vertexAi</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">vertexai</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vertexai.generative_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenerativeModel</span><span class="p">,</span> <span class="n">GenerationConfig</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">google</span><span class="w"> </span><span class="kn">import</span> <span class="n">genai</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># Adicionar o diretório raiz do projeto ao sys.path</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))))</span>
+
+<span class="c1"># Ajuste a importação para o caminho correto</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+
+<div class="viewcode-block" id="init_vertex_ai">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.init_vertex_ai">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">init_vertex_ai</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inicializa o Vertex AI com as configurações do projeto.</span>
+<span class="sd">    </span>
+<span class="sd">    Carrega as credenciais e configura o ambiente para uso do Vertex AI.</span>
+<span class="sd">    Deve ser chamado antes de qualquer outra operação com o Vertex AI.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vertexai</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">PROJECT_ID</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gemini_ai_thinking">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.gemini_ai_thinking">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gemini_ai_thinking</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inicializa o cliente Gemini AI Thinking.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Cliente Gemini AI Thinking</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">genai</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
+            <span class="n">vertexai</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">PROJECT_ID</span><span class="p">,</span>
+            <span class="n">location</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_model">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.get_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém a instância do modelo Gemini-Pro configurado.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        GenerativeModel: Instância do modelo Gemini-Pro configurada</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">GenerativeModel</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">GEMINI</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_generation_config">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.get_generation_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_generation_config</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtém as configurações de geração para o modelo.</span>
+<span class="sd">    </span>
+<span class="sd">    Define parâmetros como temperatura, top_k, top_p e candidate_count</span>
+<span class="sd">    para controlar a geração de conteúdo.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        GenerationConfig: Configurações para geração de conteúdo</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">GenerationConfig</span><span class="p">(</span>
+        <span class="n">max_output_tokens</span><span class="o">=</span><span class="mi">8192</span><span class="p">,</span>  <span class="c1"># max 8192</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># quanto maior, mais criativo vai ser max 2</span>
+        <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="generate_content_flash_1_5">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.generate_content_flash_1_5">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_content_flash_1_5</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera conteúdo usando o modelo Gemini 2.0 Flash Thinking</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - prompt: Texto para gerar o conteúdo</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Conteúdo gerado ou None em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">init_vertex_ai</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
+    <span class="n">generation_config</span> <span class="o">=</span> <span class="n">get_generation_config</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_content</span><span class="p">(</span>
+            <span class="n">prompt</span><span class="p">,</span>
+            <span class="n">generation_config</span><span class="o">=</span><span class="n">generation_config</span><span class="p">,</span>
+            <span class="n">safety_settings</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">safety_settings</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">responses</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar conteúdo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+
+<div class="viewcode-block" id="generate_content_old">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.generate_content_old">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_content_old</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tenta usar o Gemini 2.0 Flash primeiro, se falhar por quota, usa o modelo 1.5</span>
+<span class="sd">    Args:</span>
+<span class="sd">        prompt: texto do prompt para gerar conteúdo</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        response do modelo ou None em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">init_vertex_ai</span><span class="p">()</span>
+    
+    <span class="c1"># Configuração específica para respostas rápidas</span>
+    <span class="n">flash_config</span> <span class="o">=</span> <span class="n">GenerationConfig</span><span class="p">(</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+        <span class="n">top_k</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+        <span class="n">max_output_tokens</span><span class="o">=</span><span class="mi">8192</span><span class="p">,</span>
+        <span class="n">response_mime_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="n">model</span> <span class="o">=</span> <span class="n">GenerativeModel</span><span class="p">(</span>
+        <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;gemini-2.0-flash&quot;</span><span class="p">,</span>
+        <span class="n">generation_config</span><span class="o">=</span><span class="n">flash_config</span>
+    <span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">chat</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">start_chat</span><span class="p">(</span><span class="n">history</span><span class="o">=</span><span class="p">[])</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">chat</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;429&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;Quota exceeded&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Quota excedida no Gemini 2.0, tentando modelo 1.5...&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">generate_content_flash_1_5</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar conteúdo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+        
+
+<div class="viewcode-block" id="generate_content">
+<a class="viewcode-back" href="../../../modules/vertex_ai.html#app.config.vertexAi.generate_content">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_content</span><span class="p">(</span><span class="n">texto_entrada</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera conteúdo usando o modelo Gemini 2.0 Flash Thinking com retentativas e fallback.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - texto_entrada: Texto para gerar o conteúdo</span>
+<span class="sd">    - max_retries: Número máximo de tentativas (default: 3)</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Conteúdo gerado ou None em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">client</span> <span class="o">=</span> <span class="n">gemini_ai_thinking</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: Erro ao inicializar cliente Gemini: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+
+            <span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;gemini-2.0-flash-thinking-exp-01-21&quot;</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">contents</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">texto_entrada</span><span class="p">}]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: Erro ao preparar conteúdo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">generate_content_config</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">GenerateContentConfig</span><span class="p">(</span>
+                    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                    <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+                    <span class="n">max_output_tokens</span><span class="o">=</span><span class="mi">8192</span><span class="p">,</span>
+                    <span class="n">response_modalities</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;TEXT&quot;</span><span class="p">],</span>
+                    <span class="n">safety_settings</span><span class="o">=</span><span class="p">[</span>
+                        <span class="n">types</span><span class="o">.</span><span class="n">SafetySetting</span><span class="p">(</span>
+                            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;HARM_CATEGORY_HATE_SPEECH&quot;</span><span class="p">,</span>
+                            <span class="n">threshold</span><span class="o">=</span><span class="s2">&quot;OFF&quot;</span>
+                        <span class="p">),</span>
+                        <span class="n">types</span><span class="o">.</span><span class="n">SafetySetting</span><span class="p">(</span>
+                            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;HARM_CATEGORY_DANGEROUS_CONTENT&quot;</span><span class="p">,</span>
+                            <span class="n">threshold</span><span class="o">=</span><span class="s2">&quot;OFF&quot;</span>
+                        <span class="p">),</span>
+                        <span class="n">types</span><span class="o">.</span><span class="n">SafetySetting</span><span class="p">(</span>
+                            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;HARM_CATEGORY_SEXUALLY_EXPLICIT&quot;</span><span class="p">,</span>
+                            <span class="n">threshold</span><span class="o">=</span><span class="s2">&quot;OFF&quot;</span>
+                        <span class="p">),</span>
+                        <span class="n">types</span><span class="o">.</span><span class="n">SafetySetting</span><span class="p">(</span>
+                            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;HARM_CATEGORY_HARASSMENT&quot;</span><span class="p">,</span>
+                            <span class="n">threshold</span><span class="o">=</span><span class="s2">&quot;OFF&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">],</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: Erro na configuração: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+
+            <span class="n">response_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">stream</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">generate_content_stream</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">contents</span><span class="o">=</span><span class="n">contents</span><span class="p">,</span>
+                    <span class="n">config</span><span class="o">=</span><span class="n">generate_content_config</span><span class="p">,</span>
+                <span class="p">)</span>
+                
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+                    <span class="n">response_text</span> <span class="o">+=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>
+
+                <span class="k">return</span> <span class="n">response_text</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: Erro durante streaming: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">attempt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> falhou: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Tentando novamente...&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Todas as tentativas falharam. Tentando método alternativo...&quot;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">generate_content_old</span><span class="p">(</span><span class="n">texto_entrada</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">fallback_error</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro no método fallback: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">fallback_error</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

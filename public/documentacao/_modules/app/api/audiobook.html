@@ -1,0 +1,378 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.api.audiobook &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.api.audiobook</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.api.audiobook</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span> 
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.bd.bd</span><span class="w"> </span><span class="kn">import</span> <span class="n">execute_query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.audiobook_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">audiobook</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">storage</span>
+
+<span class="n">audiobook_bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;audiobook&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="s2">&quot;yduqs-dev-443513&quot;</span>
+<span class="n">BUCKET_NAME</span> <span class="o">=</span> <span class="s2">&quot;yduqs-audio-web&quot;</span>
+
+<span class="c1"># Verificação das credenciais</span>
+<span class="n">credential_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GOOGLE_APPLICATION_CREDENTIALS&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">credential_path</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Credenciais do GCS encontradas em: &quot;</span><span class="p">)</span> <span class="c1"># Removido o split</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Variável de ambiente GOOGLE_APPLICATION_CREDENTIALS não definida!&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_audiobook">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.api.audiobook.create_audiobook">[docs]</a>
+<span class="nd">@audiobook_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/generate&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_audiobook</span><span class="p">():</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Recebendo requisição para gerar audiobook&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">is_json</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Requisição deve conter JSON&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;tema&#39;</span><span class="p">:</span>
+            <span class="n">theme</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;theme&#39;</span><span class="p">)</span>
+            <span class="n">content_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recebendo requisição para gerar audiobook por tema:  com ID: &quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">theme</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">content_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Theme ou ID não fornecido&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+            <span class="c1"># Query para buscar por tema</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                SELECT JSON_CONTEUDO as conteudo, THEME as theme, nucleo, TITULO_NC, id, modulo</span>
+<span class="s2">                FROM `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO` a2</span>
+<span class="s2">                WHERE 1=1</span>
+<span class="s2">                and a2.ID like &#39;%</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">content_id</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">%&#39;</span>
+<span class="s2">                and a2.THEME like &#39;%</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">theme</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">%&#39;</span>
+<span class="s2">                order by a2.modulo, a2.nucleo</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executando query: &quot;</span><span class="p">)</span>
+            <span class="n">query_results</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Número de resultados encontrados: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">query_results</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">query_results</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="mi">0</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Converte para lista para poder acessar índices</span>
+            <span class="n">results_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">query_results</span><span class="p">)</span>
+
+            <span class="n">resultados</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results_list</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processando resultado </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> de </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results_list</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">conteudo</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;conteudo&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                    <span class="n">theme</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;theme&#39;</span><span class="p">)</span>
+                    <span class="n">nucleo</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nucleo&#39;</span><span class="p">)</span>
+                    <span class="n">titulo_atual</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">)</span>
+                    <span class="n">modulo</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;modulo&#39;</span><span class="p">)</span>
+                    <span class="n">content_id</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processando núcleo: , título: &quot;</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">conteudo</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Conteúdo vazio no resultado da query&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># Verifica o núcleo do conteúdo</span>
+                    <span class="k">if</span> <span class="n">nucleo</span> <span class="o">==</span> <span class="s2">&quot;Estrutura do Tema.json&quot;</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Pulando &#39;Estrutura do Tema.json&#39;&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># Define flag para conteúdo inicial</span>
+                    <span class="n">is_conteudo_inicial</span> <span class="o">=</span> <span class="n">nucleo</span> <span class="o">==</span> <span class="s2">&quot;conteudo_inicial.json&quot;</span>
+
+                    <span class="c1"># Pega o título do próximo item, se existir</span>
+                    <span class="n">next_titulo_nc</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">results_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">next_titulo_nc</span> <span class="o">=</span> <span class="n">results_list</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Próximo título será: &quot;</span><span class="p">)</span>
+
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando geração do audiobook para &quot;</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">ie</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;audios/&quot;</span>
+                        <span class="n">ia</span> <span class="o">=</span> <span class="s2">&quot;audiobooks&quot;</span>
+
+                        <span class="n">resultado</span> <span class="o">=</span> <span class="n">audiobook</span><span class="p">(</span>
+                            <span class="n">conteudo</span><span class="p">,</span>
+                            <span class="n">relative_path</span><span class="o">=</span><span class="n">ie</span><span class="p">,</span>
+                            <span class="n">output_dir</span><span class="o">=</span><span class="n">ia</span><span class="p">,</span>
+                            <span class="n">next_titulo_nc</span><span class="o">=</span><span class="n">next_titulo_nc</span><span class="p">,</span>
+                            <span class="n">is_conteudo_inicial</span><span class="o">=</span><span class="n">is_conteudo_inicial</span><span class="p">,</span>
+                            <span class="n">titulo_atual</span><span class="o">=</span><span class="n">titulo_atual</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="n">modulo</span><span class="p">,</span> <span class="n">nucleo</span><span class="o">=</span><span class="n">nucleo</span><span class="p">,</span> <span class="n">content_id</span><span class="o">=</span><span class="n">content_id</span><span class="p">,</span> <span class="n">theme</span><span class="o">=</span><span class="n">theme</span>
+                        <span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Audiobook gerado com sucesso para &quot;</span><span class="p">)</span>
+                        <span class="n">resultados</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resultado</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e_audiobook</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar audiobook para : </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e_audiobook</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">resultados</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Erro ao gerar audiobook: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e_audiobook</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">})</span>
+
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar JSON </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">resultados</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Erro ao processar JSON: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">})</span>
+                <span class="k">continue</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conteúdo de &#39;resultados&#39; ANTES do jsonify: </span><span class="si">{</span><span class="n">resultados</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># Log para ver o CONTEÚDO de &#39;resultados&#39;</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tipo de &#39;resultados&#39;: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">resultados</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># Log para ver o TIPO de &#39;resultados&#39; (lista, etc.)</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Audiobooks gerados sequencialmente&quot;</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="n">resultados</span><span class="p">}),</span> <span class="mi">200</span>
+
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;titulo&#39;</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recebendo requisição para gerar audiobook por título&quot;</span><span class="p">)</span>
+            <span class="n">titulo_nc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;titulo_nc&#39;</span><span class="p">)</span>
+            <span class="n">content_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+            <span class="n">nucleo</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nucleo&#39;</span><span class="p">)</span>
+            <span class="n">modulo</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;modulo&#39;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tipo de &#39;resultados&#39; do modulo e nucleo </span><span class="si">{</span><span class="n">modulo</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">nucleo</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">titulo_nc</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">content_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Título NC ou ID não fornecido&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+            <span class="c1"># Query para buscar por título (atual)</span>
+            <span class="n">query_atual</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                SELECT JSON_CONTEUDO as conteudo, THEME as theme, nucleo, TITULO_NC, id, modulo, TITULO_NC_PROXIMA_AULA</span>
+<span class="s2">                FROM `yduqs-dev-443513.YDUQS.ARQUIVOS_CONTEUDO` a2</span>
+<span class="s2">                WHERE 1=1</span>
+<span class="s2">                and a2.ID = &#39;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">content_id</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">                and a2.TITULO_NC like &#39;%</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">titulo_nc</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">%&#39;</span>
+<span class="s2">                and a2.nucleo like &#39;%</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">nucleo</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">%&#39;</span>
+<span class="s2">                AND (a2.modulo LIKE &#39;%</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">modulo</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">%&#39; OR a2.modulo IS NULL AND &#39;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">modulo</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; = &#39;None&#39;)</span>
+<span class="s2">                limit 1</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executando query para o título atual: &quot;</span><span class="p">)</span>
+            <span class="n">result_atual</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query_atual</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resultado da query para o título atual: &quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">result_atual</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">result_atual</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Arquivo não encontrado&#39;</span><span class="p">}),</span> <span class="mi">404</span>
+
+            <span class="c1"># Pega o conteúdo e theme do resultado atual</span>
+            <span class="n">conteudo</span> <span class="o">=</span> <span class="n">result_atual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;conteudo&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">theme</span> <span class="o">=</span> <span class="n">result_atual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;theme&#39;</span><span class="p">)</span>
+            <span class="n">titulo_atual</span> <span class="o">=</span> <span class="n">result_atual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">)</span>
+            <span class="n">modulo</span> <span class="o">=</span> <span class="n">result_atual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;modulo&#39;</span><span class="p">)</span>
+            <span class="n">nucleo</span> <span class="o">=</span> <span class="n">result_atual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nucleo&#39;</span><span class="p">)</span>
+            <span class="n">content_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+            <span class="n">next_titulo_nc</span> <span class="o">=</span> <span class="n">result_atual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TITULO_NC_PROXIMA_AULA&#39;</span><span class="p">)</span>
+
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">conteudo</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Conteúdo vazio&#39;</span><span class="p">}),</span> <span class="mi">400</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">theme</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Theme não encontrado&#39;</span><span class="p">}),</span> <span class="mi">400</span>
+
+            <span class="k">if</span> <span class="n">nucleo</span> <span class="o">==</span> <span class="s2">&quot;Estrutura do Tema.json&quot;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Pulando &#39;Estrutura do Tema.json&#39;&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;esse tema não pode ser gerado&#39;</span><span class="p">}),</span> <span class="mi">400</span>
+
+            <span class="c1"># Define flag para conteúdo inicial</span>
+            <span class="n">is_conteudo_inicial</span> <span class="o">=</span> <span class="n">nucleo</span> <span class="o">==</span> <span class="s2">&quot;conteudo_inicial.json&quot;</span>            
+
+
+
+            <span class="c1"># Adiciona os paths necessários para salvar no GCS</span>
+            <span class="n">ie</span> <span class="o">=</span> <span class="n">conteudo</span><span class="p">[</span><span class="s1">&#39;relative_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;audios/&quot;</span>
+            <span class="n">ia</span> <span class="o">=</span> <span class="n">conteudo</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;audiobooks&quot;</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">resultado</span> <span class="o">=</span> <span class="n">audiobook</span><span class="p">(</span><span class="n">conteudo</span><span class="p">,</span>
+                                        <span class="n">relative_path</span><span class="o">=</span><span class="n">ie</span><span class="p">,</span>
+                                        <span class="n">output_dir</span><span class="o">=</span><span class="n">ia</span><span class="p">,</span>
+                                        <span class="n">next_titulo_nc</span><span class="o">=</span><span class="n">next_titulo_nc</span><span class="p">,</span> <span class="c1"># Passa o next_titulo_nc para audiobook()</span>
+                                        <span class="n">is_conteudo_inicial</span><span class="o">=</span><span class="n">is_conteudo_inicial</span><span class="p">,</span>
+                                        <span class="n">titulo_atual</span><span class="o">=</span><span class="n">titulo_atual</span><span class="p">,</span>
+                                        <span class="n">modulo</span><span class="o">=</span><span class="n">modulo</span><span class="p">,</span>
+                                        <span class="n">nucleo</span><span class="o">=</span><span class="n">nucleo</span><span class="p">,</span>
+                                        <span class="n">content_id</span><span class="o">=</span><span class="n">content_id</span><span class="p">,</span>
+                                        <span class="n">theme</span><span class="o">=</span><span class="n">theme</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">resultado</span><span class="p">),</span> <span class="mi">200</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar JSON: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao processar o JSON&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Mode inválido - deve ser &#39;tema&#39; ou &#39;titulo&#39;&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar requisição: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao processar a requisição&quot;</span><span class="p">}),</span> <span class="mi">500</span></div>
+
+
+
+<div class="viewcode-block" id="list_files">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.api.audiobook.list_files">[docs]</a>
+<span class="nd">@audiobook_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/list&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_files</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                ID,</span>
+<span class="s2">                URL,</span>
+<span class="s2">                TIPO_AUDIO,</span>
+<span class="s2">                CREATE_DATE,</span>
+<span class="s2">                THEME,</span>
+<span class="s2">                TITULO_NC</span>
+<span class="s2">            FROM `yduqs-dev-443513.YDUQS.AUDIOS`</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resultado da query: &quot;</span><span class="p">)</span>
+
+        <span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">file_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">],</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;URL&#39;</span><span class="p">],</span>
+                <span class="s2">&quot;tipo_audio&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;TIPO_AUDIO&#39;</span><span class="p">],</span>
+                <span class="s2">&quot;create_date&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;CREATE_DATE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;CREATE_DATE&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;theme&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;THEME&#39;</span><span class="p">],</span>
+                <span class="s2">&quot;titulo_nc&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;TITULO_NC&#39;</span><span class="p">]</span>
+            <span class="p">})</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lista de arquivos montada: &quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="n">file_list</span><span class="p">})</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Cache-Control&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;no-cache, no-store, must-revalidate&#39;</span>  <span class="c1"># Disable caching</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Pragma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;no-cache&#39;</span>  <span class="c1"># for older browsers</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Expires&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>  <span class="c1"># for older browsers</span>
+
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="mi">200</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao listar arquivos do banco de dados: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao listar arquivos do banco de dados&quot;</span><span class="p">}),</span> <span class="mi">500</span></div>
+
+
+
+<div class="viewcode-block" id="delete_audios">
+<a class="viewcode-back" href="../../../modules/audio_services.html#app.api.audiobook.delete_audios">[docs]</a>
+<span class="nd">@audiobook_bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/delete&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;DELETE&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">delete_audios</span><span class="p">():</span>
+    <span class="n">audio_ids</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>  <span class="c1"># Espera receber uma lista de IDs no corpo da requisição</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">audio_ids</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">audio_ids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;IDs de áudio inválidos&quot;</span><span class="p">}),</span> <span class="mi">400</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Construir a query para deletar múltiplos áudios</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            DELETE FROM `yduqs-dev-443513.YDUQS.AUDIOS`</span>
+<span class="s2">            WHERE ID IN (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">audio_id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">audio_id</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">audio_ids</span><span class="p">])</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>  <span class="c1"># Execute a query para deletar os áudios do banco de dados</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Audiobooks com IDs  deletados com sucesso do banco de dados.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Audiobooks com IDs  deletados com sucesso.&quot;</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao deletar audiobooks com IDs  do banco de dados: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Erro ao deletar audiobooks do banco de dados&quot;</span><span class="p">}),</span> <span class="mi">500</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

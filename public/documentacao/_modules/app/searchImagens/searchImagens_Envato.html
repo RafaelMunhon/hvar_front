@@ -1,0 +1,642 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.searchImagens.searchImagens_Envato &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.searchImagens.searchImagens_Envato</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.searchImagens.searchImagens_Envato</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">googletrans</span><span class="w"> </span><span class="kn">import</span> <span class="n">Translator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ENVATO_API_URL</span><span class="p">,</span> <span class="n">ENVATO_HEADERS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_envato_images_path</span><span class="p">,</span> <span class="n">get_temp_files_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.vertexAi</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_content</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.utils.verificaImagemVideo</span><span class="w"> </span><span class="kn">import</span> <span class="n">analisar_imagem</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.search</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_search_queries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">ENVATO_API_KEY</span> <span class="o">=</span> <span class="s2">&quot;7BGGwCRsTuQCucq2Vq3yfqJodv3Rer4H&quot;</span>  <span class="c1"># Substitua pela sua chave real</span>
+
+<span class="c1"># Lock para thread-safety ao adicionar imagens à lista</span>
+<span class="n">lista_imagens_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="reformular_termo_busca">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.reformular_termo_busca">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reformula o termo de busca para melhor resultado&quot;&quot;&quot;</span>
+    <span class="c1"># Remove palavras que podem atrapalhar a busca</span>
+    <span class="n">termo</span> <span class="o">=</span> <span class="n">termo</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">palavras_remover</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;os&#39;</span><span class="p">,</span> <span class="s1">&#39;as&#39;</span><span class="p">,</span> <span class="s1">&#39;um&#39;</span><span class="p">,</span> <span class="s1">&#39;uma&#39;</span><span class="p">,</span> <span class="s1">&#39;uns&#39;</span><span class="p">,</span> <span class="s1">&#39;umas&#39;</span><span class="p">,</span> <span class="s1">&#39;de&#39;</span><span class="p">,</span> <span class="s1">&#39;da&#39;</span><span class="p">,</span> <span class="s1">&#39;do&#39;</span><span class="p">,</span> <span class="s1">&#39;das&#39;</span><span class="p">,</span> <span class="s1">&#39;dos&#39;</span><span class="p">]</span>
+    <span class="n">palavras</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">termo</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">palavras_remover</span><span class="p">]</span>
+    
+    <span class="c1"># Adiciona palavras-chave que melhoram os resultados</span>
+    <span class="n">sufixos</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;illustration&#39;</span><span class="p">,</span> <span class="s1">&#39;concept&#39;</span><span class="p">,</span> <span class="s1">&#39;visual&#39;</span><span class="p">,</span> <span class="s1">&#39;design&#39;</span><span class="p">,</span> <span class="s1">&#39;modern&#39;</span><span class="p">]</span>
+    
+    <span class="c1"># Tenta diferentes combinações</span>
+    <span class="n">termo</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">palavras</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>  <span class="c1"># Usa no máximo 3 palavras principais</span>
+    <span class="n">termo</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">sufixos</span><span class="p">)</span>  <span class="c1"># Adiciona um sufixo aleatório</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Termo reformulado: </span><span class="si">{</span><span class="n">termo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">termo</span></div>
+
+
+<div class="viewcode-block" id="baixar_e_verificar_imagem">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.baixar_e_verificar_imagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">baixar_e_verificar_imagem</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Baixa a imagem e verifica se é adequada&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Criar nome único para arquivo temporário</span>
+        <span class="n">temp_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;temp_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">.jpg&quot;</span>
+        <span class="n">temp_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;app&quot;</span><span class="p">,</span> <span class="s2">&quot;arquivosTemporarios&quot;</span><span class="p">,</span> <span class="n">temp_filename</span><span class="p">)</span>
+        
+        <span class="c1"># Baixar imagem</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="c1"># Salvar temporariamente</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        
+        <span class="c1"># Verificar adequação</span>
+        <span class="k">if</span> <span class="n">analisar_imagem</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">termo</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">temp_path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar/verificar imagem </span><span class="si">{</span><span class="n">img_url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">temp_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">temp_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="buscar_no_envato">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.buscar_no_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">buscar_no_envato</span><span class="p">(</span><span class="n">termo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Busca imagens no Envato&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="n">ENVATO_API_KEY</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Mozilla/5.0&#39;</span>
+        <span class="p">}</span>
+        
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;https://api.envato.com/v1/discovery/search/search/item&quot;</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;term&quot;</span><span class="p">:</span> <span class="n">termo</span><span class="p">,</span>
+                <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="s2">&quot;photodune.net&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;page_size&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+                <span class="s2">&quot;sort_by&quot;</span><span class="p">:</span> <span class="s2">&quot;relevance&quot;</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="n">resultados</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;matches&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Encontradas </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">resultados</span><span class="p">)</span><span class="si">}</span><span class="s2"> imagens para o termo: </span><span class="si">{</span><span class="n">termo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resultados</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro na busca Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="buscar_imagens_envato">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.buscar_imagens_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">buscar_imagens_envato</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Busca imagens no Envato e retorna a primeira adequada&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Iniciando busca de imagem ===&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Termo de busca: </span><span class="si">{</span><span class="n">termo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nome do arquivo: </span><span class="si">{</span><span class="n">fileName</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Caminho destino: </span><span class="si">{</span><span class="n">path_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Momento chave: </span><span class="si">{</span><span class="n">momento_chave</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Primeiro tenta com o termo original</span>
+        <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">termo</span>
+        <span class="n">tentativas</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">max_tentativas</span> <span class="o">=</span> <span class="mi">10</span>
+        
+        <span class="c1"># Lista de palavras do termo original</span>
+        <span class="n">palavras</span> <span class="o">=</span> <span class="n">termo_atual</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">num_palavras</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras</span><span class="p">)</span>
+        
+        <span class="k">while</span> <span class="n">tentativas</span> <span class="o">&lt;</span> <span class="n">max_tentativas</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando busca com termo: </span><span class="si">{</span><span class="n">termo_atual</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Tenta buscar imagens</span>
+            <span class="n">resultados</span> <span class="o">=</span> <span class="n">buscar_no_envato</span><span class="p">(</span><span class="n">termo_atual</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">resultados</span><span class="p">:</span>
+                <span class="c1"># Se não encontrou resultados, tenta reduzir o número de palavras</span>
+                <span class="k">if</span> <span class="n">num_palavras</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># Mantém pelo menos 2 palavras</span>
+                    <span class="n">num_palavras</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">termo_atual</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">palavras</span><span class="p">[:</span><span class="n">num_palavras</span><span class="p">])</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reduzindo termo para: </span><span class="si">{</span><span class="n">termo_atual</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                
+                <span class="c1"># Se já tentou com 2 palavras, reformula o termo</span>
+                <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">)</span>
+                <span class="n">palavras</span> <span class="o">=</span> <span class="n">termo_atual</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">num_palavras</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">palavras</span><span class="p">)</span>
+                <span class="n">tentativas</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            
+            <span class="c1"># Se encontrou resultados, processa a primeira imagem</span>
+            <span class="k">for</span> <span class="n">resultado</span> <span class="ow">in</span> <span class="n">resultados</span><span class="p">:</span>
+                <span class="n">image_urls</span> <span class="o">=</span> <span class="n">resultado</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_urls&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                
+                <span class="c1"># Encontrar melhor resolução disponível</span>
+                <span class="k">for</span> <span class="n">resolucao</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;w1600&#39;</span><span class="p">,</span> <span class="s1">&#39;w1550&#39;</span><span class="p">,</span> <span class="s1">&#39;w1500&#39;</span><span class="p">,</span> <span class="s1">&#39;w1450&#39;</span><span class="p">,</span> <span class="s1">&#39;w1400&#39;</span><span class="p">,</span> <span class="s1">&#39;w1350&#39;</span><span class="p">,</span> <span class="s1">&#39;w1300&#39;</span><span class="p">,</span> 
+                                 <span class="s1">&#39;w1250&#39;</span><span class="p">,</span> <span class="s1">&#39;w1200&#39;</span><span class="p">,</span> <span class="s1">&#39;w1150&#39;</span><span class="p">,</span> <span class="s1">&#39;w1100&#39;</span><span class="p">,</span> <span class="s1">&#39;w1050&#39;</span><span class="p">,</span> <span class="s1">&#39;w1000&#39;</span><span class="p">,</span> <span class="s1">&#39;w900&#39;</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">image_urls</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">resolucao</span><span class="p">:</span>
+                            <span class="n">img_url</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">img_url</span><span class="p">:</span>
+                                <span class="k">continue</span>
+                            
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Baixando e verificando imagem: </span><span class="si">{</span><span class="n">img_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            
+                            <span class="c1"># Baixar e verificar imagem</span>
+                            <span class="n">temp_path</span> <span class="o">=</span> <span class="n">baixar_e_verificar_imagem</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">termo</span><span class="p">)</span>
+                            
+                            <span class="k">if</span> <span class="n">temp_path</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Imagem encontrada e verificada ===&quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL da imagem: </span><span class="si">{</span><span class="n">img_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Caminho temporário: </span><span class="si">{</span><span class="n">temp_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Movendo para: </span><span class="si">{</span><span class="n">path_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                                <span class="c1"># Mover para destino final</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path_name</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">path_name</span><span class="p">)</span>
+                                
+                                <span class="c1"># Adicionar à lista com os campos necessários</span>
+                                <span class="n">imagem_info</span> <span class="o">=</span> <span class="p">{</span>
+                                    <span class="s2">&quot;urlImg&quot;</span><span class="p">:</span> <span class="n">img_url</span><span class="p">,</span>
+                                    <span class="s2">&quot;caminho&quot;</span><span class="p">:</span> <span class="n">path_name</span><span class="p">,</span>
+                                    <span class="s2">&quot;momentoChave&quot;</span><span class="p">:</span> <span class="n">momento_chave</span><span class="p">,</span>
+                                    <span class="s2">&quot;nomeArquivo&quot;</span><span class="p">:</span> <span class="n">fileName</span><span class="p">,</span>
+                                    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                                    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                                    <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                                    <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="mi">0</span>
+                                <span class="p">}</span>
+                                <span class="n">lista_imagens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imagem_info</span><span class="p">)</span>
+                                
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Dados da imagem adicionados ===&quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Informações da imagem: </span><span class="si">{</span><span class="n">imagem_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de imagens na lista: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                                <span class="k">return</span> <span class="n">lista_imagens</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem não aprovada na verificação: </span><span class="si">{</span><span class="n">img_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">continue</span>
+            
+            <span class="c1"># Se chegou aqui, não encontrou imagem adequada com o termo atual</span>
+            <span class="k">if</span> <span class="n">tentativas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nenhuma imagem adequada encontrada para &#39;</span><span class="si">{</span><span class="n">termo_atual</span><span class="si">}</span><span class="s2">&#39;. Reformulando termo...&quot;</span><span class="p">)</span>
+                <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">)</span>
+                <span class="n">tentativas</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tentativas</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentativa </span><span class="si">{</span><span class="n">tentativas</span><span class="si">}</span><span class="s2"> falhou. Reformulando termo novamente...&quot;</span><span class="p">)</span>
+                <span class="n">termo_atual</span> <span class="o">=</span> <span class="n">reformular_termo_busca</span><span class="p">(</span><span class="n">termo</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">lista_imagens</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lista_imagens</span></div>
+
+
+<div class="viewcode-block" id="pre_processar_termos">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.pre_processar_termos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pre_processar_termos</span><span class="p">(</span><span class="n">cenas</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pré-processa todos os termos de busca de uma vez usando VertexAI.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        cenas (list): Lista de cenas do vídeo</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Dicionário com termos originais e reformulados</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">termos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cena</span> <span class="ow">in</span> <span class="n">cenas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">momento_chave</span> <span class="o">:=</span> <span class="n">cena</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">):</span>
+            <span class="n">termos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">momento_chave</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">termos</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span>
+        
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Reformule os seguintes termos para busca de imagens no Envato:</span>
+<span class="s2">    </span><span class="si">{</span><span class="n">termos</span><span class="si">}</span>
+<span class="s2">    </span>
+<span class="s2">    Para cada termo:</span>
+<span class="s2">    1. Traduza para inglês</span>
+<span class="s2">    2. Use termos específicos para FOTOGRAFIAS REAIS</span>
+<span class="s2">    3. Evite termos como &quot;illustration&quot;, &quot;drawing&quot;, &quot;art&quot;</span>
+<span class="s2">    4. Adicione &quot;photo&quot; ou &quot;photography&quot; quando relevante</span>
+<span class="s2">    5. Mantenha 3-7 palavras por termo</span>
+<span class="s2">    </span>
+<span class="s2">    Retorne apenas os termos reformulados, um por linha.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">reformulados</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">termos</span><span class="p">,</span> <span class="n">reformulados</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro no pré-processamento de termos: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">termo</span><span class="p">:</span> <span class="n">termo</span> <span class="k">for</span> <span class="n">termo</span> <span class="ow">in</span> <span class="n">termos</span><span class="p">}</span>  <span class="c1"># Fallback para termos originais</span></div>
+
+
+<div class="viewcode-block" id="processar_imagem_paralelo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.processar_imagem_paralelo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">processar_imagem_paralelo</span><span class="p">(</span><span class="n">termo_original</span><span class="p">,</span> <span class="n">termo_reformulado</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">path_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Processa uma única imagem de forma paralela.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        termo_original (str): Termo original da busca</span>
+<span class="sd">        termo_reformulado (str): Termo reformulado para busca</span>
+<span class="sd">        file_name (str): Nome do arquivo</span>
+<span class="sd">        path_name (str): Caminho para salvar a imagem</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Informações da imagem encontrada ou None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Tenta primeiro com o termo reformulado</span>
+        <span class="n">resultado</span> <span class="o">=</span> <span class="n">buscar_imagens_envato</span><span class="p">([],</span> <span class="n">termo_reformulado</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">termo_original</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resultado</span><span class="p">:</span>
+            <span class="c1"># Se não encontrar, tenta com o termo original</span>
+            <span class="n">resultado</span> <span class="o">=</span> <span class="n">buscar_imagens_envato</span><span class="p">([],</span> <span class="n">termo_original</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">termo_original</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">resultado</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">resultado</span> <span class="k">else</span> <span class="kc">None</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar imagem para termo &#39;</span><span class="si">{</span><span class="n">termo_original</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="list_imagem_envato_otimizado">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.list_imagem_envato_otimizado">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_imagem_envato_otimizado</span><span class="p">(</span><span class="n">dados</span><span class="p">,</span> <span class="n">lista_imagens</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Versão otimizada do processamento de imagens com pré-processamento e paralelismo.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        dados (dict): Dados do JSON com as cenas</span>
+<span class="sd">        lista_imagens (list): Lista atual de imagens</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lista atualizada de imagens</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># 1. Pré-processamento dos termos</span>
+        <span class="n">termos_reformulados</span> <span class="o">=</span> <span class="n">pre_processar_termos</span><span class="p">(</span><span class="n">dados</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cenas&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Termos reformulados: </span><span class="si">{</span><span class="n">termos_reformulados</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># 2. Preparar tarefas para processamento paralelo</span>
+        <span class="n">tarefas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cena</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dados</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cenas&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+            <span class="k">if</span> <span class="n">momento_chave</span> <span class="o">:=</span> <span class="n">cena</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">):</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;envato_img_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">path_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_envato_images_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">)</span>
+                
+                <span class="n">termo_reformulado</span> <span class="o">=</span> <span class="n">termos_reformulados</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">momento_chave</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span>
+                <span class="n">tarefas</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">momento_chave</span><span class="p">,</span> <span class="n">termo_reformulado</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">path_name</span><span class="p">))</span>
+        
+        <span class="c1"># 3. Processamento paralelo</span>
+        <span class="n">resultados</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">processar_imagem_paralelo</span><span class="p">,</span> 
+                              <span class="n">termo_original</span><span class="p">,</span> <span class="n">termo_reformulado</span><span class="p">,</span> 
+                              <span class="n">file_name</span><span class="p">,</span> <span class="n">path_name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">termo_original</span><span class="p">,</span> <span class="n">termo_reformulado</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">path_name</span> <span class="ow">in</span> <span class="n">tarefas</span>
+            <span class="p">]</span>
+            
+            <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">resultado</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">resultado</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="n">lista_imagens_lock</span><span class="p">:</span>
+                            <span class="n">lista_imagens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resultado</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar tarefa paralela: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de imagens encontradas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lista_imagens</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro no processamento otimizado de imagens: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lista_imagens</span></div>
+
+
+<div class="viewcode-block" id="download_imagem">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.download_imagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_imagem</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Faz o download da imagem&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem baixada com sucesso: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar imagem </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="busca_imagens_envato">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.busca_imagens_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">busca_imagens_envato</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Função de compatibilidade para manter a API antiga funcionando.</span>
+<span class="sd">    Apenas um alias para buscar_imagens_envato para manter compatibilidade.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">buscar_imagens_envato</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="buscar_videos_envato">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.buscar_videos_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">buscar_videos_envato</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">format_type</span><span class="p">,</span> <span class="n">downloaded_ids</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Busca vídeos no Envato usando a mesma lógica que funciona para imagens&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Buscando vídeos no Envato para: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Configuração da API do Envato</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;ENVATO_TOKEN&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Token do Envato não encontrado&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Mozilla/5.0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="p">}</span>
+
+        <span class="c1"># URL e parâmetros da busca</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.envato.com/v1/discovery/search/search/item&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;term&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+            <span class="s1">&#39;site&#39;</span><span class="p">:</span> <span class="s1">&#39;videohive.net&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;page&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+            <span class="s1">&#39;sort_by&#39;</span><span class="p">:</span> <span class="s1">&#39;relevance&#39;</span>
+        <span class="p">}</span>
+
+        <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+                
+                <span class="n">resultados</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;matches&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de vídeos encontrados no Envato: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">resultados</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">resultados</span><span class="p">:</span>
+                    <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+                        <span class="n">new_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">new_queries</span><span class="p">:</span>
+                            <span class="n">query</span> <span class="o">=</span> <span class="n">new_queries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando nova query no Envato: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                
+                <span class="c1"># Tenta cada vídeo encontrado</span>
+                <span class="k">for</span> <span class="n">video</span> <span class="ow">in</span> <span class="n">resultados</span><span class="p">:</span>
+                    <span class="n">video_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">video_id</span> <span class="ow">in</span> <span class="n">downloaded_ids</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    
+                    <span class="c1"># Verifica se tem preview de vídeo</span>
+                    <span class="n">preview_url</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">previews</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;previews&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;icon_with_video_preview&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                    
+                    <span class="c1"># Tenta obter a URL do vídeo</span>
+                    <span class="n">preview_url</span> <span class="o">=</span> <span class="n">previews</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;video_preview_download_url&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">preview_url</span><span class="p">:</span>
+                        <span class="n">preview_url</span> <span class="o">=</span> <span class="n">previews</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;video_url&#39;</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">preview_url</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nenhum preview de vídeo encontrado para o item </span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    
+                    <span class="c1"># Baixa o vídeo</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">video_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;envato_</span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+                        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_temp_files_path</span><span class="p">(),</span> <span class="n">video_filename</span><span class="p">)</span>
+                        
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando baixar vídeo de: </span><span class="si">{</span><span class="n">preview_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">download_video_envato</span><span class="p">(</span><span class="n">preview_url</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+                            <span class="n">downloaded_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">video_id</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado com sucesso: </span><span class="si">{</span><span class="n">video_filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="n">output_path</span>
+                            
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo </span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                
+                <span class="c1"># Se chegou aqui, nenhum vídeo foi baixado com sucesso</span>
+                <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+                    <span class="n">new_queries</span> <span class="o">=</span> <span class="n">generate_search_queries</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">new_queries</span><span class="p">:</span>
+                        <span class="n">query</span> <span class="o">=</span> <span class="n">new_queries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tentando nova query no Envato: &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                        
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao buscar vídeos no Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao buscar vídeos no Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="download_video_envato">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.download_video_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_video_envato</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Faz download do vídeo do Envato&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;ENVATO_TOKEN&#39;</span><span class="p">)</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Mozilla/5.0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Faz o download do vídeo</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+        <span class="c1"># Salva o vídeo</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado com sucesso: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar vídeo do Envato: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="get_videos_for_theme">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.get_videos_for_theme">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_videos_for_theme</span><span class="p">(</span><span class="n">theme</span><span class="p">,</span> <span class="n">num_videos</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtém vídeos para o tema usando a nova implementação&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">videos</span> <span class="o">=</span> <span class="n">buscar_videos_envato</span><span class="p">(</span><span class="n">theme</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">videos</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nenhum vídeo encontrado para &#39;</span><span class="si">{</span><span class="n">theme</span><span class="si">}</span><span class="s2">&#39;, tentando fallback&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">get_fallback_videos</span><span class="p">()</span>
+            
+        <span class="k">return</span> <span class="n">videos</span><span class="p">[:</span><span class="n">num_videos</span><span class="p">]</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao obter vídeos: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_fallback_videos</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_fallback_videos">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.searchImagens.searchImagens_Envato.get_fallback_videos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_fallback_videos</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retorna lista de vídeos locais para fallback&quot;&quot;&quot;</span>
+    <span class="c1"># Implemente a lógica de fallback aqui</span>
+    <span class="k">return</span> <span class="p">[]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

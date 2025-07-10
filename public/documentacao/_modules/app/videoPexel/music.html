@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.videoPexel.music &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.videoPexel.music</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.videoPexel.music</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_temp_files_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JAMENDO_CLIENT_ID</span><span class="p">,</span> <span class="n">JAMENDO_API_URL</span><span class="p">,</span> <span class="n">JAMENDO_FORMATS</span><span class="p">,</span>
+    <span class="n">BACKGROUND_MUSIC_VOLUME</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_temp_files_pexel_path</span><span class="p">,</span> <span class="n">get_video_duration</span>
+
+<div class="viewcode-block" id="download_background_music">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.music.download_background_music">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_background_music</span><span class="p">(</span><span class="n">style</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa uma música de fundo do Jamendo com base no estilo especificado.</span>
+
+<span class="sd">    Faz uma busca na API do Jamendo por músicas instrumentais do estilo fornecido,</span>
+<span class="sd">    filtrando por músicas com duração adequada e fazendo o download da música selecionada.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        style (str): Estilo musical desejado para a música de fundo (opcional)</span>
+<span class="sd">                    Se não fornecido, busca apenas músicas instrumentais genéricas</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do arquivo de música baixado em caso de sucesso</span>
+<span class="sd">        None: Em caso de falha no download ou se nenhuma música adequada for encontrada</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Baixando música de fundo...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Parâmetros para a busca de música</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="n">JAMENDO_CLIENT_ID</span><span class="p">,</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;json&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;limit&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="s1">&#39;include&#39;</span><span class="p">:</span> <span class="s1">&#39;musicinfo&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;audioformat&#39;</span><span class="p">:</span> <span class="s1">&#39;mp32&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;instrumental,</span><span class="si">{</span><span class="n">style</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">style</span> <span class="k">else</span> <span class="s1">&#39;instrumental&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;orderby&#39;</span><span class="p">:</span> <span class="s1">&#39;popularity_total&#39;</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Faz a requisição para a API do Jamendo</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Buscando músicas...&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">JAMENDO_API_URL</span><span class="si">}</span><span class="s2">/tracks/&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status code: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response headers: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao buscar músicas: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;results&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Músicas encontradas na primeira tentativa: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Filtra músicas válidas</span>
+        <span class="n">valid_tracks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">track</span> <span class="k">for</span> <span class="n">track</span> <span class="ow">in</span> <span class="n">results</span>
+            <span class="k">if</span> <span class="n">track</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;audiodownload&#39;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mi">30</span>
+        <span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Músicas válidas encontradas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valid_tracks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_tracks</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Nenhuma música válida encontrada&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Seleciona a primeira música válida</span>
+        <span class="n">track</span> <span class="o">=</span> <span class="n">valid_tracks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Baixando música: </span><span class="si">{</span><span class="n">track</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">track</span><span class="p">[</span><span class="s1">&#39;artist_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração: </span><span class="si">{</span><span class="n">track</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> segundos&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URL: </span><span class="si">{</span><span class="n">track</span><span class="p">[</span><span class="s1">&#39;audiodownload&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Define o caminho para salvar a música</span>
+        <span class="n">pasta_arquivos_pexel</span> <span class="o">=</span> <span class="n">get_temp_files_path</span><span class="p">()</span>
+        <span class="n">music_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_arquivos_pexel</span><span class="p">,</span> <span class="s2">&quot;background_music.mp3&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Baixa a música</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">track</span><span class="p">[</span><span class="s1">&#39;audiodownload&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Erro ao baixar música&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">music_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Música baixada com sucesso: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">music_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar música de fundo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="prepare_background_music">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.music.prepare_background_music">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_background_music</span><span class="p">(</span><span class="n">music_path</span><span class="p">,</span> <span class="n">target_duration</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepara a música de fundo para um vídeo, ajustando sua duração e volume.</span>
+
+<span class="sd">    Recebe uma música e a prepara para ser usada como background em um vídeo,</span>
+<span class="sd">    fazendo os ajustes necessários de duração (repetindo se necessário) e volume.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        music_path (str): Caminho do arquivo de música original</span>
+<span class="sd">        target_duration (float): Duração desejada em segundos</span>
+<span class="sd">        volume (float, optional): Volume da música (0.0 a 1.0). Padrão é 0.1</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do arquivo de música preparado em caso de sucesso</span>
+<span class="sd">        None: Em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Preparando música de fundo...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Cria nome para arquivo temporário</span>
+        <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">music_path</span><span class="p">)</span>
+        <span class="n">prepared_music</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">&quot;prepared_music.mp3&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Obtém duração da música original</span>
+        <span class="n">music_duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">music_path</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração da música original: </span><span class="si">{</span><span class="n">music_duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Adiciona 10 segundos extras para garantir que a música cubra todo o vídeo</span>
+        <span class="n">target_duration_with_buffer</span> <span class="o">=</span> <span class="n">target_duration</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração necessária (com buffer): </span><span class="si">{</span><span class="n">target_duration_with_buffer</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Calcula quantas repetições são necessárias</span>
+        <span class="n">repeats</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_duration_with_buffer</span> <span class="o">/</span> <span class="n">music_duration</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Número de repetições necessárias: </span><span class="si">{</span><span class="n">repeats</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Comando para preparar a música</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-stream_loop&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">repeats</span><span class="p">),</span>  <span class="c1"># Número de loops</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">music_path</span><span class="p">,</span>              <span class="c1"># Arquivo de entrada</span>
+            <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">target_duration_with_buffer</span><span class="p">),</span>  <span class="c1"># Duração com buffer</span>
+            <span class="s2">&quot;-af&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;volume=</span><span class="si">{</span><span class="n">volume</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>     <span class="c1"># Ajusta volume</span>
+            <span class="n">prepared_music</span>                 <span class="c1"># Arquivo de saída</span>
+        <span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Executando comando de preparação da música...&quot;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao preparar música: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prepared_music</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Erro: Arquivo de música preparado não foi criado&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Música preparada com sucesso: </span><span class="si">{</span><span class="n">prepared_music</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prepared_music</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao preparar música: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="add_background_music">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.music.add_background_music">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_background_music</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">music_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adiciona música de fundo a um vídeo.</span>
+
+<span class="sd">    Combina um vídeo com uma faixa de música de fundo, ajustando o volume da música</span>
+<span class="sd">    e garantindo que ela cubra toda a duração do vídeo.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do arquivo de vídeo de entrada</span>
+<span class="sd">        music_path (str): Caminho do arquivo de música de fundo</span>
+<span class="sd">        output_path (str): Caminho onde o vídeo final será salvo</span>
+<span class="sd">        volume (float, optional): Volume da música de fundo (0.0 a 1.0). Padrão é 0.1</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Caminho do vídeo com música adicionada em caso de sucesso</span>
+<span class="sd">        None: Em caso de erro</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Adicionando música de fundo ao vídeo: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">video_duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração do vídeo com narração: </span><span class="si">{</span><span class="n">video_duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Prepara a música</span>
+        <span class="n">prepared_music</span> <span class="o">=</span> <span class="n">prepare_background_music</span><span class="p">(</span><span class="n">music_path</span><span class="p">,</span> <span class="n">video_duration</span><span class="p">,</span> <span class="n">volume</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">prepared_music</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="c1"># Verifica duração da música preparada</span>
+        <span class="n">music_duration</span> <span class="o">=</span> <span class="n">get_video_duration</span><span class="p">(</span><span class="n">prepared_music</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração da música preparada: </span><span class="si">{</span><span class="n">music_duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Combina vídeo com música</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;ffmpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span>
+            <span class="s2">&quot;-i&quot;</span><span class="p">,</span> <span class="n">prepared_music</span><span class="p">,</span>
+            <span class="s2">&quot;-filter_complex&quot;</span><span class="p">,</span> 
+            <span class="c1"># Removido duration=first para não cortar no primeiro input</span>
+            <span class="s2">&quot;[0:a][1:a]amix=inputs=2[aout]&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-map&quot;</span><span class="p">,</span> <span class="s2">&quot;0:v&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-map&quot;</span><span class="p">,</span> <span class="s2">&quot;[aout]&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-c:v&quot;</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+            <span class="n">output_path</span>
+        <span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Comando ffmpeg para adicionar música:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar música: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+            
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Música adicionada com sucesso ao vídeo: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração final do vídeo: </span><span class="si">{</span><span class="n">get_video_duration</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao adicionar música de fundo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

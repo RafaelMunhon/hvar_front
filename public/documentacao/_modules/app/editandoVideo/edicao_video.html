@@ -1,0 +1,456 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.editandoVideo.edicao_video &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.editandoVideo.edicao_video</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.editandoVideo.edicao_video</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">file_manager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ffmpeg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span> 
+
+<span class="n">load_dotenv</span><span class="p">()</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="editandoVideo">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.editandoVideo.edicao_video.editandoVideo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">editandoVideo</span><span class="p">(</span><span class="n">fileNameVideoHeyGen</span><span class="p">,</span> <span class="n">json_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lista_imagens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">envato</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ID</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">theme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Edita um vídeo com base em um JSON de configuração.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fileNameVideoHeyGen (str): Nome do arquivo de vídeo.</span>
+<span class="sd">        json_data (dict): O objeto do json de configuração a ser utilizado em sua lógica.  </span>
+<span class="sd">        lista_imagens (list): Lista de imagens a serem utilizadas no vídeo.</span>
+<span class="sd">        envato (bool): Indica se as imagens serão buscadas no Envato.</span>
+<span class="sd">        ID (str): ID do vídeo.</span>
+<span class="sd">        theme (str): Tema do vídeo.</span>
+<span class="sd">        titulo_nc (str): Título do vídeo.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Importações movidas para dentro da função</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">app.services</span><span class="w"> </span><span class="kn">import</span> <span class="n">text_overlay_service</span><span class="p">,</span> <span class="n">video_service</span><span class="p">,</span> <span class="n">speech_service</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;editandoVideo - json_data : </span><span class="si">{</span><span class="n">json_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">filename_video</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fileNameVideoHeyGen</span><span class="si">}</span><span class="s2">&quot;</span> <span class="c1"># Nome que ele receberá do parâmetro com sua devida extensão &quot;.mp4&quot;, se assim vier no parâmetro.</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Edita um vídeo com base em um JSON de configuração.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fileNameVideoHeyGen (str): Nome do arquivo de vídeo.</span>
+<span class="sd">       json_data (dict): O objeto do json de configuração a ser utilizado em sua lógica.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">pasta_arquivos_temporarios</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_temp_files_path</span><span class="p">()</span>
+    <span class="n">pasta_videos_finalizados</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_videos_finalized_path</span><span class="p">()</span>
+
+    <span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">)</span>
+    <span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_videos_finalizados</span><span class="p">)</span>
+
+
+    <span class="n">caminho_download</span> <span class="o">=</span>  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_base_path</span><span class="p">(),</span> <span class="s2">&quot;downloadHeygen&quot;</span><span class="p">)</span> <span class="c1">#Local onde o video vai ser salvo no disco.</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;editandoVideo - caminho_download : </span><span class="si">{</span><span class="n">caminho_download</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando processo do vídeo: </span><span class="si">{</span><span class="n">filename_video</span><span class="si">}</span><span class="s2"> com a transcrição&quot;</span><span class="p">)</span>
+   
+    <span class="n">video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">caminho_download</span><span class="p">,</span><span class="n">filename_video</span><span class="p">)</span> <span class="c1"># local para uso interno no resto das funções</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Vídeo não encontrado!&quot;</span><span class="p">)</span> <span class="c1"># Tratamento de erro para quando ele não encontra a imagem, mesmo a após salvo.</span>
+          <span class="k">return</span> <span class="c1"># Saída do metodo sem proceguir.</span>
+        
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Vídeo e JSON encontrados, iniciando processamento.&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>       
+        
+        <span class="n">duracao_video</span> <span class="o">=</span> <span class="n">video_service</span><span class="o">.</span><span class="n">get_video_duration</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;duracao_video&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">duracao_video</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Não foi possível obter a duração do vídeo.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">json_data</span> <span class="ow">and</span> <span class="s1">&#39;cenas&#39;</span> <span class="ow">in</span> <span class="n">json_data</span> <span class="ow">and</span> <span class="s2">&quot;imagens&quot;</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">:</span>
+             <span class="c1"># Baixar imagens e armazenar caminhos locais</span>
+            <span class="n">imagens_locais</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">momento_chave</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lista_imagens</span> <span class="ow">and</span> <span class="n">envato</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">imagem</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;imagens&quot;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;lista_imagens: </span><span class="si">{</span><span class="n">imagem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="c1"># Verifica se &#39;urlimg&#39; existe e é uma string</span>
+                    <span class="k">if</span> <span class="s1">&#39;urlImg&#39;</span> <span class="ow">in</span> <span class="n">imagem</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;urlImg&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem Entrou&quot;</span><span class="p">)</span>
+                        <span class="c1"># Extrair nome base da URL</span>
+                        <span class="n">url_img_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;urlImg&quot;</span><span class="p">])</span>  <span class="c1"># Pega a url para extrair a parte que nomeia as fotos.</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;url_img_base: </span><span class="si">{</span><span class="n">url_img_base</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">nome_base_imagem</span> <span class="o">=</span> <span class="n">url_img_base</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Tira o .jpg .jpeg ou qualquer outro do nome.</span>
+
+                        <span class="n">filename_imagem</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nome_base_imagem</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>  <span class="c1"># Utilizando o nome customizado e sempre salva como png</span>
+                        <span class="n">imagem_baixada</span> <span class="o">=</span> <span class="n">baixar_imagem</span><span class="p">(</span><span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;urlImg&quot;</span><span class="p">],</span> <span class="n">filename_imagem</span><span class="p">)</span>
+                        
+                        <span class="k">if</span> <span class="n">imagem_baixada</span><span class="p">:</span>
+                            <span class="n">imagens_locais</span><span class="p">[</span><span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;urlImg&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">imagem_baixada</span>
+
+                        <span class="c1"># Verifica se &#39;momentoChave&#39; existe e é uma string</span>
+                        <span class="n">momento_chave</span> <span class="o">=</span> <span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">momento_chave</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># Só adiciona em casos corretos com str</span>
+                            <span class="n">lista_imagens</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                                <span class="s2">&quot;urlImg&quot;</span><span class="p">:</span> <span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;urlImg&quot;</span><span class="p">],</span>
+                                <span class="s2">&quot;caminho&quot;</span><span class="p">:</span> <span class="n">imagens_locais</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;urlImg&quot;</span><span class="p">]),</span>
+                                <span class="s2">&quot;momentoChave&quot;</span><span class="p">:</span> <span class="n">momento_chave</span><span class="p">,</span>
+                                <span class="s2">&quot;nomeArquivo&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nome_base_imagem</span><span class="si">}</span><span class="s2">.png&quot;</span>
+                            <span class="p">})</span>    
+            
+            <span class="c1"># Extrair audio do video e transcrever com Google Cloud</span>
+            <span class="n">audio_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.wav&quot;</span><span class="p">)</span>
+            <span class="n">speech_service</span><span class="o">.</span><span class="n">extract_audio_from_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">audio_file_path</span><span class="p">)</span>
+            <span class="n">transcricao_com_tempos</span> <span class="o">=</span> <span class="n">speech_service</span><span class="o">.</span><span class="n">transcribe_with_timestamps</span><span class="p">(</span><span class="n">audio_file_path</span><span class="p">)</span>
+
+            <span class="c1"># Preparando a lista de palavras encontradas</span>
+            <span class="n">all_palavras_encontradas</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">all_texto_transcrito</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            
+
+            <span class="c1"># Iterando todas as cenas do video e colhendo informações</span>
+            <span class="k">for</span> <span class="n">cena</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;cenas&#39;</span><span class="p">]:</span>
+               <span class="k">if</span> <span class="s2">&quot;script&quot;</span> <span class="ow">in</span> <span class="n">cena</span><span class="p">:</span>
+                     <span class="n">texto_transcrito</span> <span class="o">=</span> <span class="n">cena</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span>
+                     <span class="n">palavras_encontradas</span> <span class="o">=</span> <span class="n">cena</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;palavras_chave&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                      
+                     <span class="n">all_palavras_encontradas</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">palavras_encontradas</span><span class="p">)</span> <span class="c1"># adicionando todos os vetores de palavras em uma unica lista</span>
+                     <span class="n">all_texto_transcrito</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">all_texto_transcrito</span><span class="p">,</span> <span class="n">texto_transcrito</span><span class="p">])</span> <span class="c1"># Concatenando todos os textos da cena, nao usado para nada alem de debug</span>
+
+            <span class="n">text_overlay_service</span><span class="o">.</span><span class="n">criar_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">all_palavras_encontradas</span><span class="p">,</span> <span class="n">lista_imagens</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">duracao_video</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">titulo_nc</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+              <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Formato json inválido ou sem cenas ou imagens!&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+           <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar o vídeo, arquivo JSON: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Script finalizado.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="baixar_imagem">
+<a class="viewcode-back" href="../../../modules/video_ia.html#app.editandoVideo.edicao_video.baixar_imagem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">baixar_imagem</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Baixa uma imagem de uma URL e salva em um arquivo local.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url (str): URL da imagem a ser baixada.</span>
+<span class="sd">        filename (str): Caminho completo para salvar a imagem.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        str: Caminho completo para a imagem salva.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando download da imagem: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Salvando imagem em: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">image_file</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">8192</span><span class="p">):</span>
+                <span class="n">image_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem baixada e salva em: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filename</span>
+
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao baixar imagem: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1">#if __name__ == &quot;__main__&quot;:</span>
+<span class="c1">#    fileNameVideoHeyGen = &quot;Computadores.mp4&quot;</span>
+<span class="c1">#    imagem_path =   [</span>
+<span class="c1">#        {</span>
+<span class="c1">#            &quot;urlImg&quot;: &quot;https://cdn-conteudo.ensineme.com.br/00023_img02_6571df2c95.jpg&quot;,</span>
+<span class="c1">#            &#39;caminho&#39;: &#39;C:\\projetos\\YDUQS\\app\\arquivosTemporarios\\00023_img02_6571df2c95.jpg&#39;,</span>
+<span class="c1">#            &quot;momentoChave&quot;: &quot;Ao longo do tempo Hollywood tem retratado em seus filmes computadores que nunca são mostrados como mecânicos&quot;,</span>
+<span class="c1">#            &#39;nomeArquivo&#39;: &#39;00023_img02_6571df2c95.jpg&#39;,</span>
+<span class="c1">#        }]</span>
+<span class="c1">#    envato = False</span>
+<span class="c1">#    json_data = {</span>
+<span class="c1">#    &quot;titulo&quot;: &quot;Entendendo o Básico dos Computadores&quot;,</span>
+<span class="c1">#    &quot;subtitulo&quot;: &quot;Desvendando a Essência e o Funcionamento das Máquinas Digitais&quot;,</span>
+<span class="c1">#    &quot;imagens&quot;: [</span>
+<span class="c1">#        {</span>
+<span class="c1">#            &quot;urlImg&quot;: &quot;https://cdn-conteudo.ensineme.com.br/00023_img01_ee1fd84bb1.jpg&quot;,</span>
+<span class="c1">#            &quot;momentoChave&quot;: &quot;É essencial perceber que o mercado de trabalho não é um ente determinador&quot;,</span>
+<span class="c1">#            &quot;descricaoBuscaEnvato&quot;: &quot;Pessoas em ambiente de aprendizado utilizando tecnologia&quot;</span>
+<span class="c1">#        },</span>
+<span class="c1">#        {</span>
+<span class="c1">#            &quot;urlImg&quot;: &quot;https://cdn-conteudo.ensineme.com.br/00023_img02_6571df2c95.jpg&quot;,</span>
+<span class="c1">#            &quot;momentoChave&quot;: &quot;Ao longo do tempo Hollywood tem retratado em seus filmes computadores que nunca são mostrados como mecânicos&quot;,</span>
+<span class="c1">#            &quot;descricaoBuscaEnvato&quot;: &quot;Cena de filme com computador humanizado ficção científica&quot;</span>
+<span class="c1">#        }</span>
+<span class="c1">#    ],</span>
+<span class="c1">#    &quot;codigo&quot;: [],</span>
+<span class="c1">#    &quot;cenas&quot;: [</span>
+<span class="c1">#        {</span>
+<span class="c1">#            &quot;cena&quot;: 1,</span>
+<span class="c1">#            &quot;tempo&quot;: &quot;0:00-5:00&quot;,</span>
+<span class="c1">#            &quot;script&quot;: &quot;Vivemos em uma era onde sistemas modernos processam informações rapidamente, mas é fundamental lembrar da reflexão e análise crítica. A tecnologia nos oferece acesso ilimitado ao conhecimento, contudo, a verdadeira compreensão requer contemplação e raciocínio profundo. Precisamos equilibrar a eficiência do processamento com a qualidade do pensamento para uma sociedade informada e consciente. \n\nA tecnologia proporciona acesso ilimitado ao conhecimento.  Vamos entender o que é isso. Este conteúdo aborda os recursos básicos do funcionamento dos computadores.  No mercado de trabalho atual, é crucial saber como o computador executa suas tarefas. É essencial perceber que o mercado de trabalho não é um ente determinador, e o uso tecnológico é cada vez mais presente em diversas funções. \n\nCom a ampla adoção da tecnologia, surge um dilema: nem todos têm o mesmo acesso ou experiência.  Durante muito tempo, acreditava-se que dominar a tecnologia vigente era suficiente, mas como conciliar isso com diferentes níveis de acesso?  O desespero em algumas instituições levou a decisões extremas, como abrir mão da tecnologia, o que aumentou a segregação e prejudicou grupos sociais com menor acesso. \n\nEntão, o que fazer?  Se não aprendermos a usar a tecnologia atual, qual a solução? Uma ideia é entender o funcionamento básico dos computadores, percebendo como essas máquinas operam e qual o sentido de sua constante atualização.  Felizmente, qualquer pessoa pode compreender, basicamente, como os computadores funcionam. Nosso objetivo é explorar as qualidades essenciais dos computadores, como eles operam e suas capacidades e limitações. \n\nA essência fundamental dos computadores reside em suas características: eles são extremamente poderosos, capazes de bilhões de operações por segundo, gerando dados em velocidade incrível.  Mas também são profundamente tolos, pois suas operações são muito simples, como somar números ou verificar se um número é zero.  Você pode pensar que operações simples não geram discernimentos elaborados, como identificar uma impressão digital, certo?  Embora pareça, computadores realizam essa identificação. \n\nEstudos revelaram que os humanos possuem impressões digitais singulares. Com base nisso, criou-se um método para coletar e usar esses dados, criando um banco de dados.  Portanto, o trabalho de discernimento é humano; o computador apenas cruza dados rapidamente.  Isso ocorre porque discernimento e compreensão são qualidades humanas! O computador é um mundo mecânico, executando operações simples em velocidade incrivelmente alta.  Desde 2005, processadores executam bilhões de instruções por segundo, e em 2019, dezenas de bilhões. \n\nAo longo do tempo Hollywood tem retratado em seus filmes computadores que nunca são mostrados como mecânicos, mas sim com características humanas, como discernimento e emoção.  A realidade é bem diferente. Temos uma combinação engraçada: poder de execução com instruções inicialmente tolas.  É necessário compreender como criar recursos e soluções interessantes e poderosos com isso. Quem programa computadores vivencia essa combinação. \n\nEm resumo, nesta aula, exploramos a dualidade dos computadores: sua imensa capacidade de processamento versus sua falta de capacidade de pensar de forma autônoma. Vimos que, apesar de serem &#39;tolos&#39; em essência, os computadores são ferramentas poderosas que, guiadas pela inteligência humana, podem realizar tarefas complexas.  Entender o funcionamento básico dessas máquinas é crucial no mundo tecnológico de hoje.  Espero que tenham compreendido os pontos principais. Até a próxima!&quot;,</span>
+<span class="c1">#            &quot;elementos_visuais&quot;: [</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Reflexão e Análise Crítica na Era Digital&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Equilibrando Processamento Rápido e Pensamento Profundo&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;A importância da reflexão e análise crítica em um mundo de informação veloz, contrastando com o acesso ilimitado ao conhecimento e a necessidade de verdadeira compreensão.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Reflexão vs. Velocidade&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Compreensão Profunda&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Sociedade Informada&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Qualidade do Pensamento&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;titulo-destaque&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Recursos Básicos dos Computadores&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Desmistificando a &#39;Caixa Mágica&#39; da Tecnologia&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Introdução aos recursos básicos dos computadores, enfatizando a importância de entender seu funcionamento no mercado de trabalho atual e desmistificando a visão do computador como uma &#39;caixa mágica&#39;.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Funcionamento Essencial&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Importância Profissional&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Mercado de Trabalho&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Desmistificação&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;topico-informativo&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;imagem&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Mercado de Trabalho e Tecnologia&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Presença Tecnológica em Diversas Funções&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Ilustração sobre a presença da tecnologia no mercado de trabalho e a necessidade de inclusão digital, apesar dos diferentes níveis de acesso e experiência.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Inclusão Digital&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Acesso Desigual&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Experiência Variada&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Presença Tecnológica&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: &quot;https://cdn-conteudo.ensineme.com.br/00023_img01_ee1fd84bb1.jpg&quot;,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: &quot;Pessoas aprendendo com tecnologia&quot;,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: &quot;Pessoas em ambiente de aprendizado utilizando tecnologia&quot;,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;imagem-contexto&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Entendendo o Funcionamento Básico&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Qualidades Essenciais, Capacidades e Limitações&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Apresentação do objetivo de explorar as qualidades essenciais dos computadores, seu funcionamento básico, capacidades e limitações, visando um entendimento acessível a todos.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Qualidades Essenciais&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Capacidades e Limitações&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Funcionamento Básico&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Objetivo Acessível&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;topico-informativo&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Computadores: Poderosos e Tolos&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;A Dualidade da Essência Computacional&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Exploração da dualidade dos computadores, destacando seu poder de processamento rápido e sua &#39;tolice&#39; em operações simples, contrastando velocidade com simplicidade.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Poder de Processamento&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Operações Simples&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Velocidade Incrível&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Simplicidade Lógica&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;topico-informativo&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Discernimento Humano vs. Processamento Computacional&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Qualidades Humanas em um Mundo Mecânico&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Diferenciação entre discernimento e compreensão como qualidades humanas e o computador como um mundo mecânico de operações rápidas, usando o exemplo da identificação de impressões digitais.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Discernimento Humano&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Mundo Mecânico&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Velocidade Computacional&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Impressões Digitais&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;topico-informativo&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;imagem&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Hollywood e a Visão dos Computadores&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Realidade vs. Ficção nas Telas&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Comparativo entre a representação de computadores em Hollywood como entidades humanizadas e a realidade de sua natureza mecânica, unindo poder de execução com instruções simples.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Ficção Científica&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Realidade Mecânica&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Instruções Simples&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Poder de Execução&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: &quot;https://cdn-conteudo.ensineme.com.br/00023_img02_6571df2c95.jpg&quot;,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: &quot;Cena filme computador humanizado&quot;,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: &quot;Cena de filme com computador humanizado ficção científica&quot;,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;imagem-comparativo&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Criando Soluções Poderosas&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;A Combinação de Instruções e Programação&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Conclusão sobre a capacidade de criar recursos e soluções poderosas através da combinação de instruções simples e programação, experimentada por quem interage com computadores.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Recursos Poderosos&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Instruções Simples&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Linguagem de Programação&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Soluções Inovadoras&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;topico-informativo&quot;</span>
+<span class="c1">#                },</span>
+<span class="c1">#                {</span>
+<span class="c1">#                    &quot;tipo&quot;: &quot;texto&quot;,</span>
+<span class="c1">#                    &quot;titulo&quot;: &quot;Resumo da Aula&quot;,</span>
+<span class="c1">#                    &quot;subtitulo&quot;: &quot;Dualidade e Poder dos Computadores&quot;,</span>
+<span class="c1">#                    &quot;breveDescricao&quot;: &quot;Breve resumo da aula, recapitulando a dualidade dos computadores, sua capacidade de processamento, limitações, e a importância do entendimento básico no mundo tecnológico.&quot;,</span>
+<span class="c1">#                    &quot;topico_1&quot;: &quot;Dualidade Computacional&quot;,</span>
+<span class="c1">#                    &quot;topico_2&quot;: &quot;Capacidade e Limitações&quot;,</span>
+<span class="c1">#                    &quot;topico_3&quot;: &quot;Entendimento Básico&quot;,</span>
+<span class="c1">#                    &quot;topico_4&quot;: &quot;Mundo Tecnológico&quot;,</span>
+<span class="c1">#                    &quot;urlImg&quot;: None,</span>
+<span class="c1">#                    &quot;decricaoImagem&quot;: None,</span>
+<span class="c1">#                    &quot;descricaoBuscaEnvato&quot;: None,</span>
+<span class="c1">#                    &quot;estilo&quot;: &quot;resumo-aula&quot;</span>
+<span class="c1">#                }</span>
+<span class="c1">#            ],</span>
+<span class="c1">#            &quot;palavras_chave&quot;: [</span>
+<span class="c1">#                &quot;reflexão e análise crítica&quot;,</span>
+<span class="c1">#                &quot;acesso ilimitado ao conhecimento&quot;,</span>
+<span class="c1">#                &quot;verdadeira compreensão&quot;,</span>
+<span class="c1">#                &quot;recursos básicos do funcionamento dos computadores&quot;,</span>
+<span class="c1">#                &quot;mercado de trabalho atual&quot;,</span>
+<span class="c1">#                &quot;uso tecnológico&quot;,</span>
+<span class="c1">#                &quot;adoção da tecnologia não é linear&quot;,</span>
+<span class="c1">#                &quot;funcionamento básico dos computadores&quot;,</span>
+<span class="c1">#                &quot;qualidades essenciais dos computadores&quot;,</span>
+<span class="c1">#                &quot;extremamente poderosos&quot;,</span>
+<span class="c1">#                &quot;profundamente tolos&quot;,</span>
+<span class="c1">#                &quot;discernimentos ou entendimentos mais elaborados&quot;,</span>
+<span class="c1">#                &quot;impressões digitais singulares&quot;,</span>
+<span class="c1">#                &quot;discernimento e compreensão são qualidades humanas&quot;,</span>
+<span class="c1">#                &quot;mundo mecânico&quot;,</span>
+<span class="c1">#                &quot;velocidade incrivelmente alta&quot;,</span>
+<span class="c1">#                &quot;combinação engraçada&quot;,</span>
+<span class="c1">#                &quot;recursos/soluções interessantes e poderosos&quot;,</span>
+<span class="c1">#                &quot;linguagem de programação&quot;,</span>
+<span class="c1">#                &quot;ponto principal&quot;</span>
+<span class="c1">#            ]</span>
+<span class="c1">#        }</span>
+<span class="c1">#    ]</span>
+<span class="c1">#}</span>
+<span class="c1">#    editandoVideo(fileNameVideoHeyGen, json_data,imagem_path, envato )</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

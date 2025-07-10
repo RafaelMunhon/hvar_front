@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.videoPexel.generate_video_pexel &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.videoPexel.generate_video_pexel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.videoPexel.generate_video_pexel</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">app.bd.bd</span><span class="w"> </span><span class="kn">import</span> <span class="n">inserir_video_pexel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.video_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">process_videos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_PROMPT</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.videoPexel.text_processor</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_preserved_word</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">edge_tts</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="c1"># Carregar variáveis de ambiente do arquivo .env</span>
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+<span class="c1"># Configurar logger</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_music_style_name">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.generate_video_pexel.get_music_style_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_music_style_name</span><span class="p">(</span><span class="n">style_number</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converte o número do estilo musical para o nome correspondente.</span>
+
+<span class="sd">    Tenta converter o número do estilo musical para o nome correspondente.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        str: Nome do estilo musical</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">music_styles</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;rock&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;electronic&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;jazz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;4&quot;</span><span class="p">:</span> <span class="s2">&quot;classical&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;5&quot;</span><span class="p">:</span> <span class="s2">&quot;ambient&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;6&quot;</span><span class="p">:</span> <span class="s2">&quot;pop&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;7&quot;</span><span class="p">:</span> <span class="s2">&quot;funk&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;8&quot;</span><span class="p">:</span> <span class="s2">&quot;hiphop&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;9&quot;</span><span class="p">:</span> <span class="s2">&quot;reggae&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;10&quot;</span><span class="p">:</span> <span class="s2">&quot;latin&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;11&quot;</span><span class="p">:</span> <span class="s2">&quot;world&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;12&quot;</span><span class="p">:</span> <span class="s2">&quot;lounge&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;13&quot;</span><span class="p">:</span> <span class="s2">&quot;folk&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;14&quot;</span><span class="p">:</span> <span class="s2">&quot;blues&quot;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">music_styles</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">style_number</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="generate_video">
+<a class="viewcode-back" href="../../../modules/video_pexel.html#app.videoPexel.generate_video_pexel.generate_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_video</span><span class="p">(</span><span class="n">format_type</span><span class="p">,</span> <span class="n">theme_text</span><span class="p">,</span> <span class="n">num_scenes</span><span class="p">,</span> <span class="n">music_type</span><span class="p">,</span> <span class="n">voice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gera um vídeo com os parâmetros especificados.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        format_type (str): &#39;desktop&#39; ou &#39;mobile&#39;</span>
+<span class="sd">        theme_text (str): Texto/tema do vídeo</span>
+<span class="sd">        num_scenes (int): Número de cenas</span>
+<span class="sd">        music_type (str): Tipo de música</span>
+<span class="sd">        voice (str, optional): ID da voz para narração</span>
+<span class="sd">        site (str, optional): Site de origem das imagens</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        dict: Dicionário com o resultado da geração do vídeo</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Iniciando geração do vídeo&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Formato: </span><span class="si">{</span><span class="n">format_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tema: </span><span class="si">{</span><span class="n">theme_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Número de cenas: </span><span class="si">{</span><span class="n">num_scenes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tipo de música (número): </span><span class="si">{</span><span class="n">music_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Buscar no site: </span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Converte o número do estilo musical para o nome</span>
+    <span class="n">music_style</span> <span class="o">=</span> <span class="n">get_music_style_name</span><span class="p">(</span><span class="n">music_type</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estilo musical convertido: </span><span class="si">{</span><span class="n">music_style</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Configura o formato do vídeo</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;VIDEO_FORMAT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">format_type</span>
+
+        <span class="c1"># Define voz padrão se não especificada</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">voice</span><span class="p">:</span>
+            <span class="n">voice</span> <span class="o">=</span> <span class="s2">&quot;pt-BR-FranciscaNeural&quot;</span>
+
+        <span class="c1"># Processa o vídeo e obtém a URL do bucket</span>
+        <span class="n">bucket_url</span> <span class="o">=</span> <span class="n">process_videos</span><span class="p">(</span>
+            <span class="n">custom_prompt</span><span class="o">=</span><span class="n">theme_text</span><span class="p">,</span>
+            <span class="n">voice</span><span class="o">=</span><span class="n">voice</span><span class="p">,</span>
+            <span class="n">music_style</span><span class="o">=</span><span class="n">music_style</span><span class="p">,</span>
+            <span class="n">num_scenes</span><span class="o">=</span><span class="n">num_scenes</span><span class="p">,</span>
+            <span class="n">site</span><span class="o">=</span><span class="n">site</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bucket_url</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bucket_url</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># Insere o registro no banco com a URL do bucket</span>
+            <span class="n">video_id</span> <span class="o">=</span> <span class="n">inserir_video_pexel</span><span class="p">(</span><span class="n">bucket_url</span><span class="p">,</span> <span class="s1">&#39;PEXEL&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">video_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;video_url&quot;</span><span class="p">:</span> <span class="n">bucket_url</span><span class="p">,</span>
+                    <span class="s2">&quot;video_id&quot;</span><span class="p">:</span> <span class="n">video_id</span><span class="p">,</span>
+                    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Vídeo gerado e armazenado com sucesso&quot;</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Vídeo gerado mas falhou ao registrar no banco&quot;</span>
+                <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Falha ao gerar vídeo&quot;</span>
+            <span class="p">}</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Erro ao gerar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">}</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">generate_video</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

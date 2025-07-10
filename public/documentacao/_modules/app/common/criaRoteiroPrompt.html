@@ -1,0 +1,557 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.common.criaRoteiroPrompt &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/common_utils.html">Utilitários Comuns</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.common.criaRoteiroPrompt</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.common.criaRoteiroPrompt</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+
+<div class="viewcode-block" id="cria_roteiro_prompt_template_1">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_1">[docs]</a>
+<span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cria_roteiro_prompt_template_1</span><span class="p">(</span><span class="n">texto</span><span class="p">):</span>
+
+    <span class="n">schema_texto</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">response_schema_roteiro</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Você é um professor ou professora, não vamos especificar seu genero e tambem vai criar vídeoaulas em EAD para uma conceituada faculdade.</span>
+<span class="s2">        Nessa aula, precisamos que tenha até 7 slides, com 6 cenas, e o vídeo precisa ter de 8 a 10 minutos. Na ultima cena, quero que fale sobre a aula. Apenas na ultima frase, pode se despedir.</span>
+<span class="s2">        Esse vídeo será processado pelo site HeyGen, então vamos precisar de suas variáveis.</span>
+<span class="s2">        Quero também que extraia palavras-chave para mostrar na tela. Com as palavras-chave, quero uma breve descrição abaixo, como tópico e subtópico.</span>
+<span class="s2">        Adicione variáveis de imagem onde for necessário.</span>
+<span class="s2">        Vou precisar que crie o nome das variáveis que vamos mostrar as palavras-chave (ex: titulo, subtitulo, tópico, descrição do que está sendo falado). Use urlImg para a url da imagem e decricaoImagem para a descrição da imagem.</span>
+<span class="s2">        Quero uma aula mais aprofundada sobre o assunto, que recebemos pelo JSON.</span>
+<span class="s2">        Com base no texto fornecido, crie um roteiro formatado em JSON, seguindo a estrutura abaixo.</span>
+<span class="s2">        Muito Importante: O tempo e o script devem ser coerentes, para que o vídeo não fique muito longo nem muito curto. Aprofunde mais no assunto e traga mais informações no script.</span>
+<span class="s2">        Me dê uma descrição da imagem para que eu possa criar a imagem correta.</span>
+<span class="s2">        Pegue a URL que contenha as imagens e vídeos e coloque no array de imagens e vídeos, caso tiver.</span>
+<span class="s2">        Faça com que a imagem recebida no JSON fique nas variáveis de imagem em urlImg.</span>
+<span class="s2">        Só no slide 4 colocar imagens, mas pode continuar com os outros itens tambem .</span>
+<span class="s2">        No Slide 3, quando for na metade do script falar sobre os 4 primeiros tópicos e colocar no schema correto, e na aula falar sobre eles e citar, não precisa topico 1, topico 2, topico 3 e topico 4 apenas falar as palavras e dissertar sobre eles.</span>
+<span class="s2">        Fale mais sobre os topicos 1, 2, 3 e 4.</span>
+<span class="s2">        Coloque as imagens e os vídeos no array de imagens e vídeos.</span>
+<span class="s2">        Se caso não tiver o mesmo numero de imagens para os slides 2,3 e 4, repita a imagem.</span>
+<span class="s2">        Todos as cenas precisam ter no array de elementos_visuais texto (contendo o Titulo e Subtitulo.) e se caso tiver imagem (contendo a url da imagem e a descrição da imagem).</span>
+
+<span class="s2">        no Slide 7, apenas termine a apresentação e se despeça. Coloque um titulo de despedida com até 10 palavras. (quando não tiver mais nada, coloque no texto alguma string para não quebrar o json subtitulo_7 e breveDesc_7 não pode ser null).</span>
+
+<span class="s2">        Crie um JSON que siga esta estrutura, preenchendo os campos com informações do texto fornecido.</span>
+<span class="s2">        </span>
+<span class="s2">        Vou passando as instruçõe de como eu quero o texto da seguinte forma, Instruções para roteiro: texto descritivo do que deve ser feito.</span>
+
+<span class="s2">        </span><span class="si">{</span><span class="n">texto</span><span class="si">}</span>
+
+<span class="s2">        Isso é Muito Importante:</span>
+<span class="s2">        Siga exatamente o schema fornecido e retorne apenas a string em formato JSON, sem nenhuma outra instrução, texto ou formatação.</span>
+<span class="s2">        O schema JSON a seguir descreve a estrutura da resposta que você precisa gerar, não o valor de retorno:</span>
+<span class="s2">        Retorne o JSON como texto puro, sem nenhuma formatação adicional. Forneça o JSON abaixo como uma string de texto simples, sem ```json ou qualquer outro código de formatação. Envie o JSON sem qualquer marcação de bloco de código. </span>
+<span class="s2">        Quero apenas o texto do JSON.</span>
+
+<span class="s2">        </span><span class="si">{</span><span class="n">schema_texto</span><span class="si">}</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">prompt</span></div>
+
+
+<div class="viewcode-block" id="cria_roteiro_prompt_template_3">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.criaRoteiroPrompt.cria_roteiro_prompt_template_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cria_roteiro_prompt_template_3</span><span class="p">(</span><span class="n">texto</span><span class="p">,</span> <span class="n">numCenas</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria o prompt para gerar um roteiro usando o modelo de template 3.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - texto: Texto para gerar o roteiro</span>
+<span class="sd">    - numCenas: Número de cenas desejado</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Prompt para gerar o roteiro</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">schema_texto</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">response_schema_roteiro</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            </span>
+<span class="s2">            *** Objetivos da Aula:</span>
+
+<span class="s2">            Criar uma vídeoaula , utilizando até </span><span class="si">{</span><span class="n">numCenas</span><span class="si">}</span><span class="s2"> slides (</span><span class="si">{</span><span class="n">numCenas</span><span class="si">}</span><span class="s2"> cenas).</span>
+<span class="s2">            Aprofundar o conteúdo em cada tópico, fornecendo informações relevantes e detalhadas.</span>
+<span class="s2">            Utilizar o HeyGen para o processamento do vídeo, empregando variáveis.</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">numCenas</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            O Heygen aceita até 5000 caracteres, escreva o texto de forma clara para que todo mundo entenda.</span>
+<span class="s2">            Quando necessario escreva um resumo que tenha menos de 5000 caracteres.</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            Formato da Resposta:</span>
+
+<span class="s2">            *** Roteiro formatado em JSON.</span>
+<span class="s2">            Variáveis: Utilizar titulo, subtitulo, topico, descricao, urlImg e decricaoImagem.</span>
+<span class="s2">            Estrutura elementos_visuais: Arrays contendo objetos com texto (para título e subtítulo) e, quando aplicável, imagem (com urlImg e decricaoImagem).</span>
+<span class="s2">            As frases de momentoChave das imagens devem corresponder exatamente ao que é dito no script sem ponto final.</span>
+<span class="s2">            O momentoChave obrigatoriamente precisa estar no script com as mesmas palavras.</span>
+<span class="s2">            Na última cena, apresentar um resumo da aula e realizar a despedida.</span>
+<span class="s2">            Não escrever frases que se referencie a vídeo. Exemplo: &quot;acompanhe uma explicação em vídeo&quot;, &quot;observe o vídeo a seguir&quot;, &quot;no vídeo a seguir&quot;.</span>
+
+<span class="s2">            Instruções Detalhadas:</span>
+
+<span class="s2">            *** Palavras-chave/Frases:</span>
+<span class="s2">            Criar um numero consideravel de palavras-chave.</span>
+<span class="s2">            Identificar e usar frases como palavras-chave (ex: &#39;ponto principal&#39;, &#39;resumo da aula&#39;, &#39;conclusão do estudo&#39;, &#39;abordagem geral&#39;). Não se limitar a uma única palavra (ex: &#39;resumo&#39;).</span>
+<span class="s2">            As palavras-chave/frases devem constar no script da narração.</span>
+<span class="s2">            Evitar a repetição de palavras-chave/frases.</span>
+<span class="s2">            Não criar palavras-chave/frases que não estejam presentes no texto fornecido, nem usar palavras como [&quot;resumo da aula&quot;, &quot;conclusão do estudo&quot;, &quot;encerramento&quot;].</span>
+<span class="s2">            Distribuir as palavras-chave/frases ao longo do script, com certa distância entre elas.</span>
+<span class="s2">            Não usar palavras-chave na última cena.</span>
+
+<span class="s2">            *** Variáveis e Descrições:</span>
+<span class="s2">            Utilizar as variáveis titulo, subtitulo, topico, descricao para palavras-chave e descrições textuais.</span>
+<span class="s2">            Usar urlImg para indicar o link da imagem e decricaoImagem para descrevê-la.</span>
+<span class="s2">            </span>
+<span class="s2">            *** Profundidade do Roteiro:</span>
+<span class="s2">            Elaborar um roteiro aprofundado, com informações detalhadas sobre o assunto de cada tópico/trecho.</span>
+<span class="s2">            Garantir a coerência entre a duração do vídeo e a quantidade de conteúdo abordado.</span>
+<span class="s2">            </span>
+<span class="s2">            *** Imagens:</span>
+<span class="s2">            Utilizar sempre o formato urlImg para referenciar as URLs das imagens do JSON de entrada.</span>
+<span class="s2">            Fornecer descrições claras e concisas para todas as imagens através da variável decricaoImagem.</span>
+<span class="s2">            Incluir as URLs das imagens no array imagens e as frases de momentoChave sempre correspondente ao script. (Fazer para todas as imagens do JSON de entrada)</span>
+<span class="s2">            Inserir as URLs dos vídeos no array vídeos (se houver).</span>
+<span class="s2">            O momentoChave obrigatoriamente precisa estar no script.</span>
+
+<span class="s2">            *** Vídeos:</span>
+<span class="s2">            Não teremos vídeos.</span>
+<span class="s2">            Quando aparecer um vídeo, não escrever falas referente a vídeo.</span>
+<span class="s2">            Não escrever frases que se referencia a um vídeo. &quot;acompanhe uma explicação em vídeo&quot;, &quot;observe o vídeo a seguir&quot;</span>
+
+<span class="s2">            *** Codigos:</span>
+<span class="s2">            Quando receber um coigo (principais.code-snippet), não falar sobre o codigo, apenas falar o que esta sendo explicado no codigo.</span>
+
+<span class="s2">            *** Elementos Visuais:</span>
+<span class="s2">            Cada cena/slide deve incluir um array elementos_visuais.</span>
+<span class="s2">            Este array conterá objetos com texto (composto pelo titulo e subtitulo), e, se aplicável, objetos com imagem (com urlImg e decricaoImagem).</span>
+<span class="s2">            Não abordar elementos HTML, CSS ou qualquer outro tema que não seja o conteúdo da aula.</span>
+<span class="s2">            </span>
+<span class="s2">            *** Cena da Imagem:</span>
+<span class="s2">            Ao apresentar uma imagem, usar frases introdutórias variadas, como &quot;Observe na imagem, texto referente ao script&quot;, &quot;Na ilustração podemos ver,  texto referente ao script&quot;, &quot;Perceba na imagem,  texto referente ao script&quot; ou &quot;A imagem demonstra,  texto referente ao script&quot;, e por ai em diante, evitando a repetição de &quot;Como mostra a imagem&quot;.</span>
+<span class="s2">            Mais de 5 palavras na descrição da imagem.</span>
+<span class="s2">            Não mencionar fontes, direitos autorais ou acessibilidade nas falas do script.</span>
+<span class="s2">            </span>
+<span class="s2">            *** Última Cena:</span>
+<span class="s2">            A última cena deve conter um breve resumo do conteúdo apresentado na aula.</span>
+<span class="s2">            A despedida deve ocorrer somente na última frase.</span>
+<span class="s2">            </span>
+<span class="s2">            Formato JSON:</span>
+
+<span class="s2">            Seguir a estrutura definida no schema fornecido para criar o JSON da resposta.</span>
+<span class="s2">            Saída JSON: Retornar apenas a string do JSON, em formato puro (sem formatação, código ou instruções adicionais).</span>
+<span class="s2">                </span>
+
+<span class="s2">            **Entrada:**</span>
+<span class="s2">                </span><span class="si">{</span><span class="n">texto</span><span class="si">}</span>
+
+<span class="s2">            **Schema JSON:**</span>
+<span class="s2">            </span><span class="si">{</span><span class="n">schema_texto</span><span class="si">}</span>
+
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">prompt</span></div>
+
+
+<span class="n">response_schema_roteiro</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;titulo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;O título do vídeo&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;subtitulo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Descrição do vídeo&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;imagens&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s2">&quot;urlImg&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Conteúdo do elemento visual (URL da imagem)&quot;</span><span class="p">},</span>
+                         <span class="s2">&quot;momentoChave&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Texto referente ao script&quot;</span><span class="p">},</span>
+                         <span class="s2">&quot;descricaoBuscaEnvato&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Texto correspondente a descrição da imagem até 15 palavras&quot;</span><span class="p">},</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+            <span class="s2">&quot;codigo&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s2">&quot;code-snippet&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Texto igual como foi recebido no JSON&quot;</span><span class="p">},</span>
+                         <span class="s2">&quot;momentoChaveCodigo&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Texto completo referente ao code-snippet.&quot;</span><span class="p">},</span>
+                         <span class="s2">&quot;fimMomentoChaveCodigo&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Inicio do outro Texto apos o code-snippet.&quot;</span><span class="p">},</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+            <span class="s2">&quot;cenas&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;cena&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Número da cena&quot;</span><span class="p">},</span>
+                        <span class="s2">&quot;tempo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Tempo da cena no vídeo (ex: 0:00-1:00)&quot;</span><span class="p">},</span>
+                        <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Narração da cena&quot;</span><span class="p">},</span>
+                        <span class="s2">&quot;elementos_visuais&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;tipo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Tipo do elemento visual (texto, imagem)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;titulo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Titulo sobre o texto que esta sendo falado na cena &quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;subtitulo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Breve descrição sobre o texto que esta sendo falado na cena (até 20 palavras)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;breveDescricao&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Breve resumo do que esta sendo falado no script, com ate 60 palavras&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;topico_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Breve descrição sobre o topico que esta sendo falado (até 20 palavras)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;topico_2&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Breve descrição sobre o topico que esta sendo falado (até 20 palavras)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;topico_3&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Breve descrição sobre o topico que esta sendo falado (até 20 palavras)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;topico_4&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Breve descrição sobre o topico que esta sendo falado (até 20 palavras)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;urlImg&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Conteúdo do elemento visual (URL da imagem)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;decricaoImagem&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Conteúdo do elemento visual (texto ou URL da imagem até 3 palavras)&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;descricaoBuscaEnvato&quot;</span><span class="p">:{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Texto correspondente a descrição da imagem até 15 palavras&quot;</span><span class="p">},</span>
+                                    <span class="s2">&quot;estilo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Estilo do elemento visual&quot;</span><span class="p">}</span>
+                                <span class="p">},</span>
+                                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;tipo&quot;</span><span class="p">,</span> <span class="s2">&quot;variavel&quot;</span><span class="p">,</span> <span class="s2">&quot;conteudo&quot;</span><span class="p">,</span> <span class="s2">&quot;estilo&quot;</span><span class="p">]</span>
+                            <span class="p">},</span>
+                            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Elementos visuais da cena&quot;</span>
+                        <span class="p">},</span>
+                        <span class="s2">&quot;palavras_chave&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+                            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Palavras-chave da cena com até 25 palavras (podendo ser uma, duas ou tres palavras)&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cena&quot;</span><span class="p">,</span> <span class="s2">&quot;tempo&quot;</span><span class="p">,</span> <span class="s2">&quot;narracao&quot;</span><span class="p">,</span> <span class="s2">&quot;elementos_visuais&quot;</span><span class="p">,</span> <span class="s2">&quot;palavras_chave&quot;</span><span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Lista de cenas do vídeo&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;titulo&quot;</span><span class="p">,</span> <span class="s2">&quot;cenas&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+
+
+<div class="viewcode-block" id="criar_payload_heygen">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.criaRoteiroPrompt.criar_payload_heygen">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_payload_heygen</span><span class="p">(</span><span class="n">roteiro_json</span><span class="p">):</span> <span class="c1"># adicionado heygen_response</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria o payload para a API do HeyGen com base no roteiro e na resposta do HeyGen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;caption&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;titulo&quot;</span><span class="p">],</span>  <span class="c1"># Título do vídeo</span>
+        <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Preenche os scripts do roteiro</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cena</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;cenas&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="n">cena</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;script_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;script_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">script</span><span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">cena</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementos_visuais&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="n">cena</span><span class="p">[</span><span class="s2">&quot;elementos_visuais&quot;</span><span class="p">]:</span> <span class="c1"># Lidar com chave ausente</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">elemento</span><span class="p">[</span><span class="s2">&quot;tipo&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;imagem&quot;</span><span class="p">:</span>
+                    <span class="n">imagem_url</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;urlImg&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem URL: </span><span class="si">{</span><span class="n">imagem_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">imagem_url</span> <span class="ow">and</span> <span class="n">imagem_url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Utilizar a imagem&quot;</span><span class="p">):</span> <span class="c1">#Improved check</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">imagem_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">imagem_url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;do JSON&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1">#Improved index extraction</span>
+                            <span class="n">imagem_url</span> <span class="o">=</span> <span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;imagens&quot;</span><span class="p">][</span><span class="n">imagem_index</span><span class="p">][</span><span class="s2">&quot;urlimg&quot;</span><span class="p">]</span>
+                        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Invalid image reference &#39;</span><span class="si">{</span><span class="n">imagem_url</span><span class="si">}</span><span class="s2">&#39; in scene </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. Using placeholder.&quot;</span><span class="p">)</span>
+                            <span class="n">imagem_url</span> <span class="o">=</span> <span class="s2">&quot;placeholder_image.jpg&quot;</span> <span class="c1"># Or some other default</span>
+                    
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;image_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;image_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">imagem_url</span> <span class="k">if</span> <span class="n">imagem_url</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#None is still correctly handled here.</span>
+                            <span class="s2">&quot;asset_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="s2">&quot;fit&quot;</span><span class="p">:</span> <span class="s2">&quot;contain&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+
+                <span class="k">elif</span> <span class="n">elemento</span><span class="p">[</span><span class="s2">&quot;tipo&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;texto&quot;</span><span class="p">:</span>
+                    <span class="n">titulo</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;titulo&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> 
+                    <span class="n">subtitulo</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subtitulo&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título: </span><span class="si">{</span><span class="n">titulo</span><span class="si">}</span><span class="s2">, Subtítulo: </span><span class="si">{</span><span class="n">subtitulo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;titulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;titulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">titulo</span>
+                            <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;subtitulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;subtitulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">subtitulo</span>
+                            <span class="p">}</span>
+                    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">payload</span></div>
+
+
+
+
+<div class="viewcode-block" id="criar_payload_heygen_template_1">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.criaRoteiroPrompt.criar_payload_heygen_template_1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_payload_heygen_template_1</span><span class="p">(</span><span class="n">roteiro_json</span><span class="p">):</span> <span class="c1"># adicionado heygen_response</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria o payload para a API do HeyGen com base no roteiro e na resposta do HeyGen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;caption&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;titulo&quot;</span><span class="p">],</span>  <span class="c1"># Título do vídeo</span>
+        <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Preenche os scripts do roteiro</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cena</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;cenas&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="n">cena</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;script_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;script_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">script</span><span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">cena</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;elementos_visuais&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="n">cena</span><span class="p">[</span><span class="s2">&quot;elementos_visuais&quot;</span><span class="p">]:</span> <span class="c1"># Lidar com chave ausente</span>
+                <span class="k">if</span> <span class="n">elemento</span><span class="p">[</span><span class="s2">&quot;tipo&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;imagem&quot;</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="n">imagem_url</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;urlImg&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem URL: </span><span class="si">{</span><span class="n">imagem_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">imagem_url</span> <span class="ow">and</span> <span class="n">imagem_url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Utilizar a imagem&quot;</span><span class="p">):</span> <span class="c1">#Improved check</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">imagem_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">imagem_url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;do JSON&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1">#Improved index extraction</span>
+                            <span class="n">imagem_url</span> <span class="o">=</span> <span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;imagens&quot;</span><span class="p">][</span><span class="n">imagem_index</span><span class="p">][</span><span class="s2">&quot;urlimg&quot;</span><span class="p">]</span>
+                        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Invalid image reference &#39;</span><span class="si">{</span><span class="n">imagem_url</span><span class="si">}</span><span class="s2">&#39; in scene </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. Using placeholder.&quot;</span><span class="p">)</span>
+                            <span class="n">imagem_url</span> <span class="o">=</span> <span class="s2">&quot;placeholder_image.jpg&quot;</span> <span class="c1"># Or some other default</span>
+                    
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;image_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;image_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">imagem_url</span> <span class="k">if</span> <span class="n">imagem_url</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="c1">#None is still correctly handled here.</span>
+                            <span class="s2">&quot;asset_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="s2">&quot;fit&quot;</span><span class="p">:</span> <span class="s2">&quot;contain&quot;</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+
+                <span class="k">elif</span> <span class="n">elemento</span><span class="p">[</span><span class="s2">&quot;tipo&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;texto&quot;</span><span class="p">:</span>
+                    <span class="n">titulo</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;titulo&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> 
+                    <span class="n">subtitulo</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subtitulo&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">breveDescricao</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;breveDescricao&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>            
+
+
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Título: </span><span class="si">{</span><span class="n">titulo</span><span class="si">}</span><span class="s2">, Subtítulo: </span><span class="si">{</span><span class="n">subtitulo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Breve Descrição: </span><span class="si">{</span><span class="n">breveDescricao</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;titulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;titulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">titulo</span>
+                            <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;subtitulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;subtitulo_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">subtitulo</span>
+                            <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;breveDesc_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;breveDesc_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">breveDescricao</span>
+                            <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="k">if</span> <span class="s2">&quot;topico_1&quot;</span> <span class="ow">in</span> <span class="n">elemento</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="n">topico_1</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topico_1&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                        <span class="n">topico_2</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topico_2&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                        <span class="n">topico_3</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topico_3&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                        <span class="n">topico_4</span> <span class="o">=</span> <span class="n">elemento</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;topico_4&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Topico 1: </span><span class="si">{</span><span class="n">topico_1</span><span class="si">}</span><span class="s2">, Topico 2: </span><span class="si">{</span><span class="n">topico_2</span><span class="si">}</span><span class="s2">, Topico 3: </span><span class="si">{</span><span class="n">topico_3</span><span class="si">}</span><span class="s2">, Topico 4: </span><span class="si">{</span><span class="n">topico_4</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;topico_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;topico_1&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">topico_1</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;topico_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;topico_2&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">topico_2</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;topico_3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;topico_3&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">topico_3</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;topico_4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;topico_4&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">topico_4</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">payload</span></div>
+
+
+<div class="viewcode-block" id="criar_payload_heygen_template_3">
+<a class="viewcode-back" href="../../../modules/common_utils.html#app.common.criaRoteiroPrompt.criar_payload_heygen_template_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">criar_payload_heygen_template_3</span><span class="p">(</span><span class="n">roteiro_json</span><span class="p">):</span> <span class="c1"># adicionado heygen_response</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cria o payload para a API do HeyGen com base no roteiro e na resposta do HeyGen.</span>
+
+<span class="sd">    Recebe:</span>
+<span class="sd">    - roteiro_json: Roteiro em formato JSON</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">    - Payload para a API do HeyGen</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;caption&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;titulo&quot;</span><span class="p">],</span>  <span class="c1"># Título do vídeo</span>
+        <span class="s2">&quot;dimension&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">1280</span><span class="p">,</span>
+            <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mi">720</span>
+        <span class="p">},</span>
+       
+
+        <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Preenche os scripts do roteiro</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cena</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">roteiro_json</span><span class="p">[</span><span class="s2">&quot;cenas&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="n">cena</span><span class="p">[</span><span class="s2">&quot;script&quot;</span><span class="p">]</span>
+        <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">][</span><span class="sa">f</span><span class="s2">&quot;script_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;script_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">script</span><span class="p">}</span>
+        <span class="p">}</span>            
+
+    <span class="k">return</span> <span class="n">payload</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

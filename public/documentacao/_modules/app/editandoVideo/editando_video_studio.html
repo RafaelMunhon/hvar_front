@@ -1,0 +1,367 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app.editandoVideo.editando_video_studio &mdash; YDUQS Video Service  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            YDUQS Video Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_pexel.html">Video Pexel API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_studio.html">Video Studio API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/import_file.html">File Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/database.html">Database Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/video_ia.html">Video 100% IA API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/audio_services.html">Serviços de Áudio</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">YDUQS Video Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app.editandoVideo.editando_video_studio</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app.editandoVideo.editando_video_studio</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">storage</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">speech_recognition</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ffmpeg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.config.vertexAi</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_content</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">file_manager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.searchImagens</span><span class="w"> </span><span class="kn">import</span> <span class="n">searchImagens_Envato</span><span class="p">,</span> <span class="n">searchImagens_Pexel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.searchImagens.searchImagens_Envato</span><span class="w"> </span><span class="kn">import</span> <span class="n">buscar_imagens_envato</span> <span class="k">as</span> <span class="n">busca_imagens_envato</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services</span><span class="w"> </span><span class="kn">import</span> <span class="n">video_service</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.speech_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_audio</span><span class="p">,</span> <span class="n">transcribe_with_timestamps</span><span class="p">,</span> <span class="n">upload_video_to_bucket</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.text_overlay_service_studio</span><span class="w"> </span><span class="kn">import</span> <span class="n">criar_video</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.services.vertexai_service</span><span class="w"> </span><span class="kn">import</span> <span class="n">encontrar_palavras_chaves_imagem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.logger_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.bd.bd</span><span class="w"> </span><span class="kn">import</span> <span class="n">inserir_video_pexel</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+
+<span class="c1"># Adiciona no início do arquivo, após os outros imports</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Carregar variáveis de ambiente do arquivo .env</span>
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+<span class="c1">#nome_arquivo = &quot;zanata_sem lettering_10_percent_acelerado_alta.mp4&quot;</span>
+<span class="n">pasta_videos_estudio</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_files_estudio_videos_path</span><span class="p">()</span>
+<span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_videos_estudio</span><span class="p">)</span>
+
+<span class="n">pasta_temp_videos_estudio</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_temp_files_path</span><span class="p">()</span>
+<span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_temp_videos_estudio</span><span class="p">)</span>
+
+<div class="viewcode-block" id="download_video_from_gcs">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.editandoVideo.editando_video_studio.download_video_from_gcs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_video_from_gcs</span><span class="p">(</span><span class="n">video_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Faz o download de um vídeo do GCS para o sistema local.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str): Caminho do vídeo no GCS (https:// ou gs://)</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        str: Caminho local do vídeo baixado</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Configura o cliente do GCS</span>
+        <span class="n">storage_client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+        
+        <span class="c1"># Extrai o nome do bucket e o caminho do arquivo</span>
+        <span class="k">if</span> <span class="n">video_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">):</span>
+            <span class="c1"># Formato gs://bucket/path/to/file</span>
+            <span class="n">bucket_name</span> <span class="o">=</span> <span class="n">video_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">blob_name</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">video_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;gs://&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Formato https://storage.googleapis.com/bucket/path/to/file</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">video_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;https://storage.googleapis.com/&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="n">bucket_name</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">blob_name</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bucket: </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Blob: </span><span class="si">{</span><span class="n">blob_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Obtém referências para o bucket e blob</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="n">storage_client</span><span class="o">.</span><span class="n">bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">blob_name</span><span class="p">)</span>
+        
+        <span class="c1"># Define o caminho local para salvar o vídeo</span>
+        <span class="n">local_path</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_temp_files_path</span><span class="p">()</span>
+        <span class="n">local_video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">blob_name</span><span class="p">))</span>
+        
+        <span class="c1"># Faz o download do vídeo</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iniciando download do vídeo para: </span><span class="si">{</span><span class="n">local_video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">download_to_filename</span><span class="p">(</span><span class="n">local_video_path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo baixado com sucesso para: </span><span class="si">{</span><span class="n">local_video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">local_video_path</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao fazer download do vídeo do GCS: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="tratamento_videos">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.editandoVideo.editando_video_studio.tratamento_videos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tratamento_videos</span><span class="p">(</span><span class="n">video_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;envato&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Processa um vídeo para edição e criação de um vídeo final.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        video_path (str, opcional): Caminho do vídeo no GCS (https:// ou gs://)</span>
+<span class="sd">        site (str, opcional): Site de origem do vídeo (default: &#39;envato&#39;)</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        bool: True se o vídeo foi processado com sucesso, False caso contrário</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">imagem_path</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">video_path</span><span class="p">:</span>
+            <span class="c1"># Primeiro, baixa o vídeo do GCS</span>
+            <span class="n">video_path_local</span> <span class="o">=</span> <span class="n">download_video_from_gcs</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processando vídeo local: </span><span class="si">{</span><span class="n">video_path_local</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+             <span class="c1"># Extrai o áudio da narração para transcrição</span>
+            <span class="n">audio_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_temp_videos_estudio</span><span class="p">,</span> <span class="s2">&quot;video_studio_audio.wav&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">extract_audio</span><span class="p">(</span><span class="n">video_path_local</span><span class="p">,</span> <span class="n">audio_file</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao extrair áudio do vídeo&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Falha ao extrair áudio da narração!&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Transcreve o áudio para obter os timestamps</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Transcrevendo narração para sincronizar legendas...&quot;</span><span class="p">)</span>
+            <span class="c1"># Mudando para a versão que usa GCS para áudios longos</span>
+            <span class="n">transcricao_com_tempos</span> <span class="o">=</span> <span class="n">transcribe_with_timestamps</span><span class="p">(</span><span class="n">audio_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transcricao_com_tempos</span><span class="p">:</span>
+                <span class="c1"># Formata a transcrição completa</span>
+                <span class="n">transcricao</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;word&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">transcricao_com_tempos</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">transcricao</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">duracao_video</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">video_path_local</span><span class="p">)[</span><span class="s1">&#39;format&#39;</span><span class="p">][</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+            <span class="n">duracao_video</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">duracao_video</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duração do vídeo: </span><span class="si">{</span><span class="n">duracao_video</span><span class="si">}</span><span class="s2"> segundos&quot;</span><span class="p">)</span>
+
+            <span class="c1">#Quantidade de imagens no video.</span>
+            <span class="c1"># Calcula quantidade de imagens baseado na duração do vídeo</span>
+            <span class="n">quantidade_imagens</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">duracao_video</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="c1">#quantidade_palavras_chaves = int((duracao_video / 60) * 10)</span>
+            <span class="c1"># Convertendo minutos para segundos e dividindo por 5 (uma palavra a cada 5 segundos)</span>
+            <span class="n">quantidade_palavras_chaves</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">duracao_video</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Quantidade de imagens a serem buscadas: </span><span class="si">{</span><span class="n">quantidade_imagens</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Quantidade de palavras-chave a serem buscadas: </span><span class="si">{</span><span class="n">quantidade_palavras_chaves</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">transcricao</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcrição: </span><span class="si">{</span><span class="n">transcricao</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">json_data</span> <span class="o">=</span> <span class="n">encontrar_palavras_chaves_imagem</span><span class="p">(</span><span class="n">transcricao</span><span class="p">,</span> <span class="n">quantidade_palavras_chaves</span><span class="p">,</span> <span class="n">quantidade_imagens</span><span class="p">)</span>
+                
+                <span class="c1"># Log para debug</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;JSON recebido para imagens:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">json_data</span><span class="p">)</span>
+                
+                <span class="n">lista_palavras_chaves</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;palavras_chaves&#39;</span><span class="p">]</span>
+                <span class="n">imagem_path</span> <span class="o">=</span> <span class="n">list_imagem_envato</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">imagem_path</span><span class="p">,</span> <span class="n">site</span><span class="p">)</span>
+                
+                <span class="c1"># Log para debug do resultado da busca</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resultado da busca de imagens:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Site usado: </span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Quantidade de imagens encontradas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">imagem_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">imagem_path</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imagem: </span><span class="si">{</span><span class="n">img</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;video_path_local: </span><span class="si">{</span><span class="n">video_path_local</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lista de palavras-chave: </span><span class="si">{</span><span class="n">lista_palavras_chaves</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lista de imagens: </span><span class="si">{</span><span class="n">imagem_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;transcricao_com_tempos: </span><span class="si">{</span><span class="n">transcricao_com_tempos</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duracao_video: </span><span class="si">{</span><span class="n">duracao_video</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Limpa memória</span>
+                <span class="c1">#del json_data</span>
+                
+                <span class="c1"># Processa o vídeo e obtém o caminho do vídeo final</span>
+                <span class="n">video_final</span> <span class="o">=</span> <span class="n">criar_video</span><span class="p">(</span><span class="n">video_path_local</span><span class="p">,</span> <span class="n">lista_palavras_chaves</span><span class="p">,</span> <span class="n">imagem_path</span><span class="p">,</span> <span class="n">transcricao_com_tempos</span><span class="p">,</span> <span class="n">duracao_video</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">video_final</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo processado: </span><span class="si">{</span><span class="n">video_final</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="c1"># Faz upload para o bucket</span>
+                    <span class="n">bucket_url</span> <span class="o">=</span> <span class="n">upload_video_to_bucket</span><span class="p">(</span><span class="n">video_final</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="n">bucket_url</span><span class="p">:</span>
+                        <span class="c1"># Salva no banco de dados</span>
+                        <span class="n">video_id</span> <span class="o">=</span> <span class="n">inserir_video_pexel</span><span class="p">(</span><span class="n">bucket_url</span><span class="p">,</span> <span class="s1">&#39;STUDIO&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">video_id</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vídeo processado e salvo com sucesso. ID: </span><span class="si">{</span><span class="n">video_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+                    
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao processar/salvar vídeo&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Falha ao transcrever o vídeo&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao processar vídeo: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="list_imagem_envato">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.editandoVideo.editando_video_studio.list_imagem_envato">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_imagem_envato</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">lista_imagens</span><span class="p">,</span> <span class="n">site</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lista imagens de acordo com o site especificado.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json_data (dict): Dados JSON contendo informações sobre as imagens</span>
+<span class="sd">        lista_imagens (list): Lista de imagens existentes   </span>
+<span class="sd">        site (str): Site de origem das imagens</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        list: Lista de imagens encontradas</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">site</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+        <span class="n">pasta_arquivos_temporarios</span> <span class="o">=</span> <span class="n">ffmpeg</span><span class="o">.</span><span class="n">get_temp_files_path</span><span class="p">()</span>
+        <span class="n">file_manager</span><span class="o">.</span><span class="n">criar_diretorio_se_nao_existir</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">imagem</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;imagens&quot;</span><span class="p">]:</span>
+                    
+                    <span class="c1"># Verifica se &#39;urlimg&#39; existe e é uma string</span>
+                    <span class="k">if</span> <span class="s1">&#39;descricaoBuscaEnvato&#39;</span> <span class="ow">in</span> <span class="n">imagem</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;descricaoBuscaEnvato&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+                        
+                        <span class="c1"># Extrair nome base da URL</span>
+                        <span class="n">url_img_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">imagem</span><span class="p">[</span><span class="s2">&quot;descricaoBuscaEnvato&quot;</span><span class="p">])</span>  <span class="c1"># Pega a url para extrair a parte que nomeia as fotos.</span>
+                        
+                        <span class="n">nome_base_imagem_aux</span> <span class="o">=</span> <span class="n">url_img_base</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                        <span class="n">nome_base_imagem</span> <span class="o">=</span> <span class="n">nome_base_imagem_aux</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># Tira o .jpg .jpeg ou qualquer outro do nome.</span>
+                        
+                        <span class="n">momento_chave</span> <span class="o">=</span> <span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;momentoChave&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="n">filename_imagem</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nome_base_imagem</span><span class="si">}</span><span class="s2">.jpg&quot;</span>  <span class="c1"># Utilizando o nome customizado e sempre salva como png</span>
+                        <span class="n">path_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pasta_arquivos_temporarios</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nome_base_imagem</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">)</span>
+
+                        <span class="n">termo_melhorado</span> <span class="o">=</span> <span class="n">melhorarTermo</span><span class="p">(</span><span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;descricaoBuscaEnvato&#39;</span><span class="p">))</span> 
+
+                        <span class="k">if</span> <span class="n">site</span> <span class="o">==</span> <span class="s1">&#39;envato&#39;</span><span class="p">:</span>
+                            <span class="n">lista_imagens</span> <span class="o">=</span> <span class="n">searchImagens_Envato</span><span class="o">.</span><span class="n">buscar_imagens_envato</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">imagem</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;descricaoBuscaEnvato&#39;</span><span class="p">),</span> <span class="n">filename_imagem</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">site</span> <span class="o">==</span> <span class="s1">&#39;pexels&#39;</span><span class="p">:</span>
+                            <span class="n">lista_imagens</span> <span class="o">=</span> <span class="n">searchImagens_Pexel</span><span class="o">.</span><span class="n">busca_imagens_pexels</span><span class="p">(</span><span class="n">lista_imagens</span><span class="p">,</span> <span class="n">termo_melhorado</span><span class="p">,</span> <span class="n">filename_imagem</span><span class="p">,</span> <span class="n">path_name</span><span class="p">,</span> <span class="n">momento_chave</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lista_imagens</span></div>
+
+
+<div class="viewcode-block" id="melhorarTermo">
+<a class="viewcode-back" href="../../../modules/video_studio.html#app.editandoVideo.editando_video_studio.melhorarTermo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">melhorarTermo</span><span class="p">(</span><span class="n">termo</span><span class="p">):</span>
+    <span class="n">prompt_melhorar_palavras_chaves</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Pegue esse termo no texto abaixo e melhore ele para realizar buscas em bancos de imagens para trazer a melor imagem.</span>
+<span class="s2">    faça isso em até 5 palavras.</span>
+<span class="s2">    </span><span class="si">{</span><span class="n">termo</span><span class="si">}</span>
+<span class="s2">    </span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">generate_content</span><span class="p">(</span><span class="n">prompt_melhorar_palavras_chaves</span><span class="p">)</span> <span class="c1"># chama o modelo antigo</span>
+        <span class="c1"># print(&quot;Chamada ao novo modelo&quot;)</span>
+        <span class="c1"># responses = generate(prompt_roteiro) # chama o novo modelo </span>
+        <span class="k">if</span> <span class="n">responses</span><span class="p">:</span>
+            <span class="n">response_text</span> <span class="o">=</span> <span class="n">responses</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response_text</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resposta do modelo está vazia.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="n">response_text</span>
+    
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao gerar vídeo: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erro ao decodificar JSON: &quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">tratamento_videos</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, YDUQS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
