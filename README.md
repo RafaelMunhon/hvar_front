@@ -171,14 +171,14 @@ parserOptions: {
 
 O projeto usa Prettier para formatação automática de código.
 
-## 📊 Funcionalidades do Dashboard
+## 📊 Funcionalidades do Dashboard (desativado)
 
 - **Estatísticas em Tempo Real**: Métricas de visitas, receita, pedidos e usuários
 - **Gráficos Interativos**: Relatórios semanais e anuais de vendas
 - **Sistema de Chat**: Comunicação em tempo real
 - **Gerenciamento de Projetos**: Acompanhamento de status e prazos
 
-## 🔐 Autenticação
+## 🔐 Autenticação (desativado)
 
 O sistema inclui:
 - Login/Logout
@@ -193,14 +193,6 @@ A aplicação é totalmente responsiva e funciona em:
 - Tablet
 - Mobile
 
-## 🤝 Contribuição
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
 ## 📄 Licença
 
 Este projeto é privado e proprietário.
@@ -208,7 +200,3 @@ Este projeto é privado e proprietário.
 ## 📞 Suporte
 
 Para suporte técnico ou dúvidas, entre em contato com a equipe de desenvolvimento.
-
----
-
-**Desenvolvido com ❤️ usando React + TypeScript + Vite**
